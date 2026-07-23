@@ -1,0 +1,28 @@
+{
+  "name": "lianjie-agent-api",
+  "version": "0.2.0",
+  "description": "联结宇宙 · AI基建平台 + 中枢平台 API",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx --import dotenv/config src/index.ts",
+    "build": "tsc",
+    "start": "node --import dotenv/config dist/index.js",
+    "seed": "tsx --import dotenv/config src/scripts/seed.ts"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/node": "^22.0.0",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.5.0",
+    "tsx": "^4.16.0"
+  }
+}

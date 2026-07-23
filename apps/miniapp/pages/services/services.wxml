@@ -1,0 +1,40 @@
+<!-- 服务列表 -->
+<view class="page">
+
+  <!-- 系统筛选 -->
+  <scroll-view class="filter-bar" scroll-x>
+    <view class="filter-item {{activeFilter === item.key ? 'active' : ''}}"
+          wx:for="{{filters}}" wx:key="key"
+          data-key="{{item.key}}"
+          catch:tap="switchFilter">
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <!-- 服务列表 -->
+  <view class="service-list" wx:elif="{{services.length > 0}}">
+    <view class="service-card" wx:for="{{services}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
+      <view class="service-top">
+        <text class="service-system">{{item.primary_system}}</text>
+        <text class="service-price">{{item.price}}元</text>
+      </view>
+      <text class="service-name">{{item.name}}</text>
+      <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
+      <view class="service-meta">
+        <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+        <text wx:if="{{item.delivery_method === 'online'}}">线上</text>
+        <text wx:elif="{{item.delivery_method === 'offline'}}">线下</text>
+        <text wx:else>线上/线下</text>
+        <text wx:if="{{item.trust_score > 0}}">信任 {{item.trust_score}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:elif="{{!loading}}">
+    <text>暂无可用的服务</text>
+  </view>
+</view>

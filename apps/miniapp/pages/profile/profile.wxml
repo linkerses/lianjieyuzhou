@@ -1,0 +1,47 @@
+<!-- 我的 -->
+<view class="page">
+
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-avatar">{{agent?.nickname ? agent.nickname[0] : '?'}}</view>
+    <view class="user-info">
+      <text class="user-name">{{agent?.nickname || '联结者'}}</text>
+      <text class="user-cid">{{agent?.cid || ''}}</text>
+      <view class="user-tags" wx:if="{{agent?.life_stage_tags?.length > 0}}">
+        <text class="tag" wx:for="{{agent.life_stage_tags}}" wx:key="item">{{item}}</text>
+      </view>
+      <text class="user-hint" wx:else catch:tap="goEditTags">点击完善生命阶段 →</text>
+    </view>
+  </view>
+
+  <!-- 信任概要 -->
+  <view class="trust-summary" wx:if="{{trustInfo}}" catch:tap="goTrustNetwork">
+    <text class="trust-label">信任评分</text>
+    <text class="trust-value">{{trustInfo.trust_score || 0}}</text>
+    <text class="trust-detail">{{trustInfo.total_transactions || 0}}笔交易</text>
+  </view>
+
+  <!-- 功能入口 -->
+  <view class="menu-group">
+    <view class="menu-item" catch:tap="goAgent">
+      <text class="menu-icon">🤖</text>
+      <text class="menu-label">我的Agent</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" catch:tap="goTransactions">
+      <text class="menu-icon">📋</text>
+      <text class="menu-label">交易记录</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" catch:tap="goTrustNetwork">
+      <text class="menu-icon">🔗</text>
+      <text class="menu-label">信任网络</text>
+      <text class="menu-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 开发信息 -->
+  <view class="version" catch:tap="showDevInfo">
+    <text>联结宇宙 V0.2</text>
+  </view>
+</view>

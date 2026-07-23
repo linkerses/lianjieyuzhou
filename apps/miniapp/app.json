@@ -1,0 +1,54 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/services/services",
+    "pages/services/detail",
+    "pages/booking/booking",
+    "pages/agent/agent",
+    "pages/transaction/transaction",
+    "pages/transaction/detail",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#FAFAF8",
+    "navigationBarTitleText": "联结宇宙",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#FAFAF8"
+  },
+  "tabBar": {
+    "color": "#999",
+    "selectedColor": "#2D3E2F",
+    "backgroundColor": "#FAFAF8",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/services/services",
+        "text": "服务",
+        "iconPath": "images/tab-services.png",
+        "selectedIconPath": "images/tab-services-active.png"
+      },
+      {
+        "pagePath": "pages/agent/agent",
+        "text": "我的Agent",
+        "iconPath": "images/tab-agent.png",
+        "selectedIconPath": "images/tab-agent-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/tab-profile.png",
+        "selectedIconPath": "images/tab-profile-active.png"
+      }
+    ]
+  },
+  "usingComponents": {},
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

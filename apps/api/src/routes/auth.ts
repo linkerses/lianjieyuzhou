@@ -1,0 +1,145 @@
+import { Router, Request, Response } from 'express';
+import { supabase } from '../lib/supabase';
+
+const router = Router();
+
+// ── 微信小程序登录 ──
+// 前端调用 wx.login() 获取 code，传给此接口
+// 后端用 code 换取 openid，查找或创建 Agent
+router.post('/wechat-login', async (req: Request, res: Response) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: '缺少微信登录code' });
+
+    // V0.2 开发模式：使用 dev_mode 跳过微信登录
+    if (code === 'dev_mode') {
+      return handleDevLogin(res);
+    }
+
+    const appId = process.env.WECHAT_APP_ID || '';
+    const appSecret = process.env.WECHAT_APP_SECRET || '';
+
+    if (!appId || !appSecret) {
+      return res.status(500).json({ error: '微信支付未配置' });
+    }
+
+    // 调用微信接口换取 openid
+    const wxResp = await fetch(
+      `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`
+    );
+    const wxData = await wxResp.json();
+
+    if (wxData.errcode) {
+      return res.status(400).json({ error: `微信登录失败: ${wxData.errmsg}` });
+    }
+
+    const { openid } = wxData;
+
+    // 查找是否已有 Agent
+    const { data: existingAgent } = await supabase
+      .from('agents')
+      .select('cid, nickname, life_stage_tags')
+      .eq('wechat_openid', openid)
+      .single();
+
+    if (existingAgent) {
+      // 已有 Agent，返回现有信息
+      return res.json({
+        data: {
+          cid: existingAgent.cid,
+          nickname: existingAgent.nickname,
+          is_new: false,
+          token: generateToken(existingAgent.cid),
+        },
+      });
+    }
+
+    // 新用户：自动创建 Agent（基本信息待补充）
+    const { count } = await supabase
+      .from('agents')
+      .select('*', { count: 'exact', head: true });
+
+    const seq = String((count || 0) + 1).padStart(4, '0');
+    const cid = `UC-M-${seq}`;
+
+    const { data: newAgent, error } = await supabase
+      .from('agents')
+      .insert({
+        cid,
+        nickname: `联结者${seq}`,
+        wechat_openid: openid,
+        life_stage_tags: [],
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    res.json({
+      data: {
+        cid: newAgent.cid,
+        nickname: newAgent.nickname,
+        is_new: true,
+        token: generateToken(newAgent.cid),
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message || '登录失败' });
+  }
+});
+
+// ── 开发模式模拟登录 ──
+async function handleDevLogin(res: Response) {
+  // 查找或创建开发者测试用 Agent
+  const devCid = 'UC-M-0001';
+
+  const { data: existing } = await supabase
+    .from('agents')
+    .select('cid, nickname')
+    .eq('cid', devCid)
+    .single();
+
+  if (existing) {
+    return res.json({
+      data: {
+        cid: existing.cid,
+        nickname: existing.nickname,
+        is_new: false,
+        token: generateToken(existing.cid),
+      },
+    });
+  }
+
+  // 创建开发用 Agent
+  const { data: newAgent, error } = await supabase
+    .from('agents')
+    .insert({
+      cid: devCid,
+      nickname: '开发者',
+      wechat_openid: 'dev_mode',
+      life_stage_tags: ['wealth', 'create'],
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  res.json({
+    data: {
+      cid: newAgent.cid,
+      nickname: newAgent.nickname,
+      is_new: true,
+      token: generateToken(newAgent.cid),
+    },
+  });
+}
+
+// ── Token 生成（V0.2 简易版） ──
+function generateToken(cid: string): string {
+  // V0.2: 简单 Base64 编码，不引入 JWT 库
+  // V1.0: 替换为正式 JWT
+  const payload = JSON.stringify({ cid, ts: Date.now() });
+  return Buffer.from(payload).toString('base64');
+}
+
+export default router;

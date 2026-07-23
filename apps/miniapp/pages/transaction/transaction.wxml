@@ -1,0 +1,33 @@
+<!-- 交易列表 -->
+<view class="page">
+
+  <!-- Tab切换 -->
+  <view class="tabs">
+    <view class="tab {{activeTab === item.key ? 'active' : ''}}"
+          wx:for="{{tabs}}" wx:key="key"
+          data-key="{{item.key}}"
+          catch:tap="switchTab">
+      {{item.label}}
+    </view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view class="tx-list" wx:elif="{{transactions.length > 0}}">
+    <view class="tx-card" wx:for="{{transactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
+      <view class="tx-top">
+        <text class="tx-service">{{item.services?.name || '服务'}}</text>
+        <text class="tx-status tx-{{item.status}}">{{statusLabels[item.status] || item.status}}</text>
+      </view>
+      <view class="tx-meta">
+        <text class="tx-system">{{item.services?.primary_system || ''}}</text>
+        <text class="tx-amount">{{item.amount}}元</text>
+      </view>
+      <text class="tx-score" wx:if="{{item.actual_score}}">评分 {{item.actual_score}}</text>
+    </view>
+  </view>
+
+  <view class="empty" wx:elif="{{!loading}}">
+    <text>暂无交易记录</text>
+  </view>
+</view>

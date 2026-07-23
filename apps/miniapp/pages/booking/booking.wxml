@@ -1,0 +1,48 @@
+<!-- 预约 -->
+<view class="page">
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:elif="{{service}}">
+
+    <!-- 服务摘要 -->
+    <view class="booking-summary">
+      <text class="bs-name">{{service.name}}</text>
+      <text class="bs-provider">{{service.provider_nickname || service.provider_cid}}</text>
+      <text class="bs-price">{{service.price}}元</text>
+    </view>
+
+    <!-- 预约表单 -->
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">选择预约时间</text>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">日期</text>
+        <picker mode="selector" range="{{dateOptions}}" range-key="label" bindchange="onDateChange">
+          <view class="picker">{{scheduledDate ? dateOptions.find(d => d.value === scheduledDate)?.label : '请选择日期'}}</view>
+        </picker>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">时间</text>
+        <picker mode="selector" range="{{timeOptions}}" bindchange="onTimeChange">
+          <view class="picker">{{scheduledTime || '请选择时间'}}</view>
+        </picker>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">备注（可选）</text>
+        <input class="form-input" placeholder="有什么想提前沟通的？" bindinput="onNoteInput" value="{{note}}" />
+      </view>
+    </view>
+
+    <!-- 提交 -->
+    <view class="action-bar">
+      <button class="btn-primary" catch:tap="submitBooking" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '确认预约 · ' + service.price + '元'}}
+      </button>
+    </view>
+  </view>
+</view>

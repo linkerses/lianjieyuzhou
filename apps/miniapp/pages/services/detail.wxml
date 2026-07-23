@@ -1,0 +1,97 @@
+<!-- 服务详情 -->
+<view class="page">
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:elif="{{service}}">
+
+    <!-- 预演评分卡 -->
+    <view class="pre-score-card" wx:if="{{preEnact}}" style="border-left-color: {{getScoreColor(preEnact.total_score)}}">
+      <view class="pre-score-header">
+        <text class="pre-score-label">预演匹配度</text>
+        <text class="pre-score-value" style="color: {{getScoreColor(preEnact.total_score)}}">{{preEnact.total_score}}<text class="pre-score-unit">/100</text></text>
+      </view>
+      <text class="pre-score-summary">{{preEnact.summary}}</text>
+      <view class="pre-dimensions">
+        <view class="dim-item">
+          <text class="dim-label">系统共振</text>
+          <text class="dim-score">{{preEnact.dimensions?.resonance || 0}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">阶段适配</text>
+          <text class="dim-score">{{preEnact.dimensions?.stage_fit || 0}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">历史一致</text>
+          <text class="dim-score">{{preEnact.dimensions?.history || 0}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">信任可信</text>
+          <text class="dim-score">{{preEnact.dimensions?.trust || 0}}</text>
+        </view>
+      </view>
+      <view class="pre-risks" wx:if="{{preEnact.risks && preEnact.risks.length > 0}}">
+        <text class="risk-title">请注意</text>
+        <text class="risk-item" wx:for="{{preEnact.risks}}" wx:for-item="r" wx:key="r">⚠️ {{r}}</text>
+      </view>
+    </view>
+
+    <!-- 服务信息卡 -->
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">{{service.name}}</text>
+      </view>
+
+      <view class="info-row">
+        <text class="info-label">提供者</text>
+        <text class="info-value">{{service.provider_nickname || service.provider_cid}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">系统</text>
+        <text class="info-value">{{service.primary_system}}{{service.secondary_system ? ' + ' + service.secondary_system : ''}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">价格</text>
+        <text class="info-value price">{{service.price}}元</text>
+      </view>
+      <view class="info-row" wx:if="{{service.duration_minutes}}">
+        <text class="info-label">时长</text>
+        <text class="info-value">{{service.duration_minutes}}分钟</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">方式</text>
+        <text class="info-value">{{service.delivery_method === 'online' ? '线上' : service.delivery_method === 'offline' ? '线下' : '线上/线下'}}</text>
+      </view>
+      <view class="info-row" wx:if="{{service.location}}">
+        <text class="info-label">地址</text>
+        <text class="info-value">{{service.location}}</text>
+      </view>
+
+      <view class="desc-block" wx:if="{{service.description}}">
+        <text class="desc-label">服务介绍</text>
+        <text class="desc-text">{{service.description}}</text>
+      </view>
+    </view>
+
+    <!-- 信任信息 -->
+    <view class="card" catch:tap="onContact">
+      <view class="card-header">
+        <text class="card-title">信任信息</text>
+        <text class="card-action">复制联结者ID</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">服务方信任分</text>
+        <text class="info-value">{{service.trust_score || '暂无'}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">累计交付</text>
+        <text class="info-value">{{service.delivery_count || 0}}次</text>
+      </view>
+    </view>
+
+    <!-- 预约按钮 -->
+    <view class="action-bar">
+      <button class="btn-primary" catch:tap="onBook">预约此服务</button>
+    </view>
+  </view>
+</view>

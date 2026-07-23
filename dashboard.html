@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>联结宇宙 · 管理驾驶舱</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #2D3E2F; padding: 30px; }
+.header { margin-bottom: 30px; }
+.header h1 { font-size: 28px; font-weight: 700; }
+.header p { color: #6B7D6E; margin-top: 6px; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 30px; }
+.stat-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.stat-card .num { font-size: 32px; font-weight: 700; }
+.stat-card .label { font-size: 13px; color: #6B7D6E; margin-top: 4px; }
+.cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.card h3 { font-size: 16px; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #f0f0ec; }
+.card.full { grid-column: 1 / -1; }
+.service-item { padding: 12px 0; border-bottom: 1px solid #f8f8f4; display: flex; justify-content: space-between; align-items: center; }
+.service-item:last-child { border-bottom: none; }
+.service-name { font-weight: 500; font-size: 14px; }
+.service-meta { font-size: 12px; color: #6B7D6E; gap: 12px; display: flex; }
+.service-price { color: #B8860B; font-weight: 600; }
+.tag { display: inline-block; background: #E8EDE6; padding: 2px 10px; border-radius: 10px; font-size: 12px; margin-right: 4px; }
+.skill-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f8f8f4; font-size: 14px; }
+.skill-row:last-child { border-bottom: none; }
+.badge-active { background: #4A7C59; color: white; padding: 2px 10px; border-radius: 10px; font-size: 11px; }
+.badge-inactive { background: #E8EDE6; color: #6B7D6E; padding: 2px 10px; border-radius: 10px; font-size: 11px; }
+.error { color: #B84A4A; }
+.refresh-btn { background: #2D3E2F; color: white; border: none; padding: 8px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; float: right; }
+.refresh-btn:hover { background: #1A2B1C; }
+.loading { color: #A8B5A9; font-size: 13px; }
+.tx-item { padding: 8px 0; border-bottom: 1px solid #f8f8f4; display: flex; justify-content: space-between; font-size: 13px; }
+.tx-status { font-size: 11px; padding: 2px 8px; border-radius: 8px; }
+.tx-pending { background: #f5f5f0; color: #6B7D6E; }
+.tx-rated { background: #E8EDE6; color: #4A7C59; }
+.agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.agent-card { background: #f8f8f4; padding: 14px; border-radius: 8px; }
+.agent-cid { font-size: 11px; color: #A8B5A9; }
+.agent-tags { margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🔗 联结宇宙 · 管理驾驶舱</h1>
+  <p id="status">正在连接服务器...</p>
+  <button class="refresh-btn" onclick="loadAll()">⟳ 刷新</button>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="cards">
+  <div class="card"><h3>🤖 联结者</h3><div id="agents" class="loading">加载中...</div></div>
+  <div class="card"><h3>🧠 活跃技能</h3><div id="skills" class="loading">加载中...</div></div>
+</div>
+
+<div class="cards">
+  <div class="card full"><h3>🛒 服务库</h3><div id="services" class="loading">加载中...</div></div>
+</div>
+
+<div class="cards">
+  <div class="card"><h3>📋 最近交易</h3><div id="transactions" class="loading">加载中...</div></div>
+  <div class="card"><h3>⭐ 信任网络</h3><div id="trust" class="loading">加载中...</div></div>
+</div>
+
+<div class="cards">
+  <div class="card full"><h3>🎯 预演推荐（当前登录：UC-M-0001）</h3><div id="recommend" class="loading">加载中...</div></div>
+</div>
+
+<script>
+const API = 'http://localhost:3001/api';
+let token = '';
+
+async function login() {
+  const r = await fetch(API + '/auth/wechat-login', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({code:'dev_mode'})
+  });
+  const d = await r.json();
+  if (d.data) { token = d.data.token; document.getElementById('status').textContent = `✅ 已登录 · ${d.data.nickname} (${d.data.cid})`; }
+  return d.data;
+}
+
+function authHeaders() { return {'Authorization':'Bearer '+token, 'Content-Type':'application/json'}; }
+
+async function loadAll() {
+  document.getElementById('status').textContent = '⏳ 刷新中...';
+  await login();
+  if (!token) return;
+  await Promise.all([loadStats(), loadAgents(), loadServices(), loadSkills(), loadTransactions(), loadTrust(), loadRecommend()]);
+  document.getElementById('status').textContent = '✅ 已更新 · ' + new Date().toLocaleTimeString();
+}
+
+async function loadStats() {
+  try {
+    const [sRes, aRes, tRes] = await Promise.all([
+      fetch(API + '/services', {headers:authHeaders()}),
+      fetch(API + '/agents/me', {headers:authHeaders()}),
+      fetch(API + '/trust/my-score', {headers:authHeaders()}),
+    ]);
+    const services = await sRes.json();
+    const agent = await aRes.json();
+    const trust = await tRes.json();
+    document.getElementById('stats').innerHTML = `
+      <div class="stat-card"><div class="num">${services.data?.length || 0}</div><div class="label">服务总数</div></div>
+      <div class="stat-card"><div class="num">${agent.data?.life_stage_tags?.length || 0}/3</div><div class="label">我的生命标签</div></div>
+      <div class="stat-card"><div class="num">${trust.data?.total_transactions || 0}</div><div class="label">交易笔数</div></div>
+      <div class="stat-card"><div class="num">${trust.data?.trust_score || 0}</div><div class="label">信任评分</div></div>
+    `;
+  } catch(e) { document.getElementById('stats').innerHTML = `<div class="error">加载失败: ${e.message}</div>`; }
+}
+
+async function loadAgents() {
+  try {
+    const r = await fetch(API + '/agents/me', {headers:authHeaders()});
+    const d = await r.json();
+    const a = d.data;
+    document.getElementById('agents').innerHTML = `
+      <div class="agent-card">
+        <div style="font-weight:600">${a.nickname}</div>
+        <div class="agent-cid">${a.cid}</div>
+        <div class="agent-tags">${(a.life_stage_tags||[]).map(t=>'<span class="tag">'+t+'</span>').join('')||'<span style="color:#A8B5A9">未设置</span>'}</div>
+        <div style="margin-top:6px;font-size:12px">能量: ${a.energy_status || 'unknown'} · 信任阈值: ${a.trust_threshold}</div>
+      </div>
+    `;
+  } catch(e) { document.getElementById('agents').textContent = '加载失败'; }
+}
+
+async function loadServices() {
+  try {
+    const r = await fetch(API + '/services', {headers:authHeaders()});
+    const d = await r.json();
+    document.getElementById('services').innerHTML = (d.data||[]).map(s => `
+      <div class="service-item">
+        <div>
+          <div class="service-name">${s.name}</div>
+          <div class="service-meta">
+            <span class="tag">${s.primary_system}${s.secondary_system?'+'+s.secondary_system:''}</span>
+            <span>${s.delivery_method === 'online' ? '线上' : '线下'}</span>
+            <span>${s.duration_minutes||'—'}分钟</span>
+          </div>
+        </div>
+        <div>
+          <div class="service-price">${s.price}元</div>
+          <div style="font-size:11px;color:#6B7D6E">${s.provider_nickname}</div>
+        </div>
+      </div>
+    `).join('');
+  } catch(e) { document.getElementById('services').textContent = '加载失败'; }
+}
+
+async function loadSkills() {
+  try {
+    const r = await fetch(API + '/skills/mine', {headers:authHeaders()});
+    const d = await r.json();
+    document.getElementById('skills').innerHTML = (d.data||[]).map(s => `
+      <div class="skill-row">
+        <span>${s.name}</span>
+        <span class="${s.status === 'active' ? 'badge-active' : 'badge-inactive'}">${s.status === 'active' ? '● 运行中' : '○ 已关闭'}</span>
+      </div>
+    `).join('');
+  } catch(e) { document.getElementById('skills').textContent = '加载失败'; }
+}
+
+async function loadTransactions() {
+  try {
+    const r = await fetch(API + '/transactions/mine?role=buyer', {headers:authHeaders()});
+    const d = await r.json();
+    const txs = d.data || [];
+    if (txs.length === 0) { document.getElementById('transactions').innerHTML = '<div style="color:#A8B5A9;font-size:13px">暂无交易记录</div>'; return; }
+    document.getElementById('transactions').innerHTML = txs.slice(0,5).map(tx => `
+      <div class="tx-item">
+        <span>${tx.services?.name || '服务'}</span>
+        <span class="tx-status ${'tx-'+tx.status}">${tx.status}</span>
+        <span style="color:#B8860B;font-weight:500">${tx.amount}元</span>
+      </div>
+    `).join('');
+  } catch(e) { document.getElementById('transactions').textContent = '加载失败'; }
+}
+
+async function loadTrust() {
+  try {
+    const r = await fetch(API + '/trust/network/mine', {headers:authHeaders()});
+    const d = await r.json();
+    const n = d.data;
+    if (!n) { document.getElementById('trust').innerHTML = '<div style="color:#A8B5A9;font-size:13px">暂无网络数据</div>'; return; }
+    document.getElementById('trust').innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+        <div><div style="font-size:24px;font-weight:700">${n.direct_auth_count||0}</div><div style="font-size:12px;color:#6B7D6E">我授权的</div></div>
+        <div><div style="font-size:24px;font-weight:700">${n.auth_to_me_count||0}</div><div style="font-size:12px;color:#6B7D6E">授权给我的</div></div>
+        <div><div style="font-size:24px;font-weight:700">${n.traded_count||0}</div><div style="font-size:12px;color:#6B7D6E">交易过的人</div></div>
+      </div>
+      ${(n.connections||[]).length > 0 ? '<div style="margin-top:12px;font-size:12px;color:#6B7D6E">连接了 '+n.connections.length+' 位联结者</div>' : ''}
+    `;
+  } catch(e) { document.getElementById('trust').textContent = '加载失败'; }
+}
+
+async function loadRecommend() {
+  try {
+    const r = await fetch(API + '/pre-enact/recommend', {
+      method: 'POST', headers: authHeaders(),
+      body: JSON.stringify({limit:3})
+    });
+    const d = await r.json();
+    const recs = d.data || [];
+    if (recs.length === 0) { document.getElementById('recommend').innerHTML = '<div style="color:#A8B5A9;font-size:13px">暂无推荐</div>'; return; }
+    document.getElementById('recommend').innerHTML = recs.map(r => `
+      <div class="service-item">
+        <div>
+          <div class="service-name" style="display:flex;align-items:center;gap:8px">
+            ${r.service_name}
+            <span style="background:#2D3E2F;color:white;padding:1px 8px;border-radius:8px;font-size:11px">预演 ${r.pre_score}</span>
+          </div>
+          <div style="font-size:12px;color:#6B7D6E;margin-top:4px">${r.summary || ''}</div>
+        </div>
+        <div class="service-price">${r.price}元</div>
+      </div>
+    `).join('');
+  } catch(e) { document.getElementById('recommend').textContent = '加载失败'; }
+}
+
+loadAll();
+</script>
+</body>
+</html>

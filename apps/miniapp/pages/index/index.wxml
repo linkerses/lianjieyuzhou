@@ -1,0 +1,98 @@
+<!-- 联结宇宙 · 首页 -->
+<view class="page">
+
+  <!-- 顶部Agent摘要 -->
+  <view class="agent-banner" wx:if="{{!loading.agent}}">
+    <view class="agent-info">
+      <view class="agent-avatar">{{agentSummary.nickname ? agentSummary.nickname[0] : '?'}}</view>
+      <view class="agent-meta">
+        <text class="agent-name">{{agentSummary.nickname || '联结者'}}</text>
+        <view class="agent-tags">
+          <text class="tag" wx:for="{{agentSummary.life_stage_tags}}" wx:key="item">{{item}}</text>
+          <text class="tag-empty" wx:if="{{agentSummary.life_stage_tags.length === 0}}">完善生命阶段</text>
+        </view>
+      </view>
+      <view class="trust-badge">
+        <text>信任 {{agentSummary.trust_score || 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Agent提醒卡片 -->
+  <view class="note-card" wx:if="{{agentNote}}" catch:tap="onDismissNote">
+    <view class="note-header">
+      <text class="note-icon">👋</text>
+      <text class="note-title">你的Agent注意到</text>
+      <text class="note-dismiss">×</text>
+    </view>
+    <text class="note-body">{{agentNote.message}}</text>
+    <view class="note-suggestions" wx:if="{{agentNote.suggestions.length > 0}}">
+      <view class="suggestion-btn" wx:for="{{agentNote.suggestions}}" wx:for-item="s" wx:key="s" catch:tap="onTapService">
+        {{s}}
+      </view>
+    </view>
+  </view>
+
+  <!-- 新用户引导 -->
+  <view class="onboarding" wx:if="{{isNewUser && agentSummary.life_stage_tags.length === 0}}" catch:tap="onTapNewUserGuide">
+    <text class="onboarding-title">🎉 欢迎来到联结宇宙</text>
+    <text class="onboarding-desc">完善你的生命档案，让Agent更懂你</text>
+    <text class="onboarding-btn">去完善 →</text>
+  </view>
+
+  <!-- 推荐服务 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">为你推荐</text>
+      <text class="section-more" catch:tap="goServices">查看全部</text>
+    </view>
+
+    <view class="loading" wx:if="{{loading.recommend}}">加载中...</view>
+
+    <view class="recommend-list" wx:elif="{{recommendations.length > 0}}">
+      <view class="recommend-card" wx:for="{{recommendations}}" wx:key="service_id" catch:tap="onTapService" data-id="{{item.service_id}}">
+        <view class="rec-header">
+          <text class="rec-emoji">{{item.system_emoji}}</text>
+          <text class="rec-system">{{item.primary_system}}</text>
+          <text class="rec-score">预演 {{item.pre_score}}</text>
+        </view>
+        <text class="rec-name">{{item.service_name}}</text>
+        <text class="rec-summary">{{item.summary}}</text>
+        <view class="rec-footer">
+          <text class="rec-price">{{item.price}}元</text>
+          <text class="rec-duration" wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+        </view>
+        <view class="rec-risks" wx:if="{{item.risks && item.risks.length > 0}}">
+          <text class="risk-tag" wx:for="{{item.risks}}" wx:for-item="r" wx:key="r">{{r}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:elif="{{!loading.recommend}}">
+      <text>暂无推荐，完善档案后即可获得精准推荐</text>
+    </view>
+  </view>
+
+  <!-- 最近交易 -->
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">最近交易</text>
+      <text class="section-more" wx:if="{{recentTransactions.length > 0}}" catch:tap="goTransactions">查看全部</text>
+    </view>
+
+    <view class="loading" wx:if="{{loading.transactions}}">加载中...</view>
+
+    <view class="tx-list" wx:elif="{{recentTransactions.length > 0}}">
+      <view class="tx-item" wx:for="{{recentTransactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
+        <text class="tx-status tx-{{item.status}}">{{item.status}}</text>
+        <text class="tx-service">{{item.services?.name || '服务'}}</text>
+        <text class="tx-amount">{{item.amount}}元</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:elif="{{!loading.transactions}}">
+      <text>还没有交易记录，去服务页面看看吧</text>
+    </view>
+  </view>
+
+</view>
