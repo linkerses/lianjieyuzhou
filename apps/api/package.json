@@ -3,6 +3,9 @@
   "version": "0.2.0",
   "description": "联结宇宙 · AI基建平台 + 中枢平台 API",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "tsx --import dotenv/config src/index.ts",
     "build": "tsc",

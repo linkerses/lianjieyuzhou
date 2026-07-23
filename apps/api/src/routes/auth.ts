@@ -3,6 +3,14 @@ import { supabase } from '../lib/supabase';
 
 const router = Router();
 
+interface WechatLoginResponse {
+  openid?: string;
+  session_key?: string;
+  unionid?: string;
+  errcode?: number;
+  errmsg?: string;
+}
+
 // ── 微信小程序登录 ──
 // 前端调用 wx.login() 获取 code，传给此接口
 // 后端用 code 换取 openid，查找或创建 Agent
@@ -27,13 +35,16 @@ router.post('/wechat-login', async (req: Request, res: Response) => {
     const wxResp = await fetch(
       `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${appSecret}&js_code=${code}&grant_type=authorization_code`
     );
-    const wxData = await wxResp.json();
+    const wxData = (await wxResp.json()) as WechatLoginResponse;
 
     if (wxData.errcode) {
       return res.status(400).json({ error: `微信登录失败: ${wxData.errmsg}` });
     }
 
     const { openid } = wxData;
+    if (!openid) {
+      return res.status(400).json({ error: '微信登录失败: 缺少openid' });
+    }
 
     // 查找是否已有 Agent
     const { data: existingAgent } = await supabase

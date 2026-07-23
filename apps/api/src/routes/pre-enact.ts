@@ -28,7 +28,10 @@ interface DimensionScores {
 router.post('/score', async (req: Request, res: Response) => {
   try {
     const body = PreEnactScoreSchema.parse(req.body);
-    const result = await runPreEnact(body);
+    const result = await runPreEnact({
+      agentCid: body.agent_cid,
+      serviceId: body.service_id,
+    });
 
     // 记录预演日志
     await supabase.from('pre_enact_logs').insert({
@@ -66,7 +69,10 @@ router.post('/recommend', async (req: Request, res: Response) => {
 router.post('/admin-score', async (req: Request, res: Response) => {
   try {
     const body = PreEnactScoreSchema.parse(req.body);
-    const result = await runPreEnact(body);
+    const result = await runPreEnact({
+      agentCid: body.agent_cid,
+      serviceId: body.service_id,
+    });
     res.json({ data: result });
   } catch (err: any) {
     res.status(400).json({ error: err.message });
@@ -85,7 +91,7 @@ async function runPreEnact(input: PreEnactInput) {
     supabase.from('agents').select('*').eq('cid', agentCid).single(),
     supabase
       .from('services')
-      .select('*, agents!inner(nickname, trust_score as provider_trust)')
+      .select('*, agents!inner(nickname, provider_trust:trust_score)')
       .eq('id', serviceId)
       .single(),
   ]);
@@ -123,7 +129,7 @@ async function runPreEnact(input: PreEnactInput) {
     summary,
     risks,
     alternatives,
-    service_name: service.name,
+    service_name: (service as any).name,
     provider_nickname: (service as any).agents?.nickname,
   };
 }

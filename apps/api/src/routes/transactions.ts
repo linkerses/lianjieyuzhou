@@ -124,7 +124,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
 
     const { data: transaction } = await supabase
       .from('transactions')
-      .select('buyer_cid, seller_cid, status')
+      .select('buyer_cid, seller_cid, service_id, status')
       .eq('id', id)
       .single();
 
@@ -174,7 +174,7 @@ router.post('/:id/feedback', async (req: Request, res: Response) => {
 
     const { data: transaction } = await supabase
       .from('transactions')
-      .select('buyer_cid, seller_cid, status')
+      .select('buyer_cid, seller_cid, service_id, status')
       .eq('id', id)
       .single();
 
