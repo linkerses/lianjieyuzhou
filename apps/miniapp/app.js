@@ -1,7 +1,7 @@
 // 联结宇宙 · 微信小程序
 // AI基建平台 + C端服务端口
 
-const API_BASE = 'https://api.lianjie-universe.com/api';
+const API_BASE = 'https://api.linkerses.com/api';
 // 开发模式：使用本地服务
 // const API_BASE = 'http://localhost:3001/api';
 
