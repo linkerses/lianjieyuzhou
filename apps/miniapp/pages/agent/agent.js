@@ -31,10 +31,12 @@ Page({
     editingValueProfile: false,
     skills: [],
     trustInfo: null,
+    matchReports: [],
     loading: {
       agent: true,
       skills: true,
       trust: true,
+      matches: true,
     },
     editingTags: false,
     tempTags: [],
@@ -54,6 +56,7 @@ Page({
   onShow() {
     if (app.globalData.cid && this.data.agent) {
       this.loadTrustInfo();
+      this.loadMatchReports();
     }
   },
 
@@ -66,6 +69,7 @@ Page({
           'loading.agent': false,
           'loading.skills': false,
           'loading.trust': false,
+          'loading.matches': false,
         });
         return;
       }
@@ -74,6 +78,7 @@ Page({
       this.loadAgent(),
       this.loadSkills(),
       this.loadTrustInfo(),
+      this.loadMatchReports(),
     ]);
   },
 
@@ -130,12 +135,26 @@ Page({
     }
   },
 
+  async loadMatchReports() {
+    try {
+      const res = await app.request({ url: '/matches/mine' });
+      this.setData({
+        matchReports: (res.data || []).map(item => this.formatMatchReport(item)),
+        'loading.matches': false,
+      });
+    } catch (err) {
+      console.error('[loadMatchReports error]', err);
+      this.setData({ 'loading.matches': false });
+    }
+  },
+
   retryLoad() {
     this.setData({
       errorMessage: '',
       'loading.agent': true,
       'loading.skills': true,
       'loading.trust': true,
+      'loading.matches': true,
     });
     this.loadAll();
   },
@@ -315,6 +334,25 @@ Page({
       return;
     }
     wx.navigateTo({ url: `/pages/match/report?target_cid=${targetCid}` });
+  },
+
+  openMatchReport(e) {
+    wx.navigateTo({ url: `/pages/match/report?id=${e.currentTarget.dataset.id}` });
+  },
+
+  formatMatchReport(item) {
+    const target = item.target && item.target.nickname ? item.target.nickname : item.target_cid;
+    const requester = item.requester && item.requester.nickname ? item.requester.nickname : item.requester_cid;
+    const date = new Date(item.created_at);
+    const createdText = Number.isNaN(date.getTime())
+      ? ''
+      : `${date.getMonth() + 1}月${date.getDate()}日`;
+
+    return {
+      ...item,
+      title: `${requester} × ${target}`,
+      created_text: createdText,
+    };
   },
 
   markSelectedSystems(tags) {

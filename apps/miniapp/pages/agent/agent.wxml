@@ -224,6 +224,29 @@
         <text class="action-text">报告只作为行动建议，首次合作建议小范围验证。</text>
       </view>
     </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">历史匹配报告</text>
+      </view>
+
+      <view class="loading" wx:if="{{loading.matches}}">加载中...</view>
+
+      <view wx:elif="{{matchReports.length > 0}}">
+        <view class="match-history-item" wx:for="{{matchReports}}" wx:key="id" data-id="{{item.id}}" catch:tap="openMatchReport">
+          <view class="match-history-top">
+            <text class="match-history-title">{{item.title}}</text>
+            <text class="match-score">{{item.total_score}}</text>
+          </view>
+          <text class="match-summary">{{item.summary}}</text>
+          <text class="match-date">{{item.created_text}}</text>
+        </view>
+      </view>
+
+      <view class="empty" wx:else>
+        <text>还没有历史匹配报告。</text>
+      </view>
+    </view>
   </view>
 
 </view>

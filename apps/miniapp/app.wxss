@@ -608,6 +608,54 @@ page {
 
 /* ── 预约 ── */
 
+.match-history-item {
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid #F0F0EC;
+}
+
+.match-history-item:last-child {
+  border-bottom: none;
+}
+
+.match-history-top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.match-history-title {
+  flex: 1;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2D3E2F;
+}
+
+.match-score {
+  min-width: 64rpx;
+  height: 44rpx;
+  line-height: 44rpx;
+  border-radius: 22rpx;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  text-align: center;
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.match-summary {
+  display: block;
+  font-size: 24rpx;
+  color: #6B7D6E;
+  line-height: 1.6;
+}
+
+.match-date {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #A8B5A9;
+}
+
 .booking-summary {
   background: #FFFFFF;
   border-radius: 16rpx;

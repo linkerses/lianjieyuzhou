@@ -23,6 +23,53 @@ interface ValueProfile {
   vision_needs?: string;
 }
 
+router.get('/mine', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const { data, error } = await supabase
+      .from('agent_matches')
+      .select(`
+        id, requester_cid, target_cid, total_score, summary,
+        opportunities, risks, next_actions, created_at, status,
+        requester:agents!agent_matches_requester_cid_fkey(cid, nickname),
+        target:agents!agent_matches_target_cid_fkey(cid, nickname)
+      `)
+      .or(`requester_cid.eq.${cid},target_cid.eq.${cid}`)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    res.json({ data: data || [] });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取匹配历史失败' });
+  }
+});
+
+router.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const { data, error } = await supabase
+      .from('agent_matches')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: '匹配报告不存在' });
+    if (data.requester_cid !== cid && data.target_cid !== cid) {
+      return res.status(403).json({ error: '无权查看该匹配报告' });
+    }
+
+    res.json({ data: data.report });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取匹配报告失败' });
+  }
+});
+
 router.post('/analyze', async (req: Request, res: Response) => {
   try {
     const cid = getCurrentCid(req);
@@ -45,7 +92,25 @@ router.post('/analyze', async (req: Request, res: Response) => {
     if (!me) return res.status(404).json({ error: '当前Agent不存在' });
     if (!target) return res.status(404).json({ error: '目标Agent不存在' });
 
-    res.json({ data: buildMatchReport(me, target) });
+    const report = buildMatchReport(me, target);
+    const { data: saved, error: saveError } = await supabase
+      .from('agent_matches')
+      .insert({
+        requester_cid: cid,
+        target_cid: body.target_cid,
+        total_score: report.total_score,
+        dimensions: report.dimensions,
+        summary: report.summary,
+        opportunities: report.opportunities,
+        risks: report.risks,
+        next_actions: report.next_actions,
+        report,
+      })
+      .select('id, created_at')
+      .single();
+
+    if (saveError) throw saveError;
+    res.json({ data: { ...report, id: saved.id, created_at: saved.created_at } });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '生成匹配报告失败' });
   }
