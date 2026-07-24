@@ -1,0 +1,54 @@
+<view class="page">
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:elif="{{agent}}">
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">{{agent.nickname || '联结者'}}</text>
+        <text class="card-action" catch:tap="copyCid">复制CID</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">CID</text>
+        <text class="info-value">{{agent.cid}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">信任评分</text>
+        <text class="info-value">{{agent.trust_score || 0}}</text>
+      </view>
+      <view class="tag-display">
+        <text class="tag" wx:for="{{agent.life_stage_tags}}" wx:key="item">{{item}}</text>
+        <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">未设置标签</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">公开身份档案</text>
+      </view>
+      <view class="profile-section">
+        <text class="profile-label">核心价值</text>
+        <text class="profile-text" wx:if="{{agent.value_profile.core_value}}">{{agent.value_profile.core_value}}</text>
+        <text class="profile-empty" wx:else>对方暂未填写。</text>
+      </view>
+      <view class="profile-section">
+        <text class="profile-label">服务能力</text>
+        <text class="profile-text" wx:if="{{agent.value_profile.service_capabilities}}">{{agent.value_profile.service_capabilities}}</text>
+        <text class="profile-empty" wx:else>对方暂未填写。</text>
+      </view>
+      <view class="profile-section">
+        <text class="profile-label">项目经历</text>
+        <text class="profile-text" wx:if="{{agent.value_profile.project_experience}}">{{agent.value_profile.project_experience}}</text>
+        <text class="profile-empty" wx:else>对方暂未填写。</text>
+      </view>
+      <view class="profile-section">
+        <text class="profile-label">愿景需求</text>
+        <text class="profile-text" wx:if="{{agent.value_profile.vision_needs}}">{{agent.value_profile.vision_needs}}</text>
+        <text class="profile-empty" wx:else>对方暂未填写。</text>
+      </view>
+    </view>
+
+    <view class="action-bar">
+      <button class="btn-primary" catch:tap="applyMatch">申请匹配分析</button>
+    </view>
+  </view>
+</view>

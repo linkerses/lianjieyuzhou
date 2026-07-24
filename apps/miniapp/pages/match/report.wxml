@@ -1,0 +1,81 @@
+<view class="page">
+  <view class="loading" wx:if="{{loading}}">正在生成匹配报告...</view>
+
+  <view wx:elif="{{report}}">
+    <view class="pre-score-card" style="border-left-color: {{scoreColor}}">
+      <view class="pre-score-header">
+        <text class="pre-score-label">Agent匹配度</text>
+        <text class="pre-score-value" style="color: {{scoreColor}}">{{report.total_score}}<text class="pre-score-unit">/100</text></text>
+      </view>
+      <text class="pre-score-summary">{{report.summary}}</text>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">匹配双方</text>
+        <text class="card-action" catch:tap="viewTargetAgent">看对方档案</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">我的Agent</text>
+        <text class="info-value">{{report.source_agent.nickname}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">对方Agent</text>
+        <text class="info-value">{{report.target_agent.nickname}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">维度评分</text>
+      </view>
+      <view class="pre-dimensions">
+        <view class="dim-item">
+          <text class="dim-label">我的需求</text>
+          <text class="dim-score">{{report.dimensions.demand_fit}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">对方需求</text>
+          <text class="dim-score">{{report.dimensions.reverse_demand_fit}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">价值共振</text>
+          <text class="dim-score">{{report.dimensions.value_fit}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">系统标签</text>
+          <text class="dim-score">{{report.dimensions.system_fit}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">信任基础</text>
+          <text class="dim-score">{{report.dimensions.trust_fit}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">协作机会</text>
+      </view>
+      <text class="profile-text" wx:for="{{report.opportunities}}" wx:key="item">{{item}}</text>
+    </view>
+
+    <view class="card" wx:if="{{report.risks.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">注意事项</text>
+      </view>
+      <text class="risk-item" wx:for="{{report.risks}}" wx:key="item">{{item}}</text>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">下一步行动</text>
+        <text class="card-action" catch:tap="copySummary">复制摘要</text>
+      </view>
+      <view class="action-item" wx:for="{{report.next_actions}}" wx:key="item">
+        <text class="action-dot"></text>
+        <text class="action-text">{{item}}</text>
+      </view>
+    </view>
+  </view>
+</view>

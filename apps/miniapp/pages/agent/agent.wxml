@@ -6,6 +6,7 @@
     <view class="tab {{activeTab === 'profile' ? 'active' : ''}}" data-tab="profile" catch:tap="switchTab">档案</view>
     <view class="tab {{activeTab === 'skills' ? 'active' : ''}}" data-tab="skills" catch:tap="switchTab">技能</view>
     <view class="tab {{activeTab === 'trust' ? 'active' : ''}}" data-tab="trust" catch:tap="switchTab">信任</view>
+    <view class="tab {{activeTab === 'match' ? 'active' : ''}}" data-tab="match" catch:tap="switchTab">匹配</view>
   </view>
 
   <view class="empty" wx:if="{{errorMessage}}">
@@ -190,6 +191,38 @@
         <text class="card-action">查看 →</text>
       </view>
       <text class="card-desc">查看你的授权连接和信任关系网</text>
+    </view>
+  </view>
+
+  <view wx:elif="{{!errorMessage && activeTab === 'match'}}">
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">Agent匹配分析</text>
+      </view>
+      <text class="card-desc">输入对方公开档案CID，生成一份价值、需求、信任和下一步行动报告。</text>
+      <view class="form-group">
+        <text class="form-label">对方CID</text>
+        <input class="form-input" bindinput="onMatchCidInput" value="{{matchingTargetCid}}" placeholder="例如 UC-M-0002" />
+      </view>
+      <button class="btn-primary" catch:tap="generateMatchReport">生成匹配报告</button>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">使用建议</text>
+      </view>
+      <view class="action-item">
+        <text class="action-dot"></text>
+        <text class="action-text">先让双方补全核心价值、服务能力、项目经历和愿景需求。</text>
+      </view>
+      <view class="action-item">
+        <text class="action-dot"></text>
+        <text class="action-text">对一个人感兴趣时，从公开档案或服务详情页发起匹配。</text>
+      </view>
+      <view class="action-item">
+        <text class="action-dot"></text>
+        <text class="action-text">报告只作为行动建议，首次合作建议小范围验证。</text>
+      </view>
     </view>
   </view>
 

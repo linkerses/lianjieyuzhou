@@ -39,7 +39,8 @@ Page({
     editingTags: false,
     tempTags: [],
     systemOptions: SYSTEM_OPTIONS,
-    activeTab: 'profile', // profile / skills / trust
+    activeTab: 'profile', // profile / skills / trust / match
+    matchingTargetCid: '',
     errorMessage: '',
   },
 
@@ -301,6 +302,19 @@ Page({
 
   goTrustNetwork() {
     this.setData({ activeTab: 'trust' });
+  },
+
+  onMatchCidInput(e) {
+    this.setData({ matchingTargetCid: e.detail.value.trim() });
+  },
+
+  generateMatchReport() {
+    const targetCid = this.data.matchingTargetCid;
+    if (!targetCid) {
+      wx.showToast({ title: '请输入对方CID', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({ url: `/pages/match/report?target_cid=${targetCid}` });
   },
 
   markSelectedSystems(tags) {

@@ -50,6 +50,42 @@ router.get('/me', async (req: Request, res: Response) => {
 });
 
 // ── 获取指定Agent ──
+// ── 公开Agent档案 ──
+router.get('/public/:cid', async (req: Request, res: Response) => {
+  try {
+    const { cid } = req.params;
+    const { data, error } = await supabase
+      .from('agents')
+      .select('cid, nickname, life_stage_tags, trust_score, energy_status, status, agent_config')
+      .eq('cid', cid)
+      .single();
+
+    if (error) throw error;
+    const profile = data.agent_config && data.agent_config.value_profile
+      ? data.agent_config.value_profile
+      : {};
+
+    res.json({
+      data: {
+        cid: data.cid,
+        nickname: data.nickname,
+        life_stage_tags: data.life_stage_tags || [],
+        trust_score: data.trust_score || 0,
+        energy_status: data.energy_status || 'unknown',
+        status: data.status,
+        value_profile: {
+          core_value: profile.core_value || '',
+          service_capabilities: profile.service_capabilities || '',
+          project_experience: profile.project_experience || '',
+          vision_needs: profile.vision_needs || '',
+        },
+      },
+    });
+  } catch (err: any) {
+    res.status(404).json({ error: 'Agent不存在' });
+  }
+});
+
 router.get('/:cid', async (req: Request, res: Response) => {
   try {
     const { cid } = req.params;

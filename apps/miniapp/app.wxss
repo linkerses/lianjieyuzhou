@@ -584,6 +584,28 @@ page {
 .risk-title { font-size: 24rpx; color: #B8860B; font-weight: 500; display: block; margin-bottom: 8rpx; }
 .risk-item { font-size: 24rpx; color: #B8860B; display: block; margin-bottom: 4rpx; }
 
+.action-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 10rpx 0;
+}
+
+.action-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #2D3E2F;
+  margin: 14rpx 16rpx 0 0;
+  flex-shrink: 0;
+}
+
+.action-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #6B7D6E;
+  line-height: 1.7;
+}
+
 /* ── 预约 ── */
 
 .booking-summary {

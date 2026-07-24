@@ -82,6 +82,20 @@ Page({
     }
   },
 
+  viewProviderAgent() {
+    if (!this.data.service || !this.data.service.provider_cid) return;
+    wx.navigateTo({
+      url: `/pages/agents/public?cid=${this.data.service.provider_cid}`,
+    });
+  },
+
+  applyProviderMatch() {
+    if (!this.data.service || !this.data.service.provider_cid) return;
+    wx.navigateTo({
+      url: `/pages/match/report?target_cid=${this.data.service.provider_cid}`,
+    });
+  },
+
   getScoreColor(score) {
     if (!score) return '#999';
     if (score >= 80) return '#2D3E2F';
