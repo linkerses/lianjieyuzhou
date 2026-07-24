@@ -34,9 +34,13 @@
   </view>
 
   <!-- 新用户引导 -->
-  <view class="onboarding" wx:if="{{isNewUser && agentSummary.life_stage_tags.length === 0}}" catch:tap="onTapNewUserGuide">
-    <text class="onboarding-title">🎉 欢迎来到联结宇宙</text>
-    <text class="onboarding-desc">完善你的生命档案，让Agent更懂你</text>
+  <view class="onboarding" wx:if="{{profileGuide}}" catch:tap="onTapNewUserGuide">
+    <text class="onboarding-title">{{profileGuide.title}}</text>
+    <text class="onboarding-desc">{{profileGuide.desc}}</text>
+    <view class="onboarding-progress">
+      <text>档案完成度 {{profileGuide.progress}}/6</text>
+      <text class="onboarding-missing">{{profileGuide.missing.length}} 项待完善</text>
+    </view>
     <text class="onboarding-btn">去完善 →</text>
   </view>
 

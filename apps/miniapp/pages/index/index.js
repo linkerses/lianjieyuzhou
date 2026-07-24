@@ -30,6 +30,7 @@ Page({
       trust_score: 0,
       energy_status: '',
     },
+    profileGuide: null,
     // 首页三段式内容
     agentNote: null,             // Agent提醒卡片
     recommendations: [],         // 预演推荐列表
@@ -86,16 +87,18 @@ Page({
     try {
       const res = await app.request({ url: '/agents/me' });
       if (res.data) {
+        const profileGuide = this.buildProfileGuide(res.data);
         this.setData({
           'agentSummary.nickname': res.data.nickname,
           'agentSummary.life_stage_tags': res.data.life_stage_tags || [],
           'agentSummary.trust_score': res.data.trust_score || 0,
           'agentSummary.energy_status': res.data.energy_status || 'unknown',
+          profileGuide,
           'loading.agent': false,
         });
 
         // 新用户引导
-        if (this.data.isNewUser && (!res.data.life_stage_tags || res.data.life_stage_tags.length === 0)) {
+        if (this.data.isNewUser && profileGuide) {
           this.showOnboarding();
         }
 
@@ -254,6 +257,28 @@ Page({
       explore: '🌍', spirit: '🧘', future: '🔮',
     };
     return map[system] || '📌';
+  },
+
+  buildProfileGuide(agent) {
+    const config = agent && agent.agent_config ? agent.agent_config : {};
+    const valueProfile = config.value_profile || {};
+    const missing = [];
+
+    if (!agent.nickname) missing.push('称呼');
+    if (!agent.life_stage_tags || agent.life_stage_tags.length === 0) missing.push('生命阶段标签');
+    if (!valueProfile.core_value) missing.push('核心价值');
+    if (!valueProfile.service_capabilities) missing.push('服务能力');
+    if (!valueProfile.project_experience) missing.push('项目经历');
+    if (!valueProfile.vision_needs) missing.push('愿景需求');
+
+    if (missing.length === 0) return null;
+
+    return {
+      missing,
+      progress: 6 - missing.length,
+      title: this.data.isNewUser ? '欢迎来到联结宇宙' : '完善你的 Agent 数字档案',
+      desc: `还差 ${missing.slice(0, 3).join('、')}，补全后推荐、匹配报告和公开档案会更准确。`,
+    };
   },
 
   formatService(item) {

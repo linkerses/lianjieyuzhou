@@ -331,6 +331,18 @@ page {
 
 .onboarding-title { font-size: 32rpx; font-weight: 600; display: block; margin-bottom: 10rpx; }
 .onboarding-desc { font-size: 26rpx; color: #6B7D6E; display: block; margin-bottom: 16rpx; }
+.onboarding-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 12rpx;
+  background: rgba(255, 255, 255, 0.72);
+  color: #2D3E2F;
+  font-size: 24rpx;
+  margin-bottom: 18rpx;
+}
+.onboarding-missing { color: #8A6A2F; }
 .onboarding-btn { font-size: 28rpx; color: #2D3E2F; font-weight: 500; }
 
 /* ── Section ── */
