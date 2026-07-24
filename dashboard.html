@@ -29,6 +29,16 @@ button, input, select, textarea { font: inherit; }
 .stat { background: #fff; border: 1px solid #E7E3D8; border-radius: 8px; padding: 16px; }
 .stat .num { font-size: 30px; font-weight: 750; }
 .stat .label { margin-top: 4px; color: #677268; font-size: 13px; }
+.today { background: #fff; border: 1px solid #E7E3D8; border-radius: 8px; margin-bottom: 18px; overflow: hidden; }
+.today-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #EEEAE1; }
+.today-head strong { font-size: 16px; }
+.today-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; }
+.today-item { padding: 16px; border-right: 1px solid #F0EDE5; cursor: pointer; min-height: 112px; }
+.today-item:last-child { border-right: 0; }
+.today-item:hover { background: #FBFAF6; }
+.today-num { font-size: 26px; font-weight: 750; color: #243227; }
+.today-title { margin-top: 4px; font-size: 14px; font-weight: 650; }
+.today-desc { margin-top: 6px; color: #677268; font-size: 12px; line-height: 1.45; }
 .panel { background: #fff; border: 1px solid #E7E3D8; border-radius: 8px; overflow: hidden; }
 .panel-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px; border-bottom: 1px solid #EEEAE1; }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -63,6 +73,8 @@ tr:hover td { background: #FBFAF6; }
   .topbar { display: block; }
   .auth { width: 100%; margin-top: 14px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
+  .today-list { grid-template-columns: 1fr; }
+  .today-item { border-right: 0; border-bottom: 1px solid #F0EDE5; }
   .panel { overflow-x: auto; }
   .form-grid { grid-template-columns: 1fr; }
 }
@@ -86,6 +98,16 @@ tr:hover td { background: #FBFAF6; }
   </div>
 
   <div class="stats" id="stats"></div>
+
+  <div class="today" id="todayPanel">
+    <div class="today-head">
+      <strong>今日待处理</strong>
+      <button class="link" onclick="loadActions()">刷新待处理</button>
+    </div>
+    <div class="today-list" id="todayList">
+      <div class="empty">等待加载</div>
+    </div>
+  </div>
 
   <div class="tabs">
     <div class="tab active" data-view="agents" onclick="switchView('agents')">Agent</div>
@@ -224,7 +246,7 @@ async function loadAll() {
   }
   try {
     setStatus('正在加载运营数据...');
-    await Promise.all([loadSummary(), loadAgents()]);
+    await Promise.all([loadSummary(), loadActions(), loadAgents()]);
     setStatus('已更新 · ' + new Date().toLocaleTimeString());
   } catch (err) {
     setStatus(err.message, true);
@@ -243,6 +265,80 @@ async function loadSummary() {
 
 function stat(label, value) {
   return `<div class="stat"><div class="num">${escapeHtml(value)}</div><div class="label">${label}</div></div>`;
+}
+
+async function loadActions() {
+  const actions = await api('/admin/actions');
+  const items = [
+    {
+      key: 'transactions',
+      title: '待确认交易',
+      count: actions.pending_transactions.length,
+      desc: firstTransactionText(actions.pending_transactions),
+      onClick: "jumpAction('transactions','pending')",
+    },
+    {
+      key: 'agents',
+      title: '档案待完善',
+      count: actions.incomplete_agents.length,
+      desc: firstAgentText(actions.incomplete_agents),
+      onClick: "jumpAction('agents','active')",
+    },
+    {
+      key: 'services',
+      title: '服务待上架',
+      count: actions.inactive_services.length,
+      desc: firstServiceText(actions.inactive_services),
+      onClick: "jumpAction('services','pending')",
+    },
+    {
+      key: 'matches',
+      title: '高分匹配',
+      count: actions.high_score_matches.length,
+      desc: firstMatchText(actions.high_score_matches),
+      onClick: "jumpAction('matches','')",
+    },
+  ];
+
+  document.getElementById('todayList').innerHTML = items.map(item => `
+    <div class="today-item" onclick="${item.onClick}">
+      <div class="today-num">${item.count}</div>
+      <div class="today-title">${escapeHtml(item.title)}</div>
+      <div class="today-desc">${escapeHtml(item.desc)}</div>
+    </div>
+  `).join('');
+}
+
+function jumpAction(view, status) {
+  if (view === 'transactions') document.getElementById('txStatus').value = status || 'all';
+  if (view === 'agents') document.getElementById('agentStatus').value = status || 'all';
+  if (view === 'services') document.getElementById('serviceStatus').value = status || 'all';
+  switchView(view);
+}
+
+function firstTransactionText(items) {
+  if (!items.length) return '暂无待确认交易';
+  const first = items[0];
+  const serviceName = first.services && first.services.name ? first.services.name : '服务';
+  return `${serviceName} · ${Number(first.amount || 0)}元`;
+}
+
+function firstAgentText(items) {
+  if (!items.length) return '暂无明显档案缺口';
+  const first = items[0];
+  return `${first.nickname || first.cid} · 完成度 ${first.completion}%`;
+}
+
+function firstServiceText(items) {
+  if (!items.length) return '暂无待上架服务';
+  const first = items[0];
+  return `${first.name} · ${first.status}`;
+}
+
+function firstMatchText(items) {
+  if (!items.length) return '暂无高分匹配待跟进';
+  const first = items[0];
+  return `${first.requester?.nickname || first.requester_cid} → ${first.target?.nickname || first.target_cid} · ${first.total_score}`;
 }
 
 async function loadAgents() {

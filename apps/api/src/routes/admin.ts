@@ -69,6 +69,68 @@ router.get('/summary', async (_req: Request, res: Response) => {
   }
 });
 
+router.get('/actions', async (_req: Request, res: Response) => {
+  try {
+    const [pendingTx, incompleteAgents, inactiveServices, highMatches] = await Promise.all([
+      supabase
+        .from('transactions')
+        .select('id, buyer_cid, seller_cid, amount, status, created_at, services(name)')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(10),
+      supabase
+        .from('agents')
+        .select('cid, nickname, life_stage_tags, agent_config, updated_at')
+        .eq('status', 'active')
+        .order('updated_at', { ascending: false })
+        .limit(50),
+      supabase
+        .from('services')
+        .select('id, provider_cid, name, status, updated_at, agents!inner(nickname)')
+        .in('status', ['pending', 'paused'])
+        .order('updated_at', { ascending: false })
+        .limit(10),
+      supabase
+        .from('agent_matches')
+        .select(`
+          id, requester_cid, target_cid, total_score, summary, status, created_at,
+          requester:agents!agent_matches_requester_cid_fkey(cid, nickname),
+          target:agents!agent_matches_target_cid_fkey(cid, nickname)
+        `)
+        .gte('total_score', 75)
+        .eq('status', 'generated')
+        .order('created_at', { ascending: false })
+        .limit(10),
+    ]);
+
+    const errors = [pendingTx.error, incompleteAgents.error, inactiveServices.error, highMatches.error].filter(Boolean);
+    if (errors.length > 0) throw errors[0];
+
+    const agentsToComplete = (incompleteAgents.data || [])
+      .map((agent: any) => ({
+        ...agent,
+        completion: calculateAgentCompletion(agent),
+      }))
+      .filter((agent: any) => agent.completion < 80)
+      .slice(0, 10);
+
+    res.json({
+      data: {
+        pending_transactions: pendingTx.data || [],
+        incomplete_agents: agentsToComplete,
+        inactive_services: (inactiveServices.data || []).map((service: any) => ({
+          ...service,
+          provider_nickname: service.agents?.nickname,
+          agents: undefined,
+        })),
+        high_score_matches: highMatches.data || [],
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取待处理事项失败' });
+  }
+});
+
 router.get('/agents', async (req: Request, res: Response) => {
   try {
     const { q, status, limit } = req.query;
@@ -305,6 +367,21 @@ async function countRows(table: string, apply?: (query: any) => any) {
 
 function sanitizeSearch(value: string) {
   return value.trim().replace(/[%,()]/g, '').slice(0, 60);
+}
+
+function calculateAgentCompletion(agent: any) {
+  const config = agent.agent_config || {};
+  const profile = config.value_profile || {};
+  const fields = [
+    agent.nickname,
+    agent.life_stage_tags && agent.life_stage_tags.length > 0 ? 'tags' : '',
+    profile.core_value,
+    profile.service_capabilities,
+    profile.project_experience,
+    profile.vision_needs,
+  ];
+  const completed = fields.filter(value => String(value || '').trim().length > 0).length;
+  return Math.round((completed / fields.length) * 100);
 }
 
 export default router;
