@@ -37,6 +37,7 @@ Page({
     confirmedOrders: [],
     completedOrders: [],
     statCards: [],
+    focusAction: null,
     statusLabels: {
       pending: '待开始',
       confirmed: '服务中',
@@ -80,6 +81,7 @@ Page({
       const pendingOrders = transactions.filter(item => item.status === 'pending');
       const confirmedOrders = transactions.filter(item => item.status === 'confirmed');
       const completedOrders = transactions.filter(item => item.status === 'completed' || item.status === 'rated');
+      const focusAction = this.buildFocusAction(pendingOrders, confirmedOrders, services);
 
       this.setData({
         transactions,
@@ -87,6 +89,7 @@ Page({
         pendingOrders,
         confirmedOrders,
         completedOrders,
+        focusAction,
         statCards: [
           { label: '待开始', value: pendingOrders.length },
           { label: '服务中', value: confirmedOrders.length },
@@ -116,6 +119,20 @@ Page({
 
   goCreateService() {
     wx.navigateTo({ url: '/pages/seller/service-form' });
+  },
+
+  handleFocusAction() {
+    const action = this.data.focusAction;
+    if (!action) return;
+    if (action.type === 'confirm' || action.type === 'follow') {
+      wx.navigateTo({ url: `/pages/transaction/detail?id=${action.target_id}` });
+      return;
+    }
+    if (action.type === 'create_service') {
+      this.goCreateService();
+      return;
+    }
+    this.setData({ activeTab: 'services' });
   },
 
   goEditService(e) {
@@ -170,6 +187,41 @@ Page({
     } catch (err) {
       wx.showToast({ title: err.error || '确认失败', icon: 'none' });
     }
+  },
+
+  buildFocusAction(pendingOrders, confirmedOrders, services) {
+    if (pendingOrders.length > 0) {
+      return {
+        type: 'confirm',
+        title: '有新预约待确认',
+        desc: `先处理「${pendingOrders[0].service_name}」，避免用户等待过久。`,
+        button: '去确认',
+        target_id: pendingOrders[0].id,
+      };
+    }
+    if (confirmedOrders.length > 0) {
+      return {
+        type: 'follow',
+        title: '有服务正在进行',
+        desc: `跟进「${confirmedOrders[0].service_name}」的交付进度，完成后提醒买方确认。`,
+        button: '看详情',
+        target_id: confirmedOrders[0].id,
+      };
+    }
+    if (services.length === 0) {
+      return {
+        type: 'create_service',
+        title: '还没有可预约服务',
+        desc: '先发布一个能代表你核心价值的服务，Agent 广场和匹配报告才更容易转化。',
+        button: '发布服务',
+      };
+    }
+    return {
+      type: 'manage_services',
+      title: '服务资产正常',
+      desc: '可以继续优化服务标题、标签、定价和交付说明，提高被识别和预约的概率。',
+      button: '管理服务',
+    };
   },
 
   goTransactions() {

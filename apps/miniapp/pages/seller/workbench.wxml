@@ -13,6 +13,15 @@
     </view>
   </view>
 
+  <view class="seller-focus-card" wx:if="{{focusAction}}">
+    <view class="seller-focus-main">
+      <text class="seller-focus-label">今日重点</text>
+      <text class="seller-focus-title">{{focusAction.title}}</text>
+      <text class="seller-focus-desc">{{focusAction.desc}}</text>
+    </view>
+    <button class="btn-inline" catch:tap="handleFocusAction">{{focusAction.button}}</button>
+  </view>
+
   <view class="tabs">
     <view class="tab {{activeTab === 'orders' ? 'active' : ''}}" data-tab="orders" catch:tap="switchTab">预约</view>
     <view class="tab {{activeTab === 'services' ? 'active' : ''}}" data-tab="services" catch:tap="switchTab">服务</view>

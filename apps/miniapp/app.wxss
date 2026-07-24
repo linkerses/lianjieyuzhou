@@ -1005,6 +1005,49 @@ page {
   color: #6B7D6E;
 }
 
+.seller-focus-card {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.seller-focus-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.seller-focus-label {
+  display: block;
+  font-size: 22rpx;
+  color: #B8860B;
+  margin-bottom: 6rpx;
+}
+
+.seller-focus-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.seller-focus-desc {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #6B7D6E;
+  line-height: 1.5;
+}
+
+.seller-focus-card .btn-inline {
+  flex-shrink: 0;
+  min-width: 150rpx;
+}
+
 .seller-section {
   margin-bottom: 28rpx;
 }
