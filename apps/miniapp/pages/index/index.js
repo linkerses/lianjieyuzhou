@@ -322,7 +322,7 @@ Page({
     }
     if (target === 'plaza') {
       wx.setStorageSync('onboarding_plaza_visited', true);
-      wx.navigateTo({ url: '/pages/agents/plaza' });
+      wx.switchTab({ url: '/pages/agents/plaza' });
       return;
     }
     if (target === 'match') {

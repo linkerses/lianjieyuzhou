@@ -34,13 +34,19 @@
       },
       {
         "pagePath": "pages/services/services",
-        "text": "服务",
+        "text": "找服务",
         "iconPath": "images/tab-services.png",
         "selectedIconPath": "images/tab-services-active.png"
       },
       {
+        "pagePath": "pages/agents/plaza",
+        "text": "找人",
+        "iconPath": "images/tab-plaza.png",
+        "selectedIconPath": "images/tab-plaza-active.png"
+      },
+      {
         "pagePath": "pages/agent/agent",
-        "text": "我的Agent",
+        "text": "Agent",
         "iconPath": "images/tab-agent.png",
         "selectedIconPath": "images/tab-agent-active.png"
       },

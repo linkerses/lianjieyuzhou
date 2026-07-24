@@ -48,7 +48,10 @@ Page({
     },
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    if (options.tab) {
+      this.setData({ activeTab: options.tab });
+    }
     this.loadWorkbench();
   },
 

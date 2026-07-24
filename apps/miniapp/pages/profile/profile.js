@@ -97,7 +97,7 @@ Page({
     if (key === 'agent') {
       this.goAgent();
     } else if (key === 'plaza') {
-      wx.navigateTo({ url: '/pages/agents/plaza' });
+      wx.switchTab({ url: '/pages/agents/plaza' });
     } else if (key === 'seller') {
       this.goSellerWorkbench();
     } else if (key === 'transactions') {

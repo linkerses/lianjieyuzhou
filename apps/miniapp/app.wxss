@@ -1405,6 +1405,21 @@ page {
   border-bottom: none;
 }
 
+.service-manage-card {
+  border-left: 6rpx solid #2D3E2F;
+}
+
+.agent-service-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14rpx;
+  margin-top: 20rpx;
+}
+
+.agent-service-actions .btn-inline {
+  margin: 0;
+}
+
 .profile-label {
   display: block;
   font-size: 26rpx;

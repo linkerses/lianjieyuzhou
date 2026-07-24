@@ -88,6 +88,18 @@
       </view>
     </view>
 
+    <view class="card service-manage-card" wx:if="{{agent}}">
+      <view class="card-header">
+        <text class="card-title">服务项目</text>
+        <text class="card-action" catch:tap="goManageServices">管理</text>
+      </view>
+      <text class="card-desc">把你的能力整理成可预约服务，也可以在这里修改服务内容、定价和上下架状态。</text>
+      <view class="agent-service-actions">
+        <button class="btn-primary" catch:tap="goCreateService">发布服务</button>
+        <button class="btn-inline btn-muted" catch:tap="goManageServices">修改已有服务</button>
+      </view>
+    </view>
+
     <!-- 核心价值档案 -->
     <view class="card" wx:if="{{agent}}">
       <view class="card-header">

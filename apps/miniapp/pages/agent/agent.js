@@ -489,7 +489,15 @@ Page({
   },
 
   goAgentPlaza() {
-    wx.navigateTo({ url: '/pages/agents/plaza' });
+    wx.switchTab({ url: '/pages/agents/plaza' });
+  },
+
+  goCreateService() {
+    wx.navigateTo({ url: '/pages/seller/service-form' });
+  },
+
+  goManageServices() {
+    wx.navigateTo({ url: '/pages/seller/workbench?tab=services' });
   },
 
   openMatchReport(e) {
