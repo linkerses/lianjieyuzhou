@@ -5,6 +5,7 @@
     "pages/services/detail",
     "pages/booking/booking",
     "pages/agent/agent",
+    "pages/seller/workbench",
     "pages/transaction/transaction",
     "pages/transaction/detail",
     "pages/profile/profile"

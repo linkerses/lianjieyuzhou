@@ -1,0 +1,94 @@
+<!-- 服务方工作台 -->
+<view class="page">
+
+  <view class="seller-hero">
+    <text class="seller-title">服务方工作台</text>
+    <text class="seller-subtitle">处理预约、跟进服务进度、查看你的服务资产。</text>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card" wx:for="{{statCards}}" wx:key="label">
+      <text class="stat-value">{{item.value}}</text>
+      <text class="stat-label">{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="tabs">
+    <view class="tab {{activeTab === 'orders' ? 'active' : ''}}" data-tab="orders" catch:tap="switchTab">预约</view>
+    <view class="tab {{activeTab === 'services' ? 'active' : ''}}" data-tab="services" catch:tap="switchTab">服务</view>
+  </view>
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:elif="{{activeTab === 'orders'}}">
+    <view class="seller-section" wx:if="{{pendingOrders.length > 0}}">
+      <text class="seller-section-title">待开始</text>
+      <view class="seller-order-card" wx:for="{{pendingOrders}}" wx:key="id">
+        <view catch:tap="goTransactionDetail" data-id="{{item.id}}">
+          <view class="tx-top">
+            <text class="tx-service">{{item.service_name}}</text>
+            <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
+          </view>
+          <view class="seller-order-meta">
+            <text>买方 {{item.buyer_cid}}</text>
+            <text>{{item.scheduled_text}}</text>
+            <text>{{item.amount}}元</text>
+          </view>
+        </view>
+        <button class="btn-inline" data-id="{{item.id}}" catch:tap="confirmOrder">确认开始</button>
+      </view>
+    </view>
+
+    <view class="seller-section" wx:if="{{confirmedOrders.length > 0}}">
+      <text class="seller-section-title">服务中</text>
+      <view class="seller-order-card" wx:for="{{confirmedOrders}}" wx:key="id" catch:tap="goTransactionDetail" data-id="{{item.id}}">
+        <view class="tx-top">
+          <text class="tx-service">{{item.service_name}}</text>
+          <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
+        </view>
+        <view class="seller-order-meta">
+          <text>买方 {{item.buyer_cid}}</text>
+          <text>{{item.scheduled_text}}</text>
+          <text>{{item.amount}}元</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="seller-section" wx:if="{{completedOrders.length > 0}}">
+      <text class="seller-section-title">已完成</text>
+      <view class="seller-order-card" wx:for="{{completedOrders}}" wx:key="id" catch:tap="goTransactionDetail" data-id="{{item.id}}">
+        <view class="tx-top">
+          <text class="tx-service">{{item.service_name}}</text>
+          <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
+        </view>
+        <view class="seller-order-meta">
+          <text>买方 {{item.buyer_cid}}</text>
+          <text>{{item.amount}}元</text>
+          <text wx:if="{{item.actual_score}}">评分 {{item.actual_score}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:if="{{transactions.length === 0}}">
+      <text>暂无服务方订单。切换到买方账号预约你的服务后，这里会出现待处理预约。</text>
+    </view>
+  </view>
+
+  <view wx:elif="{{activeTab === 'services'}}">
+    <view class="service-card" wx:for="{{services}}" wx:key="id" catch:tap="goServiceDetail" data-id="{{item.id}}">
+      <view class="service-top">
+        <text class="service-system">{{item.primary_system}}</text>
+        <text class="service-price">{{item.price}}元</text>
+      </view>
+      <text class="service-name">{{item.name}}</text>
+      <view class="service-meta">
+        <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+        <text>{{item.delivery_method}}</text>
+        <text>交付 {{item.delivery_count || 0}}</text>
+      </view>
+    </view>
+    <view class="empty" wx:if="{{services.length === 0}}">
+      <text>你还没有上架服务。下一步可以补“发布服务”入口。</text>
+    </view>
+  </view>
+</view>

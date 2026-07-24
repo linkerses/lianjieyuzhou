@@ -22,7 +22,10 @@ Page({
     },
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    if (options.role && ['all', 'buyer', 'seller'].includes(options.role)) {
+      this.setData({ activeTab: options.role });
+    }
     this.loadTransactions();
   },
 

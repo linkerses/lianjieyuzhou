@@ -92,7 +92,10 @@ router.get('/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const { data, error } = await supabase
       .from('transactions')
-      .select('*')
+      .select(`
+        *,
+        services(name, primary_system)
+      `)
       .eq('id', id)
       .single();
 

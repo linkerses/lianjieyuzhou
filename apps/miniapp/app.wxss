@@ -211,6 +211,17 @@ page {
   background: #C4CDC0;
 }
 
+.btn-inline {
+  height: 64rpx;
+  line-height: 64rpx;
+  background: #2D3E2F;
+  color: #FFFFFF;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  border: none;
+  margin: 18rpx 0 0;
+}
+
 /* ── 首页 ── */
 
 .agent-banner {
@@ -706,6 +717,85 @@ page {
   padding: 40rpx;
   color: #C4CDC0;
   font-size: 24rpx;
+}
+
+/* ── 服务方工作台 ── */
+
+.seller-hero {
+  padding: 8rpx 0 28rpx;
+}
+
+.seller-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.seller-subtitle {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 26rpx;
+  color: #6B7D6E;
+  line-height: 1.6;
+}
+
+.stats-grid {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.stat-card {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 14rpx;
+  padding: 20rpx 8rpx;
+  text-align: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.stat-value {
+  display: block;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #6B7D6E;
+}
+
+.seller-section {
+  margin-bottom: 28rpx;
+}
+
+.seller-section-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #2D3E2F;
+  margin-bottom: 14rpx;
+}
+
+.seller-order-card {
+  background: #FFFFFF;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.seller-order-meta {
+  display: flex;
+  gap: 18rpx;
+  flex-wrap: wrap;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #6B7D6E;
 }
 
 /* ── 技能系统 ── */

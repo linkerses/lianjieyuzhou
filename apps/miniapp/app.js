@@ -29,12 +29,12 @@ App({
   },
 
   // 登录（微信登录或开发模式）
-  async login(devMode = false) {
+  async login(devMode = false, devCode = 'dev_mode') {
     try {
       let code = '';
 
       if (devMode) {
-        code = 'dev_mode';
+        code = devCode;
       } else {
         const loginRes = await wx.login();
         code = loginRes.code;
@@ -64,6 +64,17 @@ App({
       console.error('[login error]', err);
       return { success: false, error: err.message || '登录异常' };
     }
+  },
+
+  logout() {
+    this.globalData.cid = null;
+    this.globalData.nickname = null;
+    this.globalData.token = null;
+    this.globalData.agentData = null;
+    this.globalData.isNewUser = false;
+    wx.removeStorageSync('token');
+    wx.removeStorageSync('cid');
+    wx.removeStorageSync('nickname');
   },
 
   // 统一请求封装

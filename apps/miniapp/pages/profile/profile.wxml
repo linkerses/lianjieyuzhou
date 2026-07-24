@@ -33,9 +33,19 @@
       <text class="menu-label">交易记录</text>
       <text class="menu-arrow">›</text>
     </view>
+    <view class="menu-item" catch:tap="goSellerWorkbench">
+      <text class="menu-icon">🧾</text>
+      <text class="menu-label">服务方工作台</text>
+      <text class="menu-arrow">›</text>
+    </view>
     <view class="menu-item" catch:tap="goTrustNetwork">
       <text class="menu-icon">🔗</text>
       <text class="menu-label">信任网络</text>
+      <text class="menu-arrow">›</text>
+    </view>
+    <view class="menu-item" catch:tap="switchDevRole">
+      <text class="menu-icon">🧪</text>
+      <text class="menu-label">切换测试身份</text>
       <text class="menu-arrow">›</text>
     </view>
   </view>

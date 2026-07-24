@@ -20,8 +20,8 @@ router.post('/wechat-login', async (req: Request, res: Response) => {
     if (!code) return res.status(400).json({ error: '缺少微信登录code' });
 
     // V0.2 开发模式：使用 dev_mode 跳过微信登录
-    if (code === 'dev_mode') {
-      return handleDevLogin(res);
+    if (code === 'dev_mode' || code === 'dev_seller') {
+      return handleDevLogin(res, code);
     }
 
     const appId = process.env.WECHAT_APP_ID || '';
@@ -100,9 +100,13 @@ router.post('/wechat-login', async (req: Request, res: Response) => {
 });
 
 // ── 开发模式模拟登录 ──
-async function handleDevLogin(res: Response) {
+async function handleDevLogin(res: Response, code = 'dev_mode') {
   // 查找或创建开发者测试用 Agent
-  const devCid = 'UC-M-0001';
+  const isSeller = code === 'dev_seller';
+  const devCid = isSeller ? 'UC-B-0001' : 'UC-M-0001';
+  const nickname = isSeller ? '陈氏自在妙手堂' : '开发者';
+  const wechatOpenid = isSeller ? 'dev_seller' : 'dev_mode';
+  const lifeStageTags = isSeller ? ['health', 'spirit'] : ['wealth', 'create'];
 
   const { data: existing } = await supabase
     .from('agents')
@@ -126,9 +130,9 @@ async function handleDevLogin(res: Response) {
     .from('agents')
     .insert({
       cid: devCid,
-      nickname: '开发者',
-      wechat_openid: 'dev_mode',
-      life_stage_tags: ['wealth', 'create'],
+      nickname,
+      wechat_openid: wechatOpenid,
+      life_stage_tags: lifeStageTags,
     })
     .select()
     .single();

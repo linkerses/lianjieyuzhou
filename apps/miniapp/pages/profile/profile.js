@@ -52,6 +52,27 @@ Page({
     wx.navigateTo({ url: '/pages/transaction/transaction' });
   },
 
+  goSellerWorkbench() {
+    wx.navigateTo({ url: '/pages/seller/workbench' });
+  },
+
+  switchDevRole() {
+    wx.showActionSheet({
+      itemList: ['切换为买方测试账号', '切换为服务方测试账号'],
+      success: async (res) => {
+        const code = res.tapIndex === 1 ? 'dev_seller' : 'dev_mode';
+        app.logout();
+        const loginRes = await app.login(true, code);
+        if (loginRes.success) {
+          wx.showToast({ title: '已切换身份', icon: 'success' });
+          this.loadData();
+        } else {
+          wx.showToast({ title: '切换失败', icon: 'none' });
+        }
+      },
+    });
+  },
+
   goTrustNetwork() {
     wx.navigateTo({ url: '/pages/agent/agent?tab=trust' });
   },
