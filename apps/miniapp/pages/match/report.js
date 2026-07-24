@@ -6,7 +6,9 @@ Page({
     id: '',
     report: null,
     targetServices: [],
+    primaryService: null,
     followMarked: false,
+    actionHint: '',
     loading: true,
     scoreColor: '#999',
   },
@@ -96,9 +98,17 @@ Page({
         url: '/services',
         data: { provider: targetCid, limit: 3 },
       });
-      this.setData({ targetServices: res.data || [] });
+      const services = res.data || [];
+      this.setData({
+        targetServices: services,
+        primaryService: services.length > 0 ? services[0] : null,
+        actionHint: this.getActionHint(report, services),
+      });
     } catch (err) {
       console.log('[loadTargetServices]', err);
+      this.setData({
+        actionHint: this.getActionHint(report, []),
+      });
     }
   },
 
@@ -132,6 +142,16 @@ Page({
     wx.navigateTo({ url: `/pages/booking/booking?service_id=${serviceId}&seller_cid=${sellerCid}` });
   },
 
+  takePrimaryAction() {
+    if (this.data.primaryService) {
+      wx.navigateTo({
+        url: `/pages/booking/booking?service_id=${this.data.primaryService.id}&seller_cid=${this.data.primaryService.provider_cid}`,
+      });
+      return;
+    }
+    this.connectTarget();
+  },
+
   viewService(e) {
     wx.navigateTo({ url: `/pages/services/detail?id=${e.currentTarget.dataset.id}` });
   },
@@ -149,6 +169,42 @@ Page({
       data: text,
       success: () => wx.showToast({ title: '已复制报告摘要', icon: 'none' }),
     });
+  },
+
+  copyIntentMessage() {
+    if (!this.data.report) return;
+    const report = this.data.report;
+    const targetName = report.target_agent && report.target_agent.nickname
+      ? report.target_agent.nickname
+      : report.target_agent.cid;
+    const nextAction = report.next_actions && report.next_actions.length > 0
+      ? report.next_actions[0]
+      : '建议先做一次轻量沟通，确认双方目标、资源和可协作事项。';
+    const text = [
+      `${targetName}，你好，我看了我们的 Agent 匹配报告。`,
+      `匹配度：${report.total_score}/100。`,
+      `我的理解：${report.summary}`,
+      `建议下一步：${nextAction}`,
+      '如果你也感兴趣，我们可以先约一次短沟通，确认是否适合继续推进。',
+    ].join('\n');
+
+    wx.setClipboardData({
+      data: text,
+      success: () => wx.showToast({ title: '已复制合作意向', icon: 'none' }),
+    });
+  },
+
+  getActionHint(report, services) {
+    if (services && services.length > 0) {
+      return '对方已有可预约服务，建议直接选择一个低风险服务开始验证。';
+    }
+    if (report && report.total_score >= 75) {
+      return '匹配度较高，建议先发起连接，再复制合作意向进行沟通。';
+    }
+    if (report && report.total_score >= 60) {
+      return '匹配度中等，建议先看公开档案，确认需求和能力是否足够具体。';
+    }
+    return '匹配度偏探索，建议先收藏报告或补充双方档案后再判断。';
   },
 
   getScoreColor(score) {

@@ -27,10 +27,18 @@
 
     <view class="card">
       <view class="card-header">
-        <text class="card-title">行动入口</text>
+        <text class="card-title">下一步协作</text>
+      </view>
+      <view class="next-step-panel">
+        <text class="next-step-label">推荐动作</text>
+        <text class="next-step-title" wx:if="{{primaryService}}">预约「{{primaryService.name}}」</text>
+        <text class="next-step-title" wx:else>先发起连接</text>
+        <text class="next-step-desc">{{actionHint}}</text>
+        <button class="btn-primary" catch:tap="takePrimaryAction">{{primaryService ? '立即预约服务' : '发起连接'}}</button>
       </view>
       <view class="report-actions">
-        <button class="btn-inline" catch:tap="connectTarget">发起连接</button>
+        <button class="btn-inline" catch:tap="connectTarget">连接对方</button>
+        <button class="btn-inline btn-muted" catch:tap="copyIntentMessage">复制合作意向</button>
         <button class="btn-inline btn-muted" catch:tap="copySummary">复制报告</button>
         <button class="btn-inline btn-muted" wx:if="{{!followMarked}}" catch:tap="markFollowUp">标记跟进</button>
         <button class="btn-inline btn-muted" wx:else disabled>已跟进</button>
