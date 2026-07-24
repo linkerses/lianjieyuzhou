@@ -21,6 +21,11 @@ const SORTS = [
   { key: 'complete', label: '档案完整' },
 ];
 
+const TAG_LABELS = FILTERS.reduce((acc, item) => {
+  if (item.key !== 'all') acc[item.key] = item.label;
+  return acc;
+}, {});
+
 Page({
   data: {
     agents: [],
@@ -100,8 +105,13 @@ Page({
       service_badge_class: serviceCount > 0 ? 'metric-pill strong' : 'metric-pill',
       completion_badge_class: hasCompleteProfile ? 'metric-pill strong' : 'metric-pill',
       has_complete_profile: hasCompleteProfile,
+      life_stage_tag_labels: this.formatTags(item.life_stage_tags || []),
       contact_reason: this.buildContactReason(profile, serviceCount, completion),
     };
+  },
+
+  formatTags(tags) {
+    return (tags || []).map(tag => TAG_LABELS[tag] || tag);
   },
 
   buildContactReason(profile, serviceCount, completion) {

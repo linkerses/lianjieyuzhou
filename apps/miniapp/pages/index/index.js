@@ -20,6 +20,18 @@ const DELIVERY_LABELS = {
   hybrid: '线上/线下',
 };
 
+const TAG_LABELS = {
+  health: '🫀 健康',
+  living: '🏠 生活',
+  connection: '🤝 连接',
+  growth: '📚 成长',
+  wealth: '💰 财富',
+  create: '✨ 创造',
+  explore: '🌍 探索',
+  spirit: '🧘 精神',
+  future: '🔮 未来',
+};
+
 Page({
   data: {
     userLoaded: false,
@@ -94,7 +106,7 @@ Page({
         const profileGuide = this.buildProfileGuide(res.data);
         this.setData({
           'agentSummary.nickname': res.data.nickname,
-          'agentSummary.life_stage_tags': res.data.life_stage_tags || [],
+          'agentSummary.life_stage_tags': this.formatTags(res.data.life_stage_tags || []),
           'agentSummary.trust_score': res.data.trust_score || 0,
           'agentSummary.energy_status': res.data.energy_status || 'unknown',
           profileGuide,
@@ -382,5 +394,9 @@ Page({
       delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
       tags,
     };
+  },
+
+  formatTags(tags) {
+    return (tags || []).map(tag => TAG_LABELS[tag] || tag);
   },
 });

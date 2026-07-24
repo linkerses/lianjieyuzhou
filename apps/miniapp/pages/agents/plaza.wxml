@@ -42,7 +42,7 @@
             <text class="{{item.completion_badge_class}}">{{item.completion_badge}}</text>
           </view>
           <view class="service-tags">
-            <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:key="item">{{item}}</text>
+            <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:key="item">{{item}}</text>
           </view>
         </view>
       </view>

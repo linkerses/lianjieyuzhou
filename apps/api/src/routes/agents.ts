@@ -108,11 +108,18 @@ router.get('/public/:cid', async (req: Request, res: Response) => {
 function formatPublicAgent(data: any) {
   const config = data.agent_config || {};
   const profile = config.value_profile || {};
+  const basicProfile = config.basic_profile || {};
 
   return {
     cid: data.cid,
     nickname: data.nickname,
     avatar_url: config.avatar_url || '',
+    basic_profile: {
+      province: basicProfile.province || '',
+      city: basicProfile.city || '',
+      gender: basicProfile.gender || '',
+      bio: basicProfile.bio || '',
+    },
     life_stage_tags: data.life_stage_tags || [],
     trust_score: data.trust_score || 0,
     energy_status: data.energy_status || 'unknown',
@@ -146,6 +153,10 @@ function calculateProfileCompletion(agent: any) {
   const fields = [
     agent.nickname,
     agent.avatar_url,
+    agent.basic_profile?.province,
+    agent.basic_profile?.city,
+    agent.basic_profile?.gender,
+    agent.basic_profile?.bio,
     agent.life_stage_tags && agent.life_stage_tags.length > 0 ? 'tags' : '',
     profile.core_value,
     profile.service_capabilities,

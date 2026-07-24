@@ -38,6 +38,19 @@
           <text class="info-label">能量状态</text>
           <text class="info-value">{{agent.energy_status || '待设置'}}</text>
         </view>
+        <view class="info-row">
+          <text class="info-label">省份城市</text>
+          <text class="info-value">{{basicProfile.province || '待设置'}} {{basicProfile.city || ''}}</text>
+        </view>
+        <view class="info-row">
+          <text class="info-label">性别</text>
+          <text class="info-value">{{basicProfile.gender || '待设置'}}</text>
+        </view>
+        <view class="profile-section">
+          <text class="profile-label">自我介绍</text>
+          <text class="profile-text" wx:if="{{basicProfile.bio}}">{{basicProfile.bio}}</text>
+          <text class="profile-empty" wx:else>补充一段介绍，让别人更快理解你是谁、正在做什么。</text>
+        </view>
       </view>
 
       <view wx:else>
@@ -49,6 +62,24 @@
           <text class="form-label">头像URL</text>
           <input class="form-input" data-field="avatar_url" bindinput="onBasicInput" value="{{basicForm.avatar_url}}" placeholder="可填图片链接，暂不上传本地图片" />
           <text class="form-help">当前版本先支持图片链接，后续接入微信头像选择和对象存储。</text>
+        </view>
+        <view class="form-group">
+          <text class="form-label">省份</text>
+          <input class="form-input" data-field="province" bindinput="onBasicInput" value="{{basicForm.province}}" placeholder="例如：广东省" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">城市</text>
+          <input class="form-input" data-field="city" bindinput="onBasicInput" value="{{basicForm.city}}" placeholder="例如：东莞市" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">性别</text>
+          <picker mode="selector" range="{{genderOptions}}" value="{{genderIndex}}" bindchange="onGenderChange">
+            <view class="picker">{{basicForm.gender || '未设置'}}</view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <text class="form-label">自我介绍</text>
+          <textarea class="form-textarea" maxlength="500" data-field="bio" bindinput="onBasicInput" value="{{basicForm.bio}}" placeholder="简单介绍你是谁、所在行业、正在做的事，以及别人为什么可以找你。" />
         </view>
         <view class="editor-actions">
           <button class="btn-cancel" catch:tap="cancelEditBasicProfile">取消</button>
@@ -124,7 +155,7 @@
       </view>
 
       <view class="tag-display" wx:if="{{!editingTags}}">
-        <view class="tag" wx:for="{{agent.life_stage_tags}}" wx:key="item">{{item}}</view>
+        <view class="tag" wx:for="{{lifeStageTagLabels}}" wx:key="item">{{item}}</view>
         <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">尚未设置——设置后Agent才能为你精准匹配</text>
       </view>
 
@@ -229,7 +260,7 @@
                 </view>
                 <text class="connection-cid">{{item.cid}}</text>
                 <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
-                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                  <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
                 </view>
               </view>
             </view>
@@ -257,7 +288,7 @@
                 </view>
                 <text class="connection-cid">{{item.cid}}</text>
                 <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
-                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                  <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
                 </view>
               </view>
             </view>
@@ -285,7 +316,7 @@
                 </view>
                 <text class="connection-cid">{{item.cid}}</text>
                 <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
-                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                  <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
                 </view>
               </view>
             </view>

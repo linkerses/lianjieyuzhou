@@ -13,6 +13,13 @@ const SYSTEM_OPTIONS = [
   { value: 'future', label: '🔮 未来' },
 ];
 
+const GENDER_OPTIONS = ['未设置', '男', '女', '其他'];
+
+const TAG_LABELS = SYSTEM_OPTIONS.reduce((acc, item) => {
+  acc[item.value] = item.label;
+  return acc;
+}, {});
+
 Page({
   data: {
     agent: null,
@@ -31,7 +38,21 @@ Page({
     basicForm: {
       nickname: '',
       avatar_url: '',
+      province: '',
+      city: '',
+      gender: '',
+      bio: '',
     },
+    basicProfile: {
+      avatar_url: '',
+      province: '',
+      city: '',
+      gender: '',
+      bio: '',
+    },
+    lifeStageTagLabels: [],
+    genderOptions: GENDER_OPTIONS,
+    genderIndex: 0,
     editingBasicProfile: false,
     editingValueProfile: false,
     skills: [],
@@ -110,7 +131,9 @@ Page({
         const basicProfile = this.normalizeBasicProfile(res.data);
         this.setData({
           agent: res.data,
+          basicProfile,
           basicForm: { ...basicProfile },
+          lifeStageTagLabels: this.formatTags(res.data.life_stage_tags || []),
           valueProfile,
           valueForm: { ...valueProfile },
           tempTags: res.data.life_stage_tags || [],
@@ -163,10 +186,10 @@ Page({
       const data = res.data || {};
       this.setData({
         trustNetwork: {
-          outgoing: data.outgoing || [],
-          incoming: data.incoming || [],
-          traded: data.traded || [],
-          connections: data.connections || [],
+          outgoing: this.formatConnectionAgents(data.outgoing || []),
+          incoming: this.formatConnectionAgents(data.incoming || []),
+          traded: this.formatConnectionAgents(data.traded || []),
+          connections: this.formatConnectionAgents(data.connections || []),
         },
         'loading.network': false,
       });
@@ -205,6 +228,7 @@ Page({
     this.setData({
       editingBasicProfile: true,
       basicForm: this.normalizeBasicProfile(this.data.agent),
+      genderIndex: this.getGenderIndex(this.normalizeBasicProfile(this.data.agent).gender),
     });
   },
 
@@ -212,12 +236,22 @@ Page({
     this.setData({
       editingBasicProfile: false,
       basicForm: this.normalizeBasicProfile(this.data.agent),
+      genderIndex: this.getGenderIndex(this.normalizeBasicProfile(this.data.agent).gender),
     });
   },
 
   onBasicInput(e) {
     const field = e.currentTarget.dataset.field;
     this.setData({ [`basicForm.${field}`]: e.detail.value });
+  },
+
+  onGenderChange(e) {
+    const genderIndex = Number(e.detail.value || 0);
+    const gender = this.data.genderOptions[genderIndex] || '';
+    this.setData({
+      genderIndex,
+      'basicForm.gender': gender === '未设置' ? '' : gender,
+    });
   },
 
   async saveBasicProfile() {
@@ -240,14 +274,23 @@ Page({
           agent_config: {
             ...currentConfig,
             avatar_url: this.data.basicForm.avatar_url.trim(),
+            basic_profile: {
+              province: this.data.basicForm.province.trim(),
+              city: this.data.basicForm.city.trim(),
+              gender: this.data.basicForm.gender.trim(),
+              bio: this.data.basicForm.bio.trim(),
+            },
           },
         },
       });
 
       if (res.data) {
+        const basicProfile = this.normalizeBasicProfile(res.data);
         this.setData({
           agent: res.data,
-          basicForm: this.normalizeBasicProfile(res.data),
+          basicProfile,
+          basicForm: { ...basicProfile },
+          genderIndex: this.getGenderIndex(basicProfile.gender),
           editingBasicProfile: false,
         });
         wx.setStorageSync('nickname', res.data.nickname);
@@ -364,6 +407,7 @@ Page({
         this.setData({
           'agent.life_stage_tags': res.data.life_stage_tags,
           editingTags: false,
+          lifeStageTagLabels: this.formatTags(res.data.life_stage_tags || []),
           systemOptions: this.markSelectedSystems(res.data.life_stage_tags || []),
         });
         wx.showToast({ title: '已更新', icon: 'success' });
@@ -467,6 +511,17 @@ Page({
     };
   },
 
+  formatTags(tags) {
+    return (tags || []).map(tag => TAG_LABELS[tag] || tag);
+  },
+
+  formatConnectionAgents(agents) {
+    return (agents || []).map(item => ({
+      ...item,
+      life_stage_tag_labels: this.formatTags(item.life_stage_tags || []),
+    }));
+  },
+
   markSelectedSystems(tags) {
     return SYSTEM_OPTIONS.map(item => ({
       ...item,
@@ -486,9 +541,19 @@ Page({
 
   normalizeBasicProfile(agent) {
     const config = agent && agent.agent_config ? agent.agent_config : {};
+    const profile = config.basic_profile || {};
     return {
       nickname: agent && agent.nickname ? agent.nickname : '',
       avatar_url: config.avatar_url || '',
+      province: profile.province || '',
+      city: profile.city || '',
+      gender: profile.gender || '',
+      bio: profile.bio || '',
     };
+  },
+
+  getGenderIndex(gender) {
+    const index = GENDER_OPTIONS.indexOf(gender || '未设置');
+    return index >= 0 ? index : 0;
   },
 });

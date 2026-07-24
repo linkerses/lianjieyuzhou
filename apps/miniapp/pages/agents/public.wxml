@@ -23,10 +23,26 @@
         <text class="info-label">信任评分</text>
         <text class="info-value">{{agent.trust_score || 0}}</text>
       </view>
+      <view class="info-row">
+        <text class="info-label">省份城市</text>
+        <text class="info-value">{{agent.basic_profile.province || '未填写'}} {{agent.basic_profile.city || ''}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">性别</text>
+        <text class="info-value">{{agent.basic_profile.gender || '未填写'}}</text>
+      </view>
       <view class="tag-display">
-        <text class="tag" wx:for="{{agent.life_stage_tags}}" wx:key="item">{{item}}</text>
+        <text class="tag" wx:for="{{agent.life_stage_tag_labels}}" wx:key="item">{{item}}</text>
         <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">未设置标签</text>
       </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">个人简介</text>
+      </view>
+      <text class="profile-text" wx:if="{{agent.basic_profile.bio}}">{{agent.basic_profile.bio}}</text>
+      <text class="profile-empty" wx:else>对方暂未填写。</text>
     </view>
 
     <view class="card">

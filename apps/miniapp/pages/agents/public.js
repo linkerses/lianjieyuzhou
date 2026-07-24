@@ -1,5 +1,17 @@
 const app = getApp();
 
+const TAG_LABELS = {
+  health: '🫀 健康',
+  living: '🏠 生活',
+  connection: '🤝 连接',
+  growth: '📚 成长',
+  wealth: '💰 财富',
+  create: '✨ 创造',
+  explore: '🌍 探索',
+  spirit: '🧘 精神',
+  future: '🔮 未来',
+};
+
 Page({
   data: {
     cid: '',
@@ -48,9 +60,21 @@ Page({
   },
 
   formatAgent(agent) {
+    const basicProfile = agent.basic_profile || {};
     return {
       ...agent,
+      basic_profile: {
+        province: basicProfile.province || '',
+        city: basicProfile.city || '',
+        gender: basicProfile.gender || '',
+        bio: basicProfile.bio || '',
+      },
       initial: agent.nickname ? agent.nickname.slice(0, 1) : '?',
+      life_stage_tag_labels: this.formatTags(agent.life_stage_tags || []),
     };
+  },
+
+  formatTags(tags) {
+    return (tags || []).map(tag => TAG_LABELS[tag] || tag);
   },
 });

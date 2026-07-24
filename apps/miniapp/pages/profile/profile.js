@@ -10,6 +10,18 @@ const FEEDBACK_TYPES = [
   { key: 'other', label: '其他' },
 ];
 
+const TAG_LABELS = {
+  health: '🫀 健康',
+  living: '🏠 生活',
+  connection: '🤝 连接',
+  growth: '📚 成长',
+  wealth: '💰 财富',
+  create: '✨ 创造',
+  explore: '🌍 探索',
+  spirit: '🧘 精神',
+  future: '🔮 未来',
+};
+
 Page({
   data: {
     agent: null,
@@ -46,7 +58,7 @@ Page({
         app.request({ url: '/transactions/mine' }).catch(() => null),
       ]);
       const agent = agentRes && agentRes.data ? agentRes.data : null;
-      const agentTags = agent && agent.life_stage_tags ? agent.life_stage_tags : [];
+      const agentTags = agent && agent.life_stage_tags ? this.formatTags(agent.life_stage_tags) : [];
       const transactions = txRes && txRes.data ? txRes.data : [];
       const todoItems = this.buildTodoItems(transactions);
       const quickActions = this.buildQuickActions(agent, todoItems);
@@ -233,6 +245,10 @@ Page({
       { key: 'plaza', title: '发起一次匹配', desc: '选择感兴趣的人生成匹配报告' },
       { key: 'seller', title: '维护服务内容', desc: '更新服务介绍、定价和上下架状态' },
     ];
+  },
+
+  formatTags(tags) {
+    return (tags || []).map(tag => TAG_LABELS[tag] || tag);
   },
 
   // 完善档案快捷入口
