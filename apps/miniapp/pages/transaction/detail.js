@@ -5,6 +5,12 @@ const app = getApp();
 Page({
   data: {
     transaction: null,
+    serviceName: '',
+    statusLabel: '',
+    isBuyer: false,
+    isSeller: false,
+    counterpartyLabel: '',
+    counterpartyCid: '',
     loading: true,
     scoring: false,
     // 评分表单
@@ -30,8 +36,18 @@ Page({
     this.setData({ loading: true });
     try {
       const res = await app.request({ url: `/transactions/${id}` });
+      const transaction = res.data;
+      const isBuyer = transaction && transaction.buyer_cid === app.globalData.cid;
+      const isSeller = transaction && transaction.seller_cid === app.globalData.cid;
+
       this.setData({
-        transaction: res.data,
+        transaction,
+        serviceName: transaction && transaction.services && transaction.services.name ? transaction.services.name : '—',
+        statusLabel: this.data.statusLabels[transaction.status] || transaction.status,
+        isBuyer,
+        isSeller,
+        counterpartyLabel: isBuyer ? '服务方' : '买方',
+        counterpartyCid: isBuyer ? transaction.seller_cid : transaction.buyer_cid,
         loading: false,
       });
     } catch (err) {
@@ -106,11 +122,4 @@ Page({
     }
   },
 
-  isBuyer() {
-    return this.data.transaction?.buyer_cid === app.globalData.cid;
-  },
-
-  isSeller() {
-    return this.data.transaction?.seller_cid === app.globalData.cid;
-  },
 });

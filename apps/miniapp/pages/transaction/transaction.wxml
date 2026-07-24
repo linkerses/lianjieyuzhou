@@ -16,11 +16,11 @@
   <view class="tx-list" wx:elif="{{transactions.length > 0}}">
     <view class="tx-card" wx:for="{{transactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
       <view class="tx-top">
-        <text class="tx-service">{{item.services?.name || '服务'}}</text>
-        <text class="tx-status tx-{{item.status}}">{{statusLabels[item.status] || item.status}}</text>
+        <text class="tx-service">{{item.service_name}}</text>
+        <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
       </view>
       <view class="tx-meta">
-        <text class="tx-system">{{item.services?.primary_system || ''}}</text>
+        <text class="tx-system">{{item.service_system}}</text>
         <text class="tx-amount">{{item.amount}}元</text>
       </view>
       <text class="tx-score" wx:if="{{item.actual_score}}">评分 {{item.actual_score}}</text>

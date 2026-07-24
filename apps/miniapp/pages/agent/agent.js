@@ -29,7 +29,10 @@ Page({
     activeTab: 'profile', // profile / skills / trust
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    if (options.tab) {
+      this.setData({ activeTab: options.tab });
+    }
     this.loadAll();
   },
 
@@ -57,6 +60,7 @@ Page({
         this.setData({
           agent: res.data,
           tempTags: res.data.life_stage_tags || [],
+          systemOptions: this.markSelectedSystems(res.data.life_stage_tags || []),
           'loading.agent': false,
         });
       }
@@ -99,9 +103,14 @@ Page({
   // ── 标签编辑 ──
 
   startEditTags() {
+    const tags = this.data.agent && this.data.agent.life_stage_tags
+      ? this.data.agent.life_stage_tags
+      : [];
+
     this.setData({
       editingTags: true,
-      tempTags: [...(this.data.agent?.life_stage_tags || [])],
+      tempTags: [...tags],
+      systemOptions: this.markSelectedSystems(tags),
     });
   },
 
@@ -117,7 +126,10 @@ Page({
       }
       tags.push(tag);
     }
-    this.setData({ tempTags: tags });
+    this.setData({
+      tempTags: tags,
+      systemOptions: this.markSelectedSystems(tags),
+    });
   },
 
   async saveTags() {
@@ -137,6 +149,7 @@ Page({
         this.setData({
           'agent.life_stage_tags': res.data.life_stage_tags,
           editingTags: false,
+          systemOptions: this.markSelectedSystems(res.data.life_stage_tags || []),
         });
         wx.showToast({ title: '已更新', icon: 'success' });
       }
@@ -146,9 +159,14 @@ Page({
   },
 
   cancelEditTags() {
+    const tags = this.data.agent && this.data.agent.life_stage_tags
+      ? this.data.agent.life_stage_tags
+      : [];
+
     this.setData({
       editingTags: false,
-      tempTags: [...(this.data.agent?.life_stage_tags || [])],
+      tempTags: [...tags],
+      systemOptions: this.markSelectedSystems(tags),
     });
   },
 
@@ -184,5 +202,16 @@ Page({
   switchTab(e) {
     const tab = e.currentTarget.dataset.tab;
     this.setData({ activeTab: tab });
+  },
+
+  goTrustNetwork() {
+    this.setData({ activeTab: 'trust' });
+  },
+
+  markSelectedSystems(tags) {
+    return SYSTEM_OPTIONS.map(item => ({
+      ...item,
+      selected: tags.includes(item.value),
+    }));
   },
 });

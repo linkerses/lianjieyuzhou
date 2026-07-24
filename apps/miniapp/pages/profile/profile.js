@@ -5,6 +5,11 @@ const app = getApp();
 Page({
   data: {
     agent: null,
+    agentAvatar: '?',
+    agentName: '联结者',
+    agentCid: '',
+    agentTags: [],
+    hasAgentTags: false,
     trustInfo: null,
   },
 
@@ -22,9 +27,17 @@ Page({
         app.request({ url: '/agents/me' }).catch(() => null),
         app.request({ url: '/trust/my-score' }).catch(() => null),
       ]);
+      const agent = agentRes && agentRes.data ? agentRes.data : null;
+      const agentTags = agent && agent.life_stage_tags ? agent.life_stage_tags : [];
+
       this.setData({
-        agent: agentRes?.data || null,
-        trustInfo: trustRes?.data || null,
+        agent,
+        agentAvatar: agent && agent.nickname ? agent.nickname[0] : '?',
+        agentName: agent && agent.nickname ? agent.nickname : '联结者',
+        agentCid: agent && agent.cid ? agent.cid : '',
+        agentTags,
+        hasAgentTags: agentTags.length > 0,
+        trustInfo: trustRes && trustRes.data ? trustRes.data : null,
       });
     } catch (err) {
       console.error('[loadData]', err);
@@ -36,7 +49,7 @@ Page({
   },
 
   goTransactions() {
-    wx.switchTab({ url: '/pages/transaction/transaction' });
+    wx.navigateTo({ url: '/pages/transaction/transaction' });
   },
 
   goTrustNetwork() {

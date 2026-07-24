@@ -11,6 +11,7 @@ Page({
     submitting: false,
     // 预约表单
     scheduledDate: '',
+    selectedDateLabel: '',
     scheduledTime: '',
     note: '',
     dateOptions: [],
@@ -51,7 +52,11 @@ Page({
   },
 
   onDateChange(e) {
-    this.setData({ scheduledDate: e.detail.value });
+    const selected = this.data.dateOptions[Number(e.detail.value)];
+    this.setData({
+      scheduledDate: selected ? selected.value : '',
+      selectedDateLabel: selected ? selected.label : '',
+    });
   },
 
   onTimeChange(e) {

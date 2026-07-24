@@ -152,7 +152,10 @@ Page({
       });
 
       this.setData({
-        recentTransactions: (res.data || []).slice(0, 3),
+        recentTransactions: (res.data || []).slice(0, 3).map(item => ({
+          ...item,
+          service_name: item.services && item.services.name ? item.services.name : '服务',
+        })),
         'loading.transactions': false,
       });
     } catch (err) {
@@ -189,6 +192,14 @@ Page({
 
   onTapNewUserGuide() {
     wx.navigateTo({ url: '/pages/agent/agent' });
+  },
+
+  goServices() {
+    wx.switchTab({ url: '/pages/services/services' });
+  },
+
+  goTransactions() {
+    wx.navigateTo({ url: '/pages/transaction/transaction' });
   },
 
   onDismissNote() {

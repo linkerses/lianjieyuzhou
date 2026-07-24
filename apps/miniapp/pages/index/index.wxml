@@ -85,7 +85,7 @@
     <view class="tx-list" wx:elif="{{recentTransactions.length > 0}}">
       <view class="tx-item" wx:for="{{recentTransactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
         <text class="tx-status tx-{{item.status}}">{{item.status}}</text>
-        <text class="tx-service">{{item.services?.name || '服务'}}</text>
+        <text class="tx-service">{{item.service_name}}</text>
         <text class="tx-amount">{{item.amount}}元</text>
       </view>
     </view>

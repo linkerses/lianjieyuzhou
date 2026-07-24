@@ -48,7 +48,7 @@
       <view class="tag-editor" wx:elif="{{editingTags}}">
         <text class="editor-hint">选择你当前活跃的领域（最多3个）</text>
         <view class="tag-grid">
-          <view class="tag-option {{tempTags.includes(item.value) ? 'selected' : ''}}"
+          <view class="tag-option {{item.selected ? 'selected' : ''}}"
                 wx:for="{{systemOptions}}" wx:key="value"
                 data-value="{{item.value}}"
                 catch:tap="toggleTag">

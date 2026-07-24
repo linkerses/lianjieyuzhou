@@ -21,7 +21,7 @@
       <view class="form-group">
         <text class="form-label">日期</text>
         <picker mode="selector" range="{{dateOptions}}" range-key="label" bindchange="onDateChange">
-          <view class="picker">{{scheduledDate ? dateOptions.find(d => d.value === scheduledDate)?.label : '请选择日期'}}</view>
+          <view class="picker">{{selectedDateLabel || '请选择日期'}}</view>
         </picker>
       </view>
 

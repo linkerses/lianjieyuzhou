@@ -6,6 +6,15 @@ Page({
   data: {
     service: null,
     preEnact: null,
+    preScoreColor: '#999',
+    dimensionScores: {
+      resonance: 0,
+      stage_fit: 0,
+      history: 0,
+      trust: 0,
+    },
+    serviceSystemText: '',
+    deliveryMethodText: '',
     loading: true,
     booking: false,
   },
@@ -30,9 +39,22 @@ Page({
         }).catch(() => null), // 预演评分失败不影响服务详情展示
       ]);
 
+      const service = serviceRes.data;
+      const preEnact = preRes && preRes.data ? preRes.data : null;
+      const dimensions = preEnact && preEnact.dimensions ? preEnact.dimensions : {};
+
       this.setData({
-        service: serviceRes.data,
-        preEnact: preRes?.data || null,
+        service,
+        preEnact,
+        preScoreColor: this.getScoreColor(preEnact && preEnact.total_score),
+        dimensionScores: {
+          resonance: dimensions.resonance || 0,
+          stage_fit: dimensions.stage_fit || 0,
+          history: dimensions.history || 0,
+          trust: dimensions.trust || 0,
+        },
+        serviceSystemText: this.formatServiceSystem(service),
+        deliveryMethodText: this.formatDeliveryMethod(service && service.delivery_method),
         loading: false,
       });
     } catch (err) {
@@ -65,5 +87,18 @@ Page({
     if (score >= 80) return '#2D3E2F';
     if (score >= 60) return '#B8860B';
     return '#999';
+  },
+
+  formatServiceSystem(service) {
+    if (!service) return '';
+    return service.secondary_system
+      ? `${service.primary_system} + ${service.secondary_system}`
+      : service.primary_system;
+  },
+
+  formatDeliveryMethod(method) {
+    if (method === 'online') return '线上';
+    if (method === 'offline') return '线下';
+    return '线上/线下';
   },
 });

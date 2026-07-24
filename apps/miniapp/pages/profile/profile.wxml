@@ -3,12 +3,12 @@
 
   <!-- 用户信息卡片 -->
   <view class="user-card">
-    <view class="user-avatar">{{agent?.nickname ? agent.nickname[0] : '?'}}</view>
+    <view class="user-avatar">{{agentAvatar}}</view>
     <view class="user-info">
-      <text class="user-name">{{agent?.nickname || '联结者'}}</text>
-      <text class="user-cid">{{agent?.cid || ''}}</text>
-      <view class="user-tags" wx:if="{{agent?.life_stage_tags?.length > 0}}">
-        <text class="tag" wx:for="{{agent.life_stage_tags}}" wx:key="item">{{item}}</text>
+      <text class="user-name">{{agentName}}</text>
+      <text class="user-cid">{{agentCid}}</text>
+      <view class="user-tags" wx:if="{{hasAgentTags}}">
+        <text class="tag" wx:for="{{agentTags}}" wx:key="item">{{item}}</text>
       </view>
       <text class="user-hint" wx:else catch:tap="goEditTags">点击完善生命阶段 →</text>
     </view>

@@ -7,7 +7,7 @@
 
     <!-- 状态横幅 -->
     <view class="status-banner status-{{transaction.status}}">
-      <text>{{statusLabels[transaction.status] || transaction.status}}</text>
+      <text>{{statusLabel}}</text>
     </view>
 
     <!-- 交易信息 -->
@@ -17,7 +17,7 @@
       </view>
       <view class="info-row">
         <text class="info-label">服务</text>
-        <text class="info-value">{{transaction.services?.name || '—'}}</text>
+        <text class="info-value">{{serviceName}}</text>
       </view>
       <view class="info-row">
         <text class="info-label">金额</text>
@@ -44,8 +44,8 @@
     <!-- 服务方/买方信息 -->
     <view class="card">
       <view class="info-row">
-        <text class="info-label">{{isBuyer() ? '服务方' : '买方'}}</text>
-        <text class="info-value">{{isBuyer() ? transaction.seller_cid : transaction.buyer_cid}}</text>
+        <text class="info-label">{{counterpartyLabel}}</text>
+        <text class="info-value">{{counterpartyCid}}</text>
       </view>
     </view>
 
@@ -61,17 +61,17 @@
     <view class="action-bar">
 
       <!-- 服务方：确认开始 -->
-      <button class="btn-primary" wx:if="{{isSeller() && transaction.status === 'pending'}}" catch:tap="confirmService">
+      <button class="btn-primary" wx:if="{{isSeller && transaction.status === 'pending'}}" catch:tap="confirmService">
         确认开始服务
       </button>
 
       <!-- 买方：确认完成 -->
-      <button class="btn-primary" wx:if="{{isBuyer() && transaction.status === 'confirmed'}}" catch:tap="completeService">
+      <button class="btn-primary" wx:if="{{isBuyer && transaction.status === 'confirmed'}}" catch:tap="completeService">
         确认服务完成
       </button>
 
       <!-- 买方：评分入口 -->
-      <view wx:if="{{isBuyer() && transaction.status === 'completed' && !scoring}}">
+      <view wx:if="{{isBuyer && transaction.status === 'completed' && !scoring}}">
         <button class="btn-primary" catch:tap="startScoring">提交评分</button>
       </view>
 

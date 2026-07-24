@@ -40,7 +40,12 @@ Page({
 
       const res = await app.request({ url: '/transactions/mine', data: params });
       this.setData({
-        transactions: res.data || [],
+        transactions: (res.data || []).map(item => ({
+          ...item,
+          service_name: item.services && item.services.name ? item.services.name : '服务',
+          service_system: item.services && item.services.primary_system ? item.services.primary_system : '',
+          status_label: this.data.statusLabels[item.status] || item.status,
+        })),
         loading: false,
       });
     } catch (err) {
