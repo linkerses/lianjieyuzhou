@@ -58,7 +58,7 @@ Page({
 
   async loadWorkbench() {
     if (!app.globalData.cid) {
-      await app.login(true);
+      await app.login();
     }
 
     this.setData({ loading: true });

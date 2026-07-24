@@ -28,7 +28,7 @@ Page({
 
   async loadReport(id) {
     if (!app.globalData.cid) {
-      const loginRes = await app.login(true);
+      const loginRes = await app.login();
       if (!loginRes.success) {
         this.setData({ loading: false });
         wx.showToast({ title: '登录失败', icon: 'none' });
@@ -53,7 +53,7 @@ Page({
 
   async generateReport(targetCid) {
     if (!app.globalData.cid) {
-      const loginRes = await app.login(true);
+      const loginRes = await app.login();
       if (!loginRes.success) {
         this.setData({ loading: false });
         wx.showToast({ title: '登录失败', icon: 'none' });

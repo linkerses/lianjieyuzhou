@@ -75,7 +75,7 @@ Page({
 
   async loadAll() {
     if (!app.globalData.cid) {
-      const loginRes = await app.login(true);
+      const loginRes = await app.login();
       if (!loginRes.success) {
         this.setData({
           errorMessage: loginRes.error || '登录失败，请检查网络配置',

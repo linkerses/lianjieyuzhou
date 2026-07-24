@@ -60,7 +60,7 @@ Page({
     // 检查登录状态
     if (!app.globalData.cid) {
       // 未登录，尝试自动登录
-      const loginRes = await app.login(true); // 开发模式
+      const loginRes = await app.login();
       if (!loginRes.success) {
         wx.showToast({ title: '登录失败', icon: 'none' });
         return;
