@@ -27,6 +27,18 @@
 
     <view class="card">
       <view class="card-header">
+        <text class="card-title">行动入口</text>
+      </view>
+      <view class="report-actions">
+        <button class="btn-inline" catch:tap="connectTarget">发起连接</button>
+        <button class="btn-inline btn-muted" catch:tap="copySummary">复制报告</button>
+        <button class="btn-inline btn-muted" wx:if="{{!followMarked}}" catch:tap="markFollowUp">标记跟进</button>
+        <button class="btn-inline btn-muted" wx:else disabled>已跟进</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
         <text class="card-title">维度评分</text>
       </view>
       <view class="pre-dimensions">
@@ -75,6 +87,27 @@
       <view class="action-item" wx:for="{{report.next_actions}}" wx:key="item">
         <text class="action-dot"></text>
         <text class="action-text">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{targetServices.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">对方可预约服务</text>
+        <text class="card-action" catch:tap="viewTargetAgent">看档案</text>
+      </view>
+      <view class="match-service-item" wx:for="{{targetServices}}" wx:key="id">
+        <view data-id="{{item.id}}" catch:tap="viewService">
+          <view class="service-top">
+            <text class="service-system">{{item.primary_system}}</text>
+            <text class="service-price">{{item.price}}元</text>
+          </view>
+          <text class="service-name">{{item.name}}</text>
+          <view class="service-meta">
+            <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+            <text>交付 {{item.delivery_count || 0}}</text>
+          </view>
+        </view>
+        <button class="btn-inline" data-id="{{item.id}}" data-seller="{{item.provider_cid}}" catch:tap="bookService">预约</button>
       </view>
     </view>
   </view>

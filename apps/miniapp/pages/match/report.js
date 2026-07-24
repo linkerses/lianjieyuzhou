@@ -5,6 +5,8 @@ Page({
     targetCid: '',
     id: '',
     report: null,
+    targetServices: [],
+    followMarked: false,
     loading: true,
     scoreColor: '#999',
   },
@@ -40,6 +42,7 @@ Page({
         scoreColor: this.getScoreColor(res.data.total_score),
         loading: false,
       });
+      this.afterReportLoaded(res.data);
     } catch (err) {
       wx.showToast({ title: err.error || '加载失败', icon: 'none' });
       this.setData({ loading: false });
@@ -68,6 +71,7 @@ Page({
         scoreColor: this.getScoreColor(res.data.total_score),
         loading: false,
       });
+      this.afterReportLoaded(res.data);
     } catch (err) {
       wx.showToast({ title: err.error || '生成失败', icon: 'none' });
       this.setData({ loading: false });
@@ -79,6 +83,57 @@ Page({
     wx.navigateTo({
       url: `/pages/agents/public?cid=${this.data.report.target_agent.cid}`,
     });
+  },
+
+  async afterReportLoaded(report) {
+    const targetCid = report && report.target_agent ? report.target_agent.cid : '';
+    if (!targetCid) return;
+    this.setData({
+      followMarked: !!wx.getStorageSync(`match_follow_${report.id || targetCid}`),
+    });
+    try {
+      const res = await app.request({
+        url: '/services',
+        data: { provider: targetCid, limit: 3 },
+      });
+      this.setData({ targetServices: res.data || [] });
+    } catch (err) {
+      console.log('[loadTargetServices]', err);
+    }
+  },
+
+  async connectTarget() {
+    if (!this.data.report) return;
+    try {
+      const res = await app.request({
+        url: '/trust/connect',
+        method: 'POST',
+        data: { target_cid: this.data.report.target_agent.cid },
+      });
+      wx.showToast({
+        title: res.data && res.data.already_connected ? '已连接过' : '已发起连接',
+        icon: 'success',
+      });
+    } catch (err) {
+      wx.showToast({ title: err.error || '连接失败', icon: 'none' });
+    }
+  },
+
+  markFollowUp() {
+    if (!this.data.report) return;
+    wx.setStorageSync(`match_follow_${this.data.report.id || this.data.report.target_agent.cid}`, true);
+    this.setData({ followMarked: true });
+    wx.showToast({ title: '已标记跟进', icon: 'success' });
+  },
+
+  bookService(e) {
+    const serviceId = e.currentTarget.dataset.id;
+    const sellerCid = e.currentTarget.dataset.seller;
+    wx.navigateTo({ url: `/pages/booking/booking?service_id=${serviceId}&seller_cid=${sellerCid}` });
+  },
+
+  viewService(e) {
+    wx.navigateTo({ url: `/pages/services/detail?id=${e.currentTarget.dataset.id}` });
   },
 
   copySummary() {

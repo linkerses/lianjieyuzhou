@@ -1,7 +1,60 @@
 import { Router, Request, Response } from 'express';
 import { supabase, getCurrentCid } from '../lib/supabase';
+import { CreateConnectionSchema } from '../lib/validation';
 
 const router = Router();
+
+router.post('/connect', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const body = CreateConnectionSchema.parse(req.body);
+    if (body.target_cid === cid) {
+      return res.status(400).json({ error: '不能连接自己的Agent' });
+    }
+
+    const { data: target } = await supabase
+      .from('agents')
+      .select('cid, nickname')
+      .eq('cid', body.target_cid)
+      .single();
+
+    if (!target) return res.status(404).json({ error: '目标Agent不存在' });
+
+    const { data: existing } = await supabase
+      .from('auth_records')
+      .select('*')
+      .eq('granter_cid', cid)
+      .eq('grantee_cid', body.target_cid)
+      .eq('auth_scope', 'read')
+      .eq('status', 'active')
+      .contains('data_fields', ['public_profile'])
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return res.json({ data: { ...existing[0], target_nickname: target.nickname, already_connected: true } });
+    }
+
+    const { data, error } = await supabase
+      .from('auth_records')
+      .insert({
+        granter_cid: cid,
+        grantee_cid: body.target_cid,
+        auth_scope: 'read',
+        data_fields: ['public_profile'],
+        duration: 'permanent',
+        status: 'active',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.status(201).json({ data: { ...data, target_nickname: target.nickname, already_connected: false } });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '发起连接失败' });
+  }
+});
 
 // ── 我的信任评分 ──
 router.get('/my-score', async (req: Request, res: Response) => {

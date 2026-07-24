@@ -99,6 +99,10 @@ export const AnalyzeMatchSchema = z.object({
   target_cid: z.string().min(1),
 });
 
+export const CreateConnectionSchema = z.object({
+  target_cid: z.string().min(1),
+});
+
 export const UpdateSkillSchema = z.object({
   skill: z.enum([
     'state_scan', 'growth_path', 'spirit_charge',

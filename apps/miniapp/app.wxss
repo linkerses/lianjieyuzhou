@@ -656,6 +656,26 @@ page {
   color: #A8B5A9;
 }
 
+.report-actions {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.report-actions .btn-inline {
+  flex: 1;
+  min-width: 180rpx;
+}
+
+.match-service-item {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F0F0EC;
+}
+
+.match-service-item:last-child {
+  border-bottom: none;
+}
+
 .booking-summary {
   background: #FFFFFF;
   border-radius: 16rpx;
