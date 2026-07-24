@@ -14,6 +14,21 @@
     </view>
   </view>
 
+
+  <view class="todo-card" wx:if="{{hasTodos}}">
+    <view class="card-header">
+      <text class="card-title">待处理</text>
+      <text class="card-action" catch:tap="goTransactions">全部</text>
+    </view>
+    <view class="todo-item" wx:for="{{todoItems}}" wx:key="id" data-id="{{item.id}}" catch:tap="openTodo">
+      <view class="todo-main">
+        <text class="todo-title">{{item.title}}</text>
+        <text class="todo-desc">{{item.desc}}</text>
+      </view>
+      <text class="todo-tag">{{item.tag}}</text>
+    </view>
+  </view>
+
   <!-- 信任概要 -->
   <view class="trust-summary" wx:if="{{trustInfo}}" catch:tap="goTrustNetwork">
     <text class="trust-label">信任评分</text>
