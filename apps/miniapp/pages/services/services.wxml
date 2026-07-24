@@ -1,6 +1,11 @@
 <!-- 服务列表 -->
 <view class="page">
 
+  <view class="seller-hero">
+    <text class="seller-title">找服务</text>
+    <text class="seller-subtitle">直接选择可交付的服务，适合你已经知道自己需要什么。</text>
+  </view>
+
   <!-- 系统筛选 -->
   <scroll-view class="filter-bar" scroll-x>
     <view class="filter-item {{activeFilter === item.key ? 'active' : ''}}"
@@ -33,11 +38,15 @@
         <text wx:else>线上/线下</text>
         <text wx:if="{{item.trust_score > 0}}">信任 {{item.trust_score}}</text>
       </view>
+      <view class="service-card-action">
+        <text>查看详情并预约</text>
+      </view>
     </view>
   </view>
 
   <!-- 空状态 -->
   <view class="empty" wx:elif="{{!loading}}">
-    <text>暂无可用的服务</text>
+    <text>当前分类暂无可用服务</text>
+    <button class="btn-inline btn-muted" catch:tap="clearFilter">查看全部服务</button>
   </view>
 </view>

@@ -65,12 +65,13 @@
 
       <view class="service-actions">
         <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewAgent">看档案</button>
-        <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="applyMatch">匹配</button>
+        <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="applyMatch">匹配分析</button>
       </view>
     </view>
   </view>
 
   <view class="empty" wx:else>
     <text>当前标签下暂无公开Agent。</text>
+    <button class="btn-inline btn-muted" catch:tap="clearFilter">查看全部Agent</button>
   </view>
 </view>

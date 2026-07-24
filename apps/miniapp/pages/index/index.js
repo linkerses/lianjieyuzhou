@@ -339,6 +339,10 @@ Page({
     wx.switchTab({ url: '/pages/services/services' });
   },
 
+  goAgentPlaza() {
+    wx.switchTab({ url: '/pages/agents/plaza' });
+  },
+
   goTransactions() {
     wx.navigateTo({ url: '/pages/transaction/transaction' });
   },

@@ -455,6 +455,62 @@ page {
   color: #4A7C59;
 }
 
+.discovery-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 26rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.discovery-head {
+  margin-bottom: 18rpx;
+}
+
+.discovery-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.discovery-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #6B7D6E;
+  line-height: 1.6;
+}
+
+.discovery-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14rpx;
+}
+
+.discovery-item {
+  min-height: 132rpx;
+  border-radius: 14rpx;
+  padding: 20rpx;
+  background: #FAFAF8;
+  border: 1rpx solid #EEEAE1;
+}
+
+.discovery-item-title {
+  display: block;
+  font-size: 29rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.discovery-item-desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 23rpx;
+  color: #6B7D6E;
+  line-height: 1.5;
+}
+
 /* ── Section ── */
 
 .section {
@@ -648,6 +704,15 @@ page {
   gap: 20rpx;
   font-size: 24rpx;
   color: #A8B5A9;
+}
+
+.service-card-action {
+  margin-top: 18rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F0F0EC;
+  color: #2D3E2F;
+  font-size: 26rpx;
+  font-weight: 600;
 }
 
 /* ── 服务详情 ── */

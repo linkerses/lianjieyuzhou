@@ -68,6 +68,23 @@
     </view>
   </view>
 
+  <view class="discovery-card">
+    <view class="discovery-head">
+      <text class="discovery-title">今天想解决什么？</text>
+      <text class="discovery-desc">找服务是直接获得交付，找人是先发现可连接对象。</text>
+    </view>
+    <view class="discovery-grid">
+      <view class="discovery-item" catch:tap="goServices">
+        <text class="discovery-item-title">找服务</text>
+        <text class="discovery-item-desc">看可预约项目、价格和交付方式</text>
+      </view>
+      <view class="discovery-item" catch:tap="goAgentPlaza">
+        <text class="discovery-item-title">找人</text>
+        <text class="discovery-item-desc">看公开档案，生成匹配报告</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 推荐服务 -->
   <view class="section">
     <view class="section-header">

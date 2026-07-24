@@ -87,6 +87,11 @@ Page({
     wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
   },
 
+  clearFilter() {
+    if (this.data.activeFilter === 'all') return;
+    this.setData({ activeFilter: 'all' }, () => this.loadAgents());
+  },
+
   formatAgent(item) {
     const profile = item.value_profile || {};
     const initial = item.nickname ? item.nickname.slice(0, 1) : '?';

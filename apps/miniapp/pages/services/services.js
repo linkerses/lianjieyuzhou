@@ -82,6 +82,11 @@ Page({
     wx.navigateTo({ url: `/pages/services/detail?id=${id}` });
   },
 
+  clearFilter() {
+    if (this.data.activeFilter === 'all') return;
+    this.setData({ activeFilter: 'all' }, () => this.loadServices());
+  },
+
   formatService(item) {
     const tags = [
       SYSTEM_LABELS[item.primary_system] || item.primary_system,
