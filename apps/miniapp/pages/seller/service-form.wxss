@@ -1,0 +1,47 @@
+/* pages/seller/service-form.wxss */
+
+.card {
+  margin-bottom: 26rpx;
+  padding: 28rpx;
+}
+
+.form-group {
+  margin-bottom: 30rpx;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  margin-bottom: 12rpx;
+  font-size: 27rpx;
+}
+
+.form-input,
+.picker {
+  min-height: 78rpx;
+  line-height: 78rpx;
+}
+
+.form-textarea {
+  min-height: 150rpx;
+  line-height: 1.55;
+  padding-top: 18rpx;
+  padding-bottom: 18rpx;
+}
+
+.form-textarea-large {
+  min-height: 210rpx;
+}
+
+.form-help {
+  display: block;
+  margin-top: 10rpx;
+  line-height: 1.45;
+}
+
+.action-bar {
+  padding-top: 8rpx;
+  padding-bottom: 28rpx;
+}

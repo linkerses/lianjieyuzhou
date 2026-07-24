@@ -15,6 +15,7 @@ Page({
     },
     serviceSystemText: '',
     deliveryMethodText: '',
+    descriptionSections: [],
     loading: true,
     booking: false,
   },
@@ -55,6 +56,7 @@ Page({
         },
         serviceSystemText: this.formatServiceSystem(service),
         deliveryMethodText: this.formatDeliveryMethod(service && service.delivery_method),
+        descriptionSections: this.parseDescriptionSections(service && service.description),
         loading: false,
       });
     } catch (err) {
@@ -114,5 +116,27 @@ Page({
     if (method === 'online') return '线上';
     if (method === 'offline') return '线下';
     return '线上/线下';
+  },
+
+  parseDescriptionSections(text = '') {
+    if (!text) return [];
+
+    if (text.indexOf('服务介绍：') === -1) {
+      return [{ label: '服务介绍', text }];
+    }
+
+    return [
+      { label: '服务介绍', text: this.extractSection(text, '服务介绍：', '适合谁：') },
+      { label: '适合谁', text: this.extractSection(text, '适合谁：', '不适合谁：') },
+      { label: '不适合谁', text: this.extractSection(text, '不适合谁：', '') },
+    ].filter(item => item.text);
+  },
+
+  extractSection(text, start, end) {
+    const startIndex = text.indexOf(start);
+    if (startIndex === -1) return '';
+    const contentStart = startIndex + start.length;
+    const endIndex = end ? text.indexOf(end, contentStart) : -1;
+    return text.slice(contentStart, endIndex === -1 ? undefined : endIndex).trim();
   },
 });

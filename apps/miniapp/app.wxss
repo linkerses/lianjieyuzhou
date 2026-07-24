@@ -130,6 +130,16 @@ page {
   line-height: 1.7;
 }
 
+.service-desc-section {
+  padding: 20rpx 0;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.service-desc-section:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
 /* ── Tab切换 ── */
 
 .tabs {

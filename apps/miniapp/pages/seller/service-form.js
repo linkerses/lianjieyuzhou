@@ -26,6 +26,8 @@ const DEFAULT_FORM = {
   secondary_system: '',
   suitable_stages_text: '',
   description: '',
+  suitable_for: '',
+  not_suitable_for: '',
   price: '',
   duration_minutes: '',
   delivery_method: 'online',
@@ -38,6 +40,8 @@ Page({
     isEdit: false,
     loading: false,
     submitting: false,
+    pageTitle: '发布服务',
+    submitButtonText: '上架服务',
     form: { ...DEFAULT_FORM },
     systemOptions: SYSTEM_OPTIONS,
     secondarySystemOptions: [{ value: '', label: '不设置' }, ...SYSTEM_OPTIONS],
@@ -49,7 +53,7 @@ Page({
 
   onLoad(options = {}) {
     if (options.id) {
-      this.setData({ id: options.id, isEdit: true });
+      this.setData({ id: options.id, isEdit: true, pageTitle: '编辑服务', submitButtonText: '保存修改' });
       wx.setNavigationBarTitle({ title: '编辑服务' });
       this.loadService(options.id);
     } else {
@@ -63,13 +67,16 @@ Page({
     try {
       const res = await app.request({ url: `/services/${id}` });
       const service = res.data || {};
+      const parsedDescription = this.parseDescription(service.description || '');
       this.setData({
         form: {
           name: service.name || '',
           primary_system: service.primary_system || 'create',
           secondary_system: service.secondary_system || '',
           suitable_stages_text: (service.suitable_stages || []).join('、'),
-          description: service.description || '',
+          description: parsedDescription.description,
+          suitable_for: parsedDescription.suitable_for,
+          not_suitable_for: parsedDescription.not_suitable_for,
           price: service.price ? String(service.price) : '',
           duration_minutes: service.duration_minutes ? String(service.duration_minutes) : '',
           delivery_method: service.delivery_method || 'online',
@@ -119,6 +126,7 @@ Page({
     const form = this.data.form;
     if (!form.name.trim()) return '请填写服务名称';
     if (!form.description.trim()) return '请填写服务介绍';
+    if (!form.suitable_for.trim()) return '请填写适合谁';
     if (!form.price || Number(form.price) <= 0) return '请填写有效价格';
     if (form.duration_minutes && Number(form.duration_minutes) <= 0) return '时长必须大于0';
     if ((form.delivery_method === 'offline' || form.delivery_method === 'hybrid') && !form.location.trim()) {
@@ -138,7 +146,7 @@ Page({
       primary_system: form.primary_system,
       secondary_system: form.secondary_system || null,
       suitable_stages: stages,
-      description: form.description.trim(),
+      description: this.composeDescription(form),
       price: Number(form.price),
       delivery_method: form.delivery_method,
       location: form.location.trim(),
@@ -149,6 +157,43 @@ Page({
     return payload;
   },
 
+  composeDescription(form) {
+    return [
+      '服务介绍：',
+      form.description.trim(),
+      '',
+      '适合谁：',
+      form.suitable_for.trim(),
+      '',
+      '不适合谁：',
+      form.not_suitable_for.trim() || '暂无明确限制，预约前可先沟通确认。',
+    ].join('\n');
+  },
+
+  parseDescription(text) {
+    const fallback = {
+      description: text,
+      suitable_for: '',
+      not_suitable_for: '',
+    };
+
+    if (!text || text.indexOf('服务介绍：') === -1) return fallback;
+
+    return {
+      description: this.extractSection(text, '服务介绍：', '适合谁：') || '',
+      suitable_for: this.extractSection(text, '适合谁：', '不适合谁：') || '',
+      not_suitable_for: this.extractSection(text, '不适合谁：', '') || '',
+    };
+  },
+
+  extractSection(text, start, end) {
+    const startIndex = text.indexOf(start);
+    if (startIndex === -1) return '';
+    const contentStart = startIndex + start.length;
+    const endIndex = end ? text.indexOf(end, contentStart) : -1;
+    return text.slice(contentStart, endIndex === -1 ? undefined : endIndex).trim();
+  },
+
   async submitService() {
     const error = this.validateForm();
     if (error) {
@@ -156,7 +201,7 @@ Page({
       return;
     }
 
-    this.setData({ submitting: true });
+    this.setData({ submitting: true, submitButtonText: '保存中...' });
     try {
       await app.request({
         url: this.data.isEdit ? `/services/${this.data.id}` : '/services',
@@ -167,7 +212,10 @@ Page({
       setTimeout(() => wx.navigateBack(), 800);
     } catch (err) {
       wx.showToast({ title: err.error || '保存失败', icon: 'none' });
-      this.setData({ submitting: false });
+      this.setData({
+        submitting: false,
+        submitButtonText: this.data.isEdit ? '保存修改' : '上架服务',
+      });
     }
   },
 });

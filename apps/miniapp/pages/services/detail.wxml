@@ -67,9 +67,11 @@
         <text class="info-value">{{service.location}}</text>
       </view>
 
-      <view class="desc-block" wx:if="{{service.description}}">
-        <text class="desc-label">服务介绍</text>
-        <text class="desc-text">{{service.description}}</text>
+      <view class="desc-block" wx:if="{{descriptionSections.length > 0}}">
+        <view class="service-desc-section" wx:for="{{descriptionSections}}" wx:key="label">
+          <text class="desc-label">{{item.label}}</text>
+          <text class="desc-text">{{item.text}}</text>
+        </view>
       </view>
     </view>
 
