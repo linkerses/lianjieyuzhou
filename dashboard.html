@@ -296,16 +296,17 @@ async function loadTransactions() {
   const txs = await api(`/admin/transactions?cid=${cid}&status=${status}&limit=80`);
   if (!txs.length) return renderEmpty('transactionsTable', '没有找到交易');
   document.getElementById('transactionsTable').innerHTML = table(
-    ['交易', '服务', '买方', '卖方', '金额', '状态', '评分', '创建时间'],
+    ['交易', '服务', '买方', '卖方', '金额', '状态', '评分', '创建时间', '操作'],
     txs.map(tx => [
       `<span class="tiny">${escapeHtml(tx.id)}</span>`,
       escapeHtml((tx.services && tx.services.name) || '-'),
-      escapeHtml(tx.buyer_cid),
-      escapeHtml(tx.seller_cid),
+      `${escapeHtml(tx.buyer_cid)}<div><button class="link tiny" onclick="copyText('${escapeAttr(tx.buyer_cid)}')">复制</button></div>`,
+      `${escapeHtml(tx.seller_cid)}<div><button class="link tiny" onclick="copyText('${escapeAttr(tx.seller_cid)}')">复制</button></div>`,
       `${Number(tx.amount || 0)} 元`,
       statusPill(tx.status),
       tx.actual_score || '-',
       time(tx.created_at),
+      transactionActions(tx),
     ])
   );
 }
@@ -383,6 +384,35 @@ function serviceActions(service) {
     ${service.status === 'active' ? `<button class="btn warning" onclick="updateServiceStatus('${id}','paused')">暂停</button>` : ''}
     ${service.status !== 'archived' ? `<button class="btn danger" onclick="updateServiceStatus('${id}','archived')">归档</button>` : ''}
   </div>`;
+}
+
+async function updateTransactionStatus(id, status) {
+  await api(`/admin/transactions/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  await Promise.all([loadSummary(), loadTransactions()]);
+  setStatus(`交易已更新为 ${status}`);
+}
+
+function transactionActions(tx) {
+  const id = escapeAttr(tx.id);
+  if (tx.status === 'pending') {
+    return `<div class="actions">
+      <button class="btn secondary" onclick="updateTransactionStatus('${id}','confirmed')">确认</button>
+      <button class="btn danger" onclick="updateTransactionStatus('${id}','cancelled')">取消</button>
+    </div>`;
+  }
+  if (tx.status === 'confirmed') {
+    return `<div class="actions">
+      <button class="btn secondary" onclick="updateTransactionStatus('${id}','completed')">完成</button>
+      <button class="btn danger" onclick="updateTransactionStatus('${id}','cancelled')">取消</button>
+    </div>`;
+  }
+  if (tx.status === 'completed') {
+    return '<span class="tiny muted">等待买方评分</span>';
+  }
+  return '<span class="tiny muted">无需处理</span>';
 }
 
 function table(headers, rows) {

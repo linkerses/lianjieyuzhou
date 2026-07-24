@@ -265,6 +265,36 @@ router.patch('/services/:id', async (req: Request, res: Response) => {
   }
 });
 
+router.patch('/transactions/:id/status', async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body || {};
+    if (!['confirmed', 'completed', 'cancelled'].includes(status)) {
+      return res.status(400).json({ error: '无效的交易状态' });
+    }
+
+    const updateData: Record<string, any> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (status === 'completed') {
+      updateData.completed_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: '交易不存在' });
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '更新交易状态失败' });
+  }
+});
+
 async function countRows(table: string, apply?: (query: any) => any) {
   let query = supabase.from(table).select('*', { count: 'exact', head: true });
   if (apply) query = apply(query);
