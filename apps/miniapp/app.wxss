@@ -222,6 +222,11 @@ page {
   margin: 18rpx 0 0;
 }
 
+.btn-muted {
+  background: #E8EDE6;
+  color: #2D3E2F;
+}
+
 /* ── 首页 ── */
 
 .agent-banner {
@@ -605,6 +610,17 @@ page {
   box-sizing: border-box;
 }
 
+.form-textarea-large {
+  min-height: 260rpx;
+}
+
+.form-help {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #A8B5A9;
+}
+
 .picker {
   width: 100%;
   height: 72rpx;
@@ -771,6 +787,14 @@ page {
 
 .seller-section {
   margin-bottom: 28rpx;
+}
+
+.seller-toolbar {
+  margin-bottom: 20rpx;
+}
+
+.service-actions {
+  margin-top: 18rpx;
 }
 
 .seller-section-title {

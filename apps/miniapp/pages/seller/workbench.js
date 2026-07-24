@@ -89,6 +89,14 @@ Page({
     wx.navigateTo({ url: `/pages/services/detail?id=${e.currentTarget.dataset.id}` });
   },
 
+  goCreateService() {
+    wx.navigateTo({ url: '/pages/seller/service-form' });
+  },
+
+  goEditService(e) {
+    wx.navigateTo({ url: `/pages/seller/service-form?id=${e.currentTarget.dataset.id}` });
+  },
+
   async confirmOrder(e) {
     const id = e.currentTarget.dataset.id;
     try {

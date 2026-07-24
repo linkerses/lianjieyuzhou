@@ -75,20 +75,29 @@
   </view>
 
   <view wx:elif="{{activeTab === 'services'}}">
-    <view class="service-card" wx:for="{{services}}" wx:key="id" catch:tap="goServiceDetail" data-id="{{item.id}}">
-      <view class="service-top">
-        <text class="service-system">{{item.primary_system}}</text>
-        <text class="service-price">{{item.price}}元</text>
+    <view class="seller-toolbar">
+      <button class="btn-primary" catch:tap="goCreateService">发布服务</button>
+    </view>
+
+    <view class="service-card" wx:for="{{services}}" wx:key="id">
+      <view catch:tap="goServiceDetail" data-id="{{item.id}}">
+        <view class="service-top">
+          <text class="service-system">{{item.primary_system}}</text>
+          <text class="service-price">{{item.price}}元</text>
+        </view>
+        <text class="service-name">{{item.name}}</text>
+        <view class="service-meta">
+          <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+          <text>{{item.delivery_method}}</text>
+          <text>交付 {{item.delivery_count || 0}}</text>
+        </view>
       </view>
-      <text class="service-name">{{item.name}}</text>
-      <view class="service-meta">
-        <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
-        <text>{{item.delivery_method}}</text>
-        <text>交付 {{item.delivery_count || 0}}</text>
+      <view class="service-actions">
+        <button class="btn-inline btn-muted" data-id="{{item.id}}" catch:tap="goEditService">编辑定价</button>
       </view>
     </view>
     <view class="empty" wx:if="{{services.length === 0}}">
-      <text>你还没有上架服务。下一步可以补“发布服务”入口。</text>
+      <text>你还没有上架服务。先发布一个能代表你核心价值的服务。</text>
     </view>
   </view>
 </view>
