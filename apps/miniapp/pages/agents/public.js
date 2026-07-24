@@ -22,7 +22,7 @@ Page({
     try {
       const res = await app.request({ url: `/agents/public/${cid}` });
       this.setData({
-        agent: res.data,
+        agent: this.formatAgent(res.data),
         loading: false,
       });
       wx.setNavigationBarTitle({ title: res.data.nickname || '公开档案' });
@@ -45,5 +45,12 @@ Page({
       data: this.data.agent.cid,
       success: () => wx.showToast({ title: '已复制CID', icon: 'none' }),
     });
+  },
+
+  formatAgent(agent) {
+    return {
+      ...agent,
+      initial: agent.nickname ? agent.nickname.slice(0, 1) : '?',
+    };
   },
 });

@@ -7,6 +7,14 @@
         <text class="card-title">{{agent.nickname || '联结者'}}</text>
         <text class="card-action" catch:tap="copyCid">复制CID</text>
       </view>
+      <view class="agent-basic">
+        <image class="agent-basic-avatar" wx:if="{{agent.avatar_url}}" src="{{agent.avatar_url}}" mode="aspectFill"></image>
+        <view class="agent-basic-avatar avatar-fallback" wx:else>{{agent.initial}}</view>
+        <view class="agent-basic-meta">
+          <text class="agent-basic-name">{{agent.nickname || '联结者'}}</text>
+          <text class="agent-basic-cid">{{agent.cid}}</text>
+        </view>
+      </view>
       <view class="info-row">
         <text class="info-label">CID</text>
         <text class="info-value">{{agent.cid}}</text>

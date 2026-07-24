@@ -51,6 +51,31 @@ router.get('/me', async (req: Request, res: Response) => {
 
 // ── 获取指定Agent ──
 // ── 公开Agent档案 ──
+router.get('/public', async (req: Request, res: Response) => {
+  try {
+    const { tag, limit } = req.query;
+    const parsedLimit = Number(limit);
+
+    let query = supabase
+      .from('agents')
+      .select('cid, nickname, life_stage_tags, trust_score, energy_status, status, agent_config, updated_at')
+      .eq('status', 'active')
+      .order('updated_at', { ascending: false })
+      .limit(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 50) : 30);
+
+    if (tag) {
+      query = query.contains('life_stage_tags', [String(tag)]);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    res.json({ data: (data || []).map(formatPublicAgent) });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取Agent广场失败' });
+  }
+});
+
 router.get('/public/:cid', async (req: Request, res: Response) => {
   try {
     const { cid } = req.params;
@@ -61,30 +86,32 @@ router.get('/public/:cid', async (req: Request, res: Response) => {
       .single();
 
     if (error) throw error;
-    const profile = data.agent_config && data.agent_config.value_profile
-      ? data.agent_config.value_profile
-      : {};
-
-    res.json({
-      data: {
-        cid: data.cid,
-        nickname: data.nickname,
-        life_stage_tags: data.life_stage_tags || [],
-        trust_score: data.trust_score || 0,
-        energy_status: data.energy_status || 'unknown',
-        status: data.status,
-        value_profile: {
-          core_value: profile.core_value || '',
-          service_capabilities: profile.service_capabilities || '',
-          project_experience: profile.project_experience || '',
-          vision_needs: profile.vision_needs || '',
-        },
-      },
-    });
+    res.json({ data: formatPublicAgent(data) });
   } catch (err: any) {
     res.status(404).json({ error: 'Agent不存在' });
   }
 });
+
+function formatPublicAgent(data: any) {
+  const config = data.agent_config || {};
+  const profile = config.value_profile || {};
+
+  return {
+    cid: data.cid,
+    nickname: data.nickname,
+    avatar_url: config.avatar_url || '',
+    life_stage_tags: data.life_stage_tags || [],
+    trust_score: data.trust_score || 0,
+    energy_status: data.energy_status || 'unknown',
+    status: data.status,
+    value_profile: {
+      core_value: profile.core_value || '',
+      service_capabilities: profile.service_capabilities || '',
+      project_experience: profile.project_experience || '',
+      vision_needs: profile.vision_needs || '',
+    },
+  };
+}
 
 router.get('/:cid', async (req: Request, res: Response) => {
   try {

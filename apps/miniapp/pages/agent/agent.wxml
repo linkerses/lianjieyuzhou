@@ -22,19 +22,38 @@
     <view class="card" wx:elif="{{agent}}">
       <view class="card-header">
         <text class="card-title">Agent信息</text>
+        <text class="card-action" wx:if="{{!editingBasicProfile}}" catch:tap="startEditBasicProfile">编辑</text>
       </view>
 
-      <view class="info-row">
-        <text class="info-label">CID</text>
-        <text class="info-value">{{agent.cid}}</text>
+      <view wx:if="{{!editingBasicProfile}}">
+        <view class="agent-basic">
+          <image class="agent-basic-avatar" wx:if="{{basicForm.avatar_url}}" src="{{basicForm.avatar_url}}" mode="aspectFill"></image>
+          <view class="agent-basic-avatar avatar-fallback" wx:else>{{agent.nickname ? agent.nickname[0] : '?'}}</view>
+          <view class="agent-basic-meta">
+            <text class="agent-basic-name">{{agent.nickname}}</text>
+            <text class="agent-basic-cid">{{agent.cid}}</text>
+          </view>
+        </view>
+        <view class="info-row">
+          <text class="info-label">能量状态</text>
+          <text class="info-value">{{agent.energy_status || '待设置'}}</text>
+        </view>
       </view>
-      <view class="info-row">
-        <text class="info-label">昵称</text>
-        <text class="info-value">{{agent.nickname}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">能量状态</text>
-        <text class="info-value">{{agent.energy_status || '待设置'}}</text>
+
+      <view wx:else>
+        <view class="form-group">
+          <text class="form-label">称呼</text>
+          <input class="form-input" data-field="nickname" bindinput="onBasicInput" value="{{basicForm.nickname}}" placeholder="请输入你的称呼" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">头像URL</text>
+          <input class="form-input" data-field="avatar_url" bindinput="onBasicInput" value="{{basicForm.avatar_url}}" placeholder="可填图片链接，暂不上传本地图片" />
+          <text class="form-help">当前版本先支持图片链接，后续接入微信头像选择和对象存储。</text>
+        </view>
+        <view class="editor-actions">
+          <button class="btn-cancel" catch:tap="cancelEditBasicProfile">取消</button>
+          <button class="btn-save" catch:tap="saveBasicProfile">保存资料</button>
+        </view>
       </view>
     </view>
 
@@ -205,6 +224,7 @@
         <input class="form-input" bindinput="onMatchCidInput" value="{{matchingTargetCid}}" placeholder="例如 UC-M-0002" />
       </view>
       <button class="btn-primary" catch:tap="generateMatchReport">生成匹配报告</button>
+      <button class="btn-inline btn-muted" catch:tap="goAgentPlaza">去Agent广场</button>
     </view>
 
     <view class="card">

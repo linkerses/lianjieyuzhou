@@ -1066,3 +1066,91 @@ page {
   font-size: 28rpx;
   font-weight: 500;
 }
+
+.agent-basic {
+  display: flex;
+  align-items: center;
+  margin-bottom: 18rpx;
+}
+
+.agent-basic-avatar,
+.agent-plaza-avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  flex-shrink: 0;
+}
+
+.avatar-fallback {
+  background: #2D3E2F;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34rpx;
+  font-weight: 600;
+}
+
+.agent-basic-meta {
+  flex: 1;
+}
+
+.agent-basic-name {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.agent-basic-cid,
+.agent-plaza-cid {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 24rpx;
+  color: #A8B5A9;
+}
+
+.agent-plaza-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.agent-plaza-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.agent-plaza-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-plaza-top {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.agent-plaza-name {
+  flex: 1;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trust-badge-small {
+  flex-shrink: 0;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  padding: 5rpx 12rpx;
+  border-radius: 16rpx;
+  font-size: 22rpx;
+}

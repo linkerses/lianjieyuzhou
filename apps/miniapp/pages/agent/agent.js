@@ -28,6 +28,11 @@ Page({
       project_experience: '',
       vision_needs: '',
     },
+    basicForm: {
+      nickname: '',
+      avatar_url: '',
+    },
+    editingBasicProfile: false,
     editingValueProfile: false,
     skills: [],
     trustInfo: null,
@@ -87,8 +92,10 @@ Page({
       const res = await app.request({ url: '/agents/me' });
       if (res.data) {
         const valueProfile = this.normalizeValueProfile(res.data.agent_config);
+        const basicProfile = this.normalizeBasicProfile(res.data);
         this.setData({
           agent: res.data,
+          basicForm: { ...basicProfile },
           valueProfile,
           valueForm: { ...valueProfile },
           tempTags: res.data.life_stage_tags || [],
@@ -157,6 +164,64 @@ Page({
       'loading.matches': true,
     });
     this.loadAll();
+  },
+
+  startEditBasicProfile() {
+    this.setData({
+      editingBasicProfile: true,
+      basicForm: this.normalizeBasicProfile(this.data.agent),
+    });
+  },
+
+  cancelEditBasicProfile() {
+    this.setData({
+      editingBasicProfile: false,
+      basicForm: this.normalizeBasicProfile(this.data.agent),
+    });
+  },
+
+  onBasicInput(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({ [`basicForm.${field}`]: e.detail.value });
+  },
+
+  async saveBasicProfile() {
+    const nickname = this.data.basicForm.nickname.trim();
+    if (!nickname) {
+      wx.showToast({ title: '请填写称呼', icon: 'none' });
+      return;
+    }
+
+    const currentConfig = this.data.agent && this.data.agent.agent_config
+      ? this.data.agent.agent_config
+      : {};
+
+    try {
+      const res = await app.request({
+        url: '/agents/me',
+        method: 'PATCH',
+        data: {
+          nickname,
+          agent_config: {
+            ...currentConfig,
+            avatar_url: this.data.basicForm.avatar_url.trim(),
+          },
+        },
+      });
+
+      if (res.data) {
+        this.setData({
+          agent: res.data,
+          basicForm: this.normalizeBasicProfile(res.data),
+          editingBasicProfile: false,
+        });
+        wx.setStorageSync('nickname', res.data.nickname);
+        app.globalData.nickname = res.data.nickname;
+        wx.showToast({ title: '资料已更新', icon: 'success' });
+      }
+    } catch (err) {
+      wx.showToast({ title: err.error || '保存失败', icon: 'none' });
+    }
   },
 
   startEditValueProfile() {
@@ -336,6 +401,10 @@ Page({
     wx.navigateTo({ url: `/pages/match/report?target_cid=${targetCid}` });
   },
 
+  goAgentPlaza() {
+    wx.navigateTo({ url: '/pages/agents/plaza' });
+  },
+
   openMatchReport(e) {
     wx.navigateTo({ url: `/pages/match/report?id=${e.currentTarget.dataset.id}` });
   },
@@ -369,6 +438,14 @@ Page({
       service_capabilities: profile.service_capabilities || '',
       project_experience: profile.project_experience || '',
       vision_needs: profile.vision_needs || '',
+    };
+  },
+
+  normalizeBasicProfile(agent) {
+    const config = agent && agent.agent_config ? agent.agent_config : {};
+    return {
+      nickname: agent && agent.nickname ? agent.nickname : '',
+      avatar_url: config.avatar_url || '',
     };
   },
 });
