@@ -38,8 +38,8 @@
           </view>
           <text class="agent-plaza-cid">{{item.cid}}</text>
           <view class="agent-plaza-metrics">
-            <text>{{item.service_count || 0}}个服务</text>
-            <text>档案{{item.profile_completion || 0}}%</text>
+            <text class="{{item.service_badge_class}}">{{item.service_badge}}</text>
+            <text class="{{item.completion_badge_class}}">{{item.completion_badge}}</text>
           </view>
           <view class="service-tags">
             <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:key="item">{{item}}</text>
@@ -47,8 +47,21 @@
         </view>
       </view>
 
-      <text class="profile-text">{{item.core_value}}</text>
-      <text class="profile-empty">{{item.service_capabilities}}</text>
+      <view class="agent-value-grid">
+        <view class="agent-value-block">
+          <text class="agent-value-label">可提供</text>
+          <text class="agent-value-text">{{item.service_capabilities}}</text>
+        </view>
+        <view class="agent-value-block">
+          <text class="agent-value-label">正在找</text>
+          <text class="agent-value-text">{{item.vision_needs}}</text>
+        </view>
+      </view>
+
+      <view class="agent-reason">
+        <text class="agent-reason-label">联系理由</text>
+        <text class="agent-reason-text">{{item.contact_reason}}</text>
+      </view>
 
       <view class="service-actions">
         <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewAgent">看档案</button>

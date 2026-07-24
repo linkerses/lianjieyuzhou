@@ -85,11 +85,35 @@ Page({
   formatAgent(item) {
     const profile = item.value_profile || {};
     const initial = item.nickname ? item.nickname.slice(0, 1) : '?';
+    const serviceCount = item.service_count || 0;
+    const completion = item.profile_completion || 0;
+    const hasCompleteProfile = completion >= 80;
     return {
       ...item,
       initial,
       core_value: profile.core_value || '暂未填写核心价值',
       service_capabilities: profile.service_capabilities || '暂未填写服务能力',
+      project_experience: profile.project_experience || '',
+      vision_needs: profile.vision_needs || '暂未填写愿景需求',
+      service_badge: serviceCount > 0 ? `${serviceCount}个服务` : '暂无服务',
+      completion_badge: `档案${completion}%`,
+      service_badge_class: serviceCount > 0 ? 'metric-pill strong' : 'metric-pill',
+      completion_badge_class: hasCompleteProfile ? 'metric-pill strong' : 'metric-pill',
+      has_complete_profile: hasCompleteProfile,
+      contact_reason: this.buildContactReason(profile, serviceCount, completion),
     };
+  },
+
+  buildContactReason(profile, serviceCount, completion) {
+    if (profile.service_capabilities && profile.vision_needs) {
+      return '能力和需求都已公开，适合先生成匹配报告再沟通。';
+    }
+    if (serviceCount > 0) {
+      return '已有可预约服务，适合从一次轻量体验开始。';
+    }
+    if (completion >= 80) {
+      return '档案较完整，适合先查看公开档案判断合作方向。';
+    }
+    return '档案还在完善中，建议先查看基础信息或等待对方补充。';
   },
 });
