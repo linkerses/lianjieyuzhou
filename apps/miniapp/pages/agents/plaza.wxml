@@ -14,6 +14,16 @@
     </view>
   </scroll-view>
 
+  <scroll-view class="filter-bar sort-bar" scroll-x>
+    <view class="filter-item {{activeSort === item.key ? 'active' : ''}}"
+          wx:for="{{sorts}}"
+          wx:key="key"
+          data-key="{{item.key}}"
+          catch:tap="switchSort">
+      {{item.label}}
+    </view>
+  </scroll-view>
+
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
   <view wx:elif="{{agents.length > 0}}">
@@ -27,6 +37,10 @@
             <text class="trust-badge-small">信任 {{item.trust_score || 0}}</text>
           </view>
           <text class="agent-plaza-cid">{{item.cid}}</text>
+          <view class="agent-plaza-metrics">
+            <text>{{item.service_count || 0}}个服务</text>
+            <text>档案{{item.profile_completion || 0}}%</text>
+          </view>
           <view class="service-tags">
             <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:key="item">{{item}}</text>
           </view>

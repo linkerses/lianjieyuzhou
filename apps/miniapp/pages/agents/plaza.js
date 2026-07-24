@@ -13,11 +13,21 @@ const FILTERS = [
   { key: 'future', label: '未来' },
 ];
 
+const SORTS = [
+  { key: 'recommended', label: '推荐' },
+  { key: 'latest', label: '最新' },
+  { key: 'trust', label: '信任' },
+  { key: 'services', label: '有服务' },
+  { key: 'complete', label: '档案完整' },
+];
+
 Page({
   data: {
     agents: [],
     filters: FILTERS,
+    sorts: SORTS,
     activeFilter: 'all',
+    activeSort: 'recommended',
     loading: true,
   },
 
@@ -34,7 +44,7 @@ Page({
   async loadAgents() {
     this.setData({ loading: true });
     try {
-      const params = { limit: 30 };
+      const params = { limit: 30, sort: this.data.activeSort };
       if (this.data.activeFilter !== 'all') {
         params.tag = this.data.activeFilter;
       }
@@ -54,6 +64,13 @@ Page({
     const key = e.currentTarget.dataset.key;
     if (key !== this.data.activeFilter) {
       this.setData({ activeFilter: key }, () => this.loadAgents());
+    }
+  },
+
+  switchSort(e) {
+    const key = e.currentTarget.dataset.key;
+    if (key !== this.data.activeSort) {
+      this.setData({ activeSort: key }, () => this.loadAgents());
     }
   },
 

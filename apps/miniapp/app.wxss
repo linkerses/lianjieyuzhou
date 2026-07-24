@@ -1174,3 +1174,16 @@ page {
   border-radius: 16rpx;
   font-size: 22rpx;
 }
+
+.sort-bar {
+  margin-top: -8rpx;
+  margin-bottom: 22rpx;
+}
+
+.agent-plaza-metrics {
+  display: flex;
+  gap: 14rpx;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #A8B5A9;
+}

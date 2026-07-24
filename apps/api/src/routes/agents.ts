@@ -53,7 +53,7 @@ router.get('/me', async (req: Request, res: Response) => {
 // ── 公开Agent档案 ──
 router.get('/public', async (req: Request, res: Response) => {
   try {
-    const { tag, limit } = req.query;
+    const { tag, limit, sort } = req.query;
     const parsedLimit = Number(limit);
 
     let query = supabase
@@ -70,7 +70,20 @@ router.get('/public', async (req: Request, res: Response) => {
     const { data, error } = await query;
     if (error) throw error;
 
-    res.json({ data: (data || []).map(formatPublicAgent) });
+    const publicAgents = (data || []).map(formatPublicAgent);
+    const serviceCounts = await getActiveServiceCounts(publicAgents.map(agent => agent.cid));
+    const agents = publicAgents
+      .map(agent => ({
+        ...agent,
+        service_count: serviceCounts[agent.cid] || 0,
+        profile_completion: calculateProfileCompletion(agent),
+      }))
+      .map(agent => ({
+        ...agent,
+        recommendation_score: calculateRecommendationScore(agent),
+      }));
+
+    res.json({ data: sortPublicAgents(agents, String(sort || 'recommended')) });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '获取Agent广场失败' });
   }
@@ -111,6 +124,60 @@ function formatPublicAgent(data: any) {
       vision_needs: profile.vision_needs || '',
     },
   };
+}
+
+async function getActiveServiceCounts(cids: string[]) {
+  if (cids.length === 0) return {} as Record<string, number>;
+
+  const { data } = await supabase
+    .from('services')
+    .select('provider_cid')
+    .in('provider_cid', cids)
+    .eq('status', 'active');
+
+  return (data || []).reduce((acc: Record<string, number>, item: any) => {
+    acc[item.provider_cid] = (acc[item.provider_cid] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function calculateProfileCompletion(agent: any) {
+  const profile = agent.value_profile || {};
+  const fields = [
+    agent.nickname,
+    agent.avatar_url,
+    agent.life_stage_tags && agent.life_stage_tags.length > 0 ? 'tags' : '',
+    profile.core_value,
+    profile.service_capabilities,
+    profile.project_experience,
+    profile.vision_needs,
+  ];
+  const completed = fields.filter(value => String(value || '').trim().length > 0).length;
+  return Math.round((completed / fields.length) * 100);
+}
+
+function calculateRecommendationScore(agent: any) {
+  const trust = Number(agent.trust_score || 0) * 10;
+  const services = Math.min(Number(agent.service_count || 0), 5) * 8;
+  const completion = Number(agent.profile_completion || 0) * 0.35;
+  return Math.round(trust + services + completion);
+}
+
+function sortPublicAgents(agents: any[], sort: string) {
+  const list = [...agents];
+  if (sort === 'trust') {
+    return list.sort((a, b) => Number(b.trust_score || 0) - Number(a.trust_score || 0));
+  }
+  if (sort === 'services') {
+    return list.sort((a, b) => Number(b.service_count || 0) - Number(a.service_count || 0));
+  }
+  if (sort === 'complete') {
+    return list.sort((a, b) => Number(b.profile_completion || 0) - Number(a.profile_completion || 0));
+  }
+  if (sort === 'latest') {
+    return list;
+  }
+  return list.sort((a, b) => Number(b.recommendation_score || 0) - Number(a.recommendation_score || 0));
 }
 
 router.get('/:cid', async (req: Request, res: Response) => {
