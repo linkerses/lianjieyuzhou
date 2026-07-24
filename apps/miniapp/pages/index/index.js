@@ -156,10 +156,10 @@ Page({
       const res = await app.request({
         url: '/pre-enact/recommend',
         method: 'POST',
-        data: { agent_cid: app.globalData.cid, limit: 5 },
+        data: { agent_cid: app.globalData.cid, limit: 3 },
       });
 
-      const recs = (res.data || []).map(item => ({
+      const recs = (res.data || []).slice(0, 3).map(item => ({
         ...item,
         system_emoji: this.getSystemEmoji(item.primary_system),
       }));
