@@ -55,7 +55,7 @@ export const UpdateServiceSchema = CreateServiceSchema.partial();
 export const CreateTransactionSchema = z.object({
   service_id: z.string().uuid(),
   seller_cid: z.string().min(1),
-  scheduled_at: z.string().datetime().optional(),
+  scheduled_at: z.string().datetime({ offset: true }).optional(),
 });
 
 export const FeedbackSchema = z.object({

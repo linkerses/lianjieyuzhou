@@ -97,7 +97,8 @@ Page({
         }, 1500);
       }
     } catch (err) {
-      wx.showToast({ title: '预约失败: ' + (err.error || ''), icon: 'none' });
+      const message = err.error || err.message || err.errMsg || '请稍后重试';
+      wx.showToast({ title: '预约失败: ' + message, icon: 'none' });
       this.setData({ submitting: false });
     }
   },
