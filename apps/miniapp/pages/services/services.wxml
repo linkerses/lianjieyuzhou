@@ -18,10 +18,13 @@
   <view class="service-list" wx:elif="{{services.length > 0}}">
     <view class="service-card" wx:for="{{services}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
       <view class="service-top">
-        <text class="service-system">{{item.primary_system}}</text>
+        <text class="service-system">{{item.system_label}}</text>
         <text class="service-price">{{item.price}}元</text>
       </view>
       <text class="service-name">{{item.name}}</text>
+      <view class="service-tags">
+        <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+      </view>
       <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
       <view class="service-meta">
         <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>

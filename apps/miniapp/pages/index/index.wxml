@@ -73,6 +73,29 @@
     </view>
   </view>
 
+  <view class="section">
+    <view class="section-header">
+      <text class="section-title">新上架服务</text>
+      <text class="section-more" catch:tap="goServices">查看全部</text>
+    </view>
+
+    <view class="loading" wx:if="{{loading.latest}}">加载中...</view>
+
+    <view class="service-list" wx:elif="{{latestServices.length > 0}}">
+      <view class="service-card" wx:for="{{latestServices}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
+        <view class="service-top">
+          <text class="service-system">{{item.system_label}}</text>
+          <text class="service-price">{{item.price}}元</text>
+        </view>
+        <text class="service-name">{{item.name}}</text>
+        <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
+        <view class="service-tags">
+          <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
   <!-- 最近交易 -->
   <view class="section">
     <view class="section-header">

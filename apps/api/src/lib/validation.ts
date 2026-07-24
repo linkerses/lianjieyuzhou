@@ -48,7 +48,9 @@ export const CreateServiceSchema = z.object({
   location: z.string().max(200).optional(),
 });
 
-export const UpdateServiceSchema = CreateServiceSchema.partial();
+export const UpdateServiceSchema = CreateServiceSchema.extend({
+  status: z.enum(['pending', 'active', 'paused', 'archived']).optional(),
+}).partial();
 
 // ── 交易 ──
 

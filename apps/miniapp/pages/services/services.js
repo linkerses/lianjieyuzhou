@@ -2,6 +2,24 @@
 
 const app = getApp();
 
+const SYSTEM_LABELS = {
+  health: '健康',
+  living: '生活',
+  connection: '连接',
+  growth: '成长',
+  wealth: '财富',
+  create: '创造',
+  explore: '探索',
+  spirit: '精神',
+  future: '未来',
+};
+
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
+
 Page({
   data: {
     services: [],
@@ -41,7 +59,7 @@ Page({
 
       const res = await app.request({ url: '/services', data: params });
       this.setData({
-        services: res.data || [],
+        services: (res.data || []).map(item => this.formatService(item)),
         loading: false,
       });
     } catch (err) {
@@ -62,5 +80,21 @@ Page({
   onTapService(e) {
     const { id } = e.currentTarget.dataset;
     wx.navigateTo({ url: `/pages/services/detail?id=${id}` });
+  },
+
+  formatService(item) {
+    const tags = [
+      SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      item.secondary_system ? SYSTEM_LABELS[item.secondary_system] || item.secondary_system : '',
+      DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      item.duration_minutes ? `${item.duration_minutes}分钟` : '',
+    ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 5);
+
+    return {
+      ...item,
+      system_label: SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      tags,
+    };
   },
 });

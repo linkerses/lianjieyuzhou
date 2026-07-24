@@ -2,6 +2,31 @@
 
 const app = getApp();
 
+const SYSTEM_LABELS = {
+  health: '健康',
+  living: '生活',
+  connection: '连接',
+  growth: '成长',
+  wealth: '财富',
+  create: '创造',
+  explore: '探索',
+  spirit: '精神',
+  future: '未来',
+};
+
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
+
+const SERVICE_STATUS_LABELS = {
+  pending: '待审核',
+  active: '已上架',
+  paused: '已暂停',
+  archived: '已归档',
+};
+
 Page({
   data: {
     loading: true,
@@ -39,7 +64,7 @@ Page({
     try {
       const [txRes, serviceRes] = await Promise.all([
         app.request({ url: '/transactions/mine', data: { role: 'seller' } }),
-        app.request({ url: '/services', data: { provider: app.globalData.cid } }).catch(() => ({ data: [] })),
+        app.request({ url: '/services', data: { provider: app.globalData.cid, status: 'all' } }).catch(() => ({ data: [] })),
       ]);
 
       const transactions = (txRes.data || []).map(item => ({
@@ -51,7 +76,7 @@ Page({
         created_text: this.formatTime(item.created_at),
         can_confirm: item.status === 'pending',
       }));
-      const services = serviceRes.data || [];
+      const services = (serviceRes.data || []).map(item => this.formatService(item));
       const pendingOrders = transactions.filter(item => item.status === 'pending');
       const confirmedOrders = transactions.filter(item => item.status === 'confirmed');
       const completedOrders = transactions.filter(item => item.status === 'completed' || item.status === 'rated');
@@ -95,6 +120,41 @@ Page({
 
   goEditService(e) {
     wx.navigateTo({ url: `/pages/seller/service-form?id=${e.currentTarget.dataset.id}` });
+  },
+
+  formatService(item) {
+    const tags = [
+      SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      item.secondary_system ? SYSTEM_LABELS[item.secondary_system] || item.secondary_system : '',
+      DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      item.duration_minutes ? `${item.duration_minutes}分钟` : '',
+    ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 5);
+
+    return {
+      ...item,
+      system_label: SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      status_label: SERVICE_STATUS_LABELS[item.status] || item.status || '已上架',
+      price_label: `${item.price || 0}元`,
+      can_activate: item.status !== 'active',
+      can_pause: item.status === 'active',
+      tags,
+    };
+  },
+
+  async updateServiceStatus(e) {
+    const { id, status } = e.currentTarget.dataset;
+    try {
+      await app.request({
+        url: `/services/${id}`,
+        method: 'PATCH',
+        data: { status },
+      });
+      wx.showToast({ title: status === 'active' ? '已上架' : '已暂停', icon: 'success' });
+      this.loadWorkbench();
+    } catch (err) {
+      wx.showToast({ title: err.error || '操作失败', icon: 'none' });
+    }
   },
 
   async confirmOrder(e) {

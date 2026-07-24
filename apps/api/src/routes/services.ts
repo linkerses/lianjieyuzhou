@@ -13,7 +13,7 @@ router.post('/', async (req: Request, res: Response) => {
     const body = CreateServiceSchema.parse(req.body);
     const { data, error } = await supabase
       .from('services')
-      .insert({ provider_cid: cid, ...body })
+      .insert({ provider_cid: cid, status: 'active', ...body })
       .select()
       .single();
 
@@ -27,12 +27,12 @@ router.post('/', async (req: Request, res: Response) => {
 // ── 服务列表（支持筛选） ──
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const { system, status, provider } = req.query;
+    const { system, status, provider, limit } = req.query;
 
     let query = supabase
       .from('services')
       .select(`
-        id, name, primary_system, secondary_system, price,
+        id, name, primary_system, secondary_system, suitable_stages, price,
         duration_minutes, delivery_method, trust_score,
         delivery_count, avg_rating, status, created_at,
         provider_cid,
@@ -42,13 +42,18 @@ router.get('/', async (req: Request, res: Response) => {
     if (system) {
       query = query.or(`primary_system.eq.${system},secondary_system.eq.${system}`);
     }
-    if (status) {
+    if (status && status !== 'all') {
       query = query.eq('status', status);
     } else {
       query = query.eq('status', 'active'); // 默认只看上架的
     }
     if (provider) {
       query = query.eq('provider_cid', provider);
+    }
+
+    const parsedLimit = Number(limit);
+    if (Number.isFinite(parsedLimit) && parsedLimit > 0) {
+      query = query.limit(Math.min(parsedLimit, 50));
     }
 
     const { data, error } = await query.order('created_at', { ascending: false });

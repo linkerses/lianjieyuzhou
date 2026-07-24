@@ -2,6 +2,24 @@
 
 const app = getApp();
 
+const SYSTEM_LABELS = {
+  health: '健康',
+  living: '生活',
+  connection: '连接',
+  growth: '成长',
+  wealth: '财富',
+  create: '创造',
+  explore: '探索',
+  spirit: '精神',
+  future: '未来',
+};
+
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
+
 Page({
   data: {
     userLoaded: false,
@@ -15,10 +33,12 @@ Page({
     // 首页三段式内容
     agentNote: null,             // Agent提醒卡片
     recommendations: [],         // 预演推荐列表
+    latestServices: [],
     recentTransactions: [],      // 最近交易
     loading: {
       agent: true,
       recommend: true,
+      latest: true,
       transactions: true,
     },
   },
@@ -31,6 +51,7 @@ Page({
     // 每次显示刷新推荐和交易（服务完成后回来看首页能看到更新）
     if (this.data.userLoaded) {
       this.loadRecommendations();
+      this.loadLatestServices();
       this.loadTransactions();
     }
   },
@@ -55,6 +76,7 @@ Page({
     await Promise.all([
       this.loadAgent(),
       this.loadRecommendations(),
+      this.loadLatestServices(),
       this.loadTransactions(),
     ]);
   },
@@ -143,6 +165,23 @@ Page({
     }
   },
 
+  async loadLatestServices() {
+    try {
+      const res = await app.request({
+        url: '/services',
+        data: { limit: 3 },
+      });
+
+      this.setData({
+        latestServices: (res.data || []).map(item => this.formatService(item)),
+        'loading.latest': false,
+      });
+    } catch (err) {
+      console.error('[loadLatestServices error]', err);
+      this.setData({ 'loading.latest': false });
+    }
+  },
+
   // 加载最近交易
   async loadTransactions() {
     try {
@@ -215,5 +254,21 @@ Page({
       explore: '🌍', spirit: '🧘', future: '🔮',
     };
     return map[system] || '📌';
+  },
+
+  formatService(item) {
+    const tags = [
+      SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      item.secondary_system ? SYSTEM_LABELS[item.secondary_system] || item.secondary_system : '',
+      DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      item.duration_minutes ? `${item.duration_minutes}分钟` : '',
+    ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 5);
+
+    return {
+      ...item,
+      system_label: SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      tags,
+    };
   },
 });

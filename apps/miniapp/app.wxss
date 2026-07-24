@@ -450,6 +450,9 @@ page {
 .tx-completed { background: #FFF5E6; color: #B8860B; }
 .tx-rated { background: #E8EDE6; color: #4A7C59; }
 .tx-cancelled { background: #F5F5F0; color: #A8B5A9; }
+.tx-active { background: #E8EDE6; color: #4A7C59; }
+.tx-paused { background: #FFF5E6; color: #B8860B; }
+.tx-archived { background: #F5F5F0; color: #A8B5A9; }
 
 /* ── 服务列表 ── */
 
@@ -496,6 +499,27 @@ page {
 
 .service-name { font-size: 32rpx; font-weight: 600; display: block; margin-bottom: 6rpx; }
 .service-provider { font-size: 26rpx; color: #6B7D6E; display: block; margin-bottom: 12rpx; }
+
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin: 10rpx 0 12rpx;
+}
+
+.service-tag {
+  display: inline-block;
+  max-width: 240rpx;
+  padding: 5rpx 14rpx;
+  background: #F5F5F0;
+  color: #6B7D6E;
+  border-radius: 18rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 .service-meta {
   display: flex;
@@ -795,6 +819,14 @@ page {
 
 .service-actions {
   margin-top: 18rpx;
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.service-actions .btn-inline {
+  flex: 1;
+  min-width: 160rpx;
 }
 
 .seller-section-title {

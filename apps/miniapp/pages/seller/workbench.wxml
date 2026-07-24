@@ -82,18 +82,24 @@
     <view class="service-card" wx:for="{{services}}" wx:key="id">
       <view catch:tap="goServiceDetail" data-id="{{item.id}}">
         <view class="service-top">
-          <text class="service-system">{{item.primary_system}}</text>
+          <text class="service-system">{{item.system_label}}</text>
+          <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
           <text class="service-price">{{item.price}}元</text>
         </view>
         <text class="service-name">{{item.name}}</text>
+        <view class="service-tags">
+          <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+        </view>
         <view class="service-meta">
           <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
-          <text>{{item.delivery_method}}</text>
+          <text>{{item.delivery_label}}</text>
           <text>交付 {{item.delivery_count || 0}}</text>
         </view>
       </view>
       <view class="service-actions">
         <button class="btn-inline btn-muted" data-id="{{item.id}}" catch:tap="goEditService">编辑定价</button>
+        <button class="btn-inline" wx:if="{{item.can_activate}}" data-id="{{item.id}}" data-status="active" catch:tap="updateServiceStatus">上架</button>
+        <button class="btn-inline btn-muted" wx:if="{{item.can_pause}}" data-id="{{item.id}}" data-status="paused" catch:tap="updateServiceStatus">暂停</button>
       </view>
     </view>
     <view class="empty" wx:if="{{services.length === 0}}">
