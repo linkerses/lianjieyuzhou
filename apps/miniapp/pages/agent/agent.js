@@ -36,11 +36,18 @@ Page({
     editingValueProfile: false,
     skills: [],
     trustInfo: null,
+    trustNetwork: {
+      outgoing: [],
+      incoming: [],
+      traded: [],
+      connections: [],
+    },
     matchReports: [],
     loading: {
       agent: true,
       skills: true,
       trust: true,
+      network: true,
       matches: true,
     },
     editingTags: false,
@@ -61,6 +68,7 @@ Page({
   onShow() {
     if (app.globalData.cid && this.data.agent) {
       this.loadTrustInfo();
+      this.loadTrustNetwork();
       this.loadMatchReports();
     }
   },
@@ -74,6 +82,7 @@ Page({
           'loading.agent': false,
           'loading.skills': false,
           'loading.trust': false,
+          'loading.network': false,
           'loading.matches': false,
         });
         return;
@@ -83,6 +92,7 @@ Page({
       this.loadAgent(),
       this.loadSkills(),
       this.loadTrustInfo(),
+      this.loadTrustNetwork(),
       this.loadMatchReports(),
     ]);
   },
@@ -142,6 +152,25 @@ Page({
     }
   },
 
+  async loadTrustNetwork() {
+    try {
+      const res = await app.request({ url: '/trust/network/mine' });
+      const data = res.data || {};
+      this.setData({
+        trustNetwork: {
+          outgoing: data.outgoing || [],
+          incoming: data.incoming || [],
+          traded: data.traded || [],
+          connections: data.connections || [],
+        },
+        'loading.network': false,
+      });
+    } catch (err) {
+      console.error('[loadTrustNetwork error]', err);
+      this.setData({ 'loading.network': false });
+    }
+  },
+
   async loadMatchReports() {
     try {
       const res = await app.request({ url: '/matches/mine' });
@@ -161,6 +190,7 @@ Page({
       'loading.agent': true,
       'loading.skills': true,
       'loading.trust': true,
+      'loading.network': true,
       'loading.matches': true,
     });
     this.loadAll();
@@ -386,6 +416,14 @@ Page({
 
   goTrustNetwork() {
     this.setData({ activeTab: 'trust' });
+  },
+
+  viewConnectionAgent(e) {
+    wx.navigateTo({ url: `/pages/agents/public?cid=${e.currentTarget.dataset.cid}` });
+  },
+
+  matchConnectionAgent(e) {
+    wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
   },
 
   onMatchCidInput(e) {

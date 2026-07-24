@@ -1175,6 +1175,73 @@ page {
   font-size: 22rpx;
 }
 
+.connection-section {
+  margin-top: 26rpx;
+}
+
+.connection-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14rpx;
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.connection-item {
+  padding: 20rpx 0;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.connection-main {
+  display: flex;
+  align-items: center;
+}
+
+.connection-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.connection-top {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.connection-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-cid {
+  display: block;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  color: #A8B5A9;
+}
+
+.connection-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12rpx;
+  margin-top: 14rpx;
+}
+
+.connection-empty {
+  padding: 20rpx 0;
+  font-size: 24rpx;
+  color: #A8B5A9;
+  border-top: 1rpx solid #F0F0EC;
+}
+
 .sort-bar {
   margin-top: -8rpx;
   margin-bottom: 22rpx;

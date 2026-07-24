@@ -102,7 +102,64 @@ router.get('/my-score', async (req: Request, res: Response) => {
   }
 });
 
-// ── 查另一个联结者的信任评分 ──
+// ── 获取我的信任网络 ──
+router.get('/network/mine', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const [myAuthsResult, authToMeResult, myTransactionsResult] = await Promise.all([
+      supabase
+        .from('auth_records')
+        .select('grantee_cid, auth_scope, status, created_at')
+        .eq('granter_cid', cid)
+        .eq('status', 'active'),
+      supabase
+        .from('auth_records')
+        .select('granter_cid, auth_scope, status, created_at')
+        .eq('grantee_cid', cid)
+        .eq('status', 'active'),
+      supabase
+        .from('transactions')
+        .select('seller_cid, actual_score')
+        .eq('buyer_cid', cid)
+        .eq('status', 'rated')
+        .limit(20),
+    ]);
+
+    const myAuths = myAuthsResult.data || [];
+    const authToMe = authToMeResult.data || [];
+    const myTransactions = myTransactionsResult.data || [];
+    const outgoingCids = myAuths.map(a => a.grantee_cid);
+    const incomingCids = authToMe.map(a => a.granter_cid);
+    const tradedCids = myTransactions.map(t => t.seller_cid);
+    const allConnectedCids = [...new Set([...outgoingCids, ...incomingCids, ...tradedCids])];
+
+    const { data: connectedAgents } = allConnectedCids.length > 0
+      ? await supabase
+          .from('agents')
+          .select('cid, nickname, trust_score, life_stage_tags, agent_config')
+          .in('cid', allConnectedCids)
+      : { data: [] };
+
+    const agentMap = new Map((connectedAgents || []).map((agent: any) => [agent.cid, formatConnectionAgent(agent)]));
+
+    res.json({
+      data: {
+        direct_auth_count: myAuths.length,
+        auth_to_me_count: authToMe.length,
+        traded_count: tradedCids.length,
+        outgoing: outgoingCids.map(targetCid => agentMap.get(targetCid)).filter(Boolean),
+        incoming: incomingCids.map(sourceCid => agentMap.get(sourceCid)).filter(Boolean),
+        traded: tradedCids.map(sellerCid => agentMap.get(sellerCid)).filter(Boolean),
+        connections: allConnectedCids.map(connectedCid => agentMap.get(connectedCid)).filter(Boolean),
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取信任网络失败' });
+  }
+});
+
 router.get('/:cid', async (req: Request, res: Response) => {
   try {
     const { cid } = req.params;
@@ -133,60 +190,15 @@ router.get('/:cid', async (req: Request, res: Response) => {
   }
 });
 
-// ── 获取信任网络 ──
-router.get('/network/mine', async (req: Request, res: Response) => {
-  try {
-    const cid = getCurrentCid(req);
-    if (!cid) return res.status(401).json({ error: '未登录' });
-
-    // 获取直接授权连接（我授权的）
-    const { data: myAuths } = await supabase
-      .from('auth_records')
-      .select('grantee_cid, auth_scope, status, created_at')
-      .eq('granter_cid', cid)
-      .eq('status', 'active');
-
-    // 获取授权给我的
-    const { data: authToMe } = await supabase
-      .from('auth_records')
-      .select('granter_cid, auth_scope, status, created_at')
-      .eq('grantee_cid', cid)
-      .eq('status', 'active');
-
-    // 获取我完成的交易方
-    const { data: myTransactions } = await supabase
-      .from('transactions')
-      .select('seller_cid, actual_score')
-      .eq('buyer_cid', cid)
-      .eq('status', 'rated')
-      .limit(20);
-
-    const directConnections = (myAuths || []).map(a => a.grantee_cid);
-    const connectedToMe = (authToMe || []).map(a => a.granter_cid);
-    const tradedWith = (myTransactions || []).map(t => t.seller_cid);
-
-    // 合并所有连接CID
-    const allConnectedCids = [...new Set([...directConnections, ...connectedToMe, ...tradedWith])];
-
-    // 获取连接详情
-    const { data: connectedAgents } = allConnectedCids.length > 0
-      ? await supabase
-          .from('agents')
-          .select('cid, nickname, trust_score')
-          .in('cid', allConnectedCids)
-      : { data: [] };
-
-    res.json({
-      data: {
-        direct_auth_count: myAuths?.length || 0,
-        auth_to_me_count: authToMe?.length || 0,
-        traded_count: tradedWith.length,
-        connections: connectedAgents || [],
-      },
-    });
-  } catch (err: any) {
-    res.status(400).json({ error: err.message || '获取信任网络失败' });
-  }
-});
+function formatConnectionAgent(agent: any) {
+  const config = agent.agent_config || {};
+  return {
+    cid: agent.cid,
+    nickname: agent.nickname,
+    trust_score: agent.trust_score || 0,
+    life_stage_tags: agent.life_stage_tags || [],
+    avatar_url: config.avatar_url || '',
+  };
+}
 
 export default router;

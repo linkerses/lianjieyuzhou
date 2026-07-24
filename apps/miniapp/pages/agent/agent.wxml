@@ -203,13 +203,100 @@
       </view>
     </view>
 
-    <!-- 信任网络入口 -->
-    <view class="card" catch:tap="goTrustNetwork">
+    <view class="card">
       <view class="card-header">
         <text class="card-title">信任网络</text>
-        <text class="card-action">查看 →</text>
+        <text class="card-action">{{trustNetwork.connections.length || 0}}人</text>
       </view>
-      <text class="card-desc">查看你的授权连接和信任关系网</text>
+      <text class="card-desc">查看你主动连接、对方连接和交易过的 Agent。</text>
+
+      <view class="loading" wx:if="{{loading.network}}">加载中...</view>
+
+      <view wx:else>
+        <view class="connection-section">
+          <view class="connection-section-title">
+            <text>我连接的人</text>
+            <text>{{trustNetwork.outgoing.length || 0}}</text>
+          </view>
+          <view class="connection-item" wx:for="{{trustNetwork.outgoing}}" wx:key="cid">
+            <view class="connection-main">
+              <image class="agent-basic-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"></image>
+              <view class="agent-basic-avatar avatar-fallback" wx:else>{{item.nickname ? item.nickname[0] : '?'}}</view>
+              <view class="connection-info">
+                <view class="connection-top">
+                  <text class="connection-name">{{item.nickname}}</text>
+                  <text class="trust-badge-small">{{item.trust_score || 0}}</text>
+                </view>
+                <text class="connection-cid">{{item.cid}}</text>
+                <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
+                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="connection-actions">
+              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
+              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+            </view>
+          </view>
+          <view class="connection-empty" wx:if="{{trustNetwork.outgoing.length === 0}}">还没有主动连接的 Agent。</view>
+        </view>
+
+        <view class="connection-section">
+          <view class="connection-section-title">
+            <text>连接我的人</text>
+            <text>{{trustNetwork.incoming.length || 0}}</text>
+          </view>
+          <view class="connection-item" wx:for="{{trustNetwork.incoming}}" wx:key="cid">
+            <view class="connection-main">
+              <image class="agent-basic-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"></image>
+              <view class="agent-basic-avatar avatar-fallback" wx:else>{{item.nickname ? item.nickname[0] : '?'}}</view>
+              <view class="connection-info">
+                <view class="connection-top">
+                  <text class="connection-name">{{item.nickname}}</text>
+                  <text class="trust-badge-small">{{item.trust_score || 0}}</text>
+                </view>
+                <text class="connection-cid">{{item.cid}}</text>
+                <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
+                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="connection-actions">
+              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
+              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+            </view>
+          </view>
+          <view class="connection-empty" wx:if="{{trustNetwork.incoming.length === 0}}">还没有人主动连接你。</view>
+        </view>
+
+        <view class="connection-section">
+          <view class="connection-section-title">
+            <text>交易过的人</text>
+            <text>{{trustNetwork.traded.length || 0}}</text>
+          </view>
+          <view class="connection-item" wx:for="{{trustNetwork.traded}}" wx:key="cid">
+            <view class="connection-main">
+              <image class="agent-basic-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"></image>
+              <view class="agent-basic-avatar avatar-fallback" wx:else>{{item.nickname ? item.nickname[0] : '?'}}</view>
+              <view class="connection-info">
+                <view class="connection-top">
+                  <text class="connection-name">{{item.nickname}}</text>
+                  <text class="trust-badge-small">{{item.trust_score || 0}}</text>
+                </view>
+                <text class="connection-cid">{{item.cid}}</text>
+                <view class="service-tags" wx:if="{{item.life_stage_tags.length > 0}}">
+                  <text class="service-tag" wx:for="{{item.life_stage_tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+                </view>
+              </view>
+            </view>
+            <view class="connection-actions">
+              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
+              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+            </view>
+          </view>
+          <view class="connection-empty" wx:if="{{trustNetwork.traded.length === 0}}">还没有已完成交易的 Agent。</view>
+        </view>
+      </view>
     </view>
   </view>
 
