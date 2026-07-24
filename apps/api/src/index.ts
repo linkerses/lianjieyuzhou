@@ -10,6 +10,7 @@ import skillsRouter from './routes/skills';
 import trustRouter from './routes/trust';
 import matchesRouter from './routes/matches';
 import adminRouter from './routes/admin';
+import { verifyToken } from './lib/auth-token';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -22,14 +23,9 @@ app.use(express.json());
 app.use('/api', (req, _res, next) => {
   const authHeader = req.headers['authorization'];
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    try {
-      const token = authHeader.slice(7);
-      const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf-8'));
-      if (decoded.cid) {
-        req.headers['x-connector-cid'] = decoded.cid;
-      }
-    } catch {
-      // Token解析失败，继续（让各路由自己处理未登录）
+    const payload = verifyToken(authHeader.slice(7));
+    if (payload) {
+      req.headers['x-connector-cid'] = payload.cid;
     }
   }
   next();

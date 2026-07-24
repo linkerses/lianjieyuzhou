@@ -70,9 +70,15 @@ SUPABASE_URL=https://hxqrocgtmeydppsdquiz.supabase.co
 SUPABASE_SERVICE_KEY=<set-production-service-role-key>
 WECHAT_APP_ID=dev_placeholder
 WECHAT_APP_SECRET=dev_placeholder
+AUTH_TOKEN_SECRET=<set-long-random-token-secret>
+ENABLE_DEV_LOGIN=true
 PORT=3001
 NODE_ENV=production
 ```
+
+`AUTH_TOKEN_SECRET` signs API login tokens. Use a long random value and keep it stable across deployments.
+
+`ENABLE_DEV_LOGIN=true` keeps `dev_mode` and `dev_seller` usable for internal testing. Before a public launch, set it to `false` and verify real WeChat login with valid `WECHAT_APP_ID` and `WECHAT_APP_SECRET`.
 
 ## Start API With PM2
 

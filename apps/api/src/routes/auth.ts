@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../lib/supabase';
+import { generateToken, isDevLoginEnabled } from '../lib/auth-token';
 
 const router = Router();
 
@@ -21,6 +22,9 @@ router.post('/wechat-login', async (req: Request, res: Response) => {
 
     // V0.2 开发模式：使用 dev_mode 跳过微信登录
     if (code === 'dev_mode' || code === 'dev_seller') {
+      if (!isDevLoginEnabled()) {
+        return res.status(403).json({ error: '开发登录已关闭' });
+      }
       return await handleDevLogin(res, code);
     }
 
@@ -148,13 +152,4 @@ async function handleDevLogin(res: Response, code = 'dev_mode') {
     },
   });
 }
-
-// ── Token 生成（V0.2 简易版） ──
-function generateToken(cid: string): string {
-  // V0.2: 简单 Base64 编码，不引入 JWT 库
-  // V1.0: 替换为正式 JWT
-  const payload = JSON.stringify({ cid, ts: Date.now() });
-  return Buffer.from(payload).toString('base64');
-}
-
 export default router;
