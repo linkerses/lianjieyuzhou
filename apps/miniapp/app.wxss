@@ -582,6 +582,18 @@ page {
   box-sizing: border-box;
 }
 
+.form-textarea {
+  width: 100%;
+  min-height: 160rpx;
+  background: #F5F5F0;
+  border-radius: 12rpx;
+  padding: 18rpx 20rpx;
+  font-size: 28rpx;
+  color: #2D3E2F;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
 .picker {
   width: 100%;
   height: 72rpx;
@@ -751,6 +763,37 @@ page {
 .tag-display {
   display: flex;
   flex-wrap: wrap;
+}
+
+.profile-section {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #F0F0EC;
+}
+
+.profile-section:last-child {
+  border-bottom: none;
+}
+
+.profile-label {
+  display: block;
+  font-size: 26rpx;
+  color: #6B7D6E;
+  margin-bottom: 8rpx;
+}
+
+.profile-text {
+  display: block;
+  font-size: 28rpx;
+  color: #2D3E2F;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.profile-empty {
+  display: block;
+  font-size: 26rpx;
+  color: #A8B5A9;
+  line-height: 1.6;
 }
 
 .tag-grid {

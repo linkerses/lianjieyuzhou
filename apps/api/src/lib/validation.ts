@@ -14,6 +14,7 @@ export const UpdateAgentSchema = z.object({
   life_stage_tags: z.array(z.string()).max(3).optional(),
   trust_threshold: z.enum(['conservative', 'medium', 'open']).optional(),
   energy_status: z.enum(['输出期', '输入期', '调整期', 'unknown']).optional(),
+  agent_config: z.record(z.any()).optional(),
 });
 
 // ── Agent Profile ──

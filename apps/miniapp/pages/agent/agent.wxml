@@ -8,8 +8,13 @@
     <view class="tab {{activeTab === 'trust' ? 'active' : ''}}" data-tab="trust" catch:tap="switchTab">信任</view>
   </view>
 
+  <view class="empty" wx:if="{{errorMessage}}">
+    <text>{{errorMessage}}</text>
+    <button class="btn-primary" catch:tap="retryLoad">重试</button>
+  </view>
+
   <!-- ═══════════ 档案Tab ═══════════ -->
-  <view wx:if="{{activeTab === 'profile'}}">
+  <view wx:if="{{!errorMessage && activeTab === 'profile'}}">
 
     <view class="loading" wx:if="{{loading.agent}}">加载中...</view>
 
@@ -29,6 +34,65 @@
       <view class="info-row">
         <text class="info-label">能量状态</text>
         <text class="info-value">{{agent.energy_status || '待设置'}}</text>
+      </view>
+    </view>
+
+    <!-- 核心价值档案 -->
+    <view class="card" wx:if="{{agent}}">
+      <view class="card-header">
+        <text class="card-title">核心价值档案</text>
+        <text class="card-action" wx:if="{{!editingValueProfile}}" catch:tap="startEditValueProfile">编辑</text>
+      </view>
+
+      <text class="card-desc">用 Agent 的方式描述你能为他人提供的价值、经验与当下需求。</text>
+
+      <view wx:if="{{!editingValueProfile}}">
+        <view class="profile-section">
+          <text class="profile-label">核心价值</text>
+          <text class="profile-text" wx:if="{{valueProfile.core_value}}">{{valueProfile.core_value}}</text>
+          <text class="profile-empty" wx:else>一句话说明你最擅长为谁解决什么问题。</text>
+        </view>
+
+        <view class="profile-section">
+          <text class="profile-label">服务能力</text>
+          <text class="profile-text" wx:if="{{valueProfile.service_capabilities}}">{{valueProfile.service_capabilities}}</text>
+          <text class="profile-empty" wx:else>列出你可交付的能力、服务或资源。</text>
+        </view>
+
+        <view class="profile-section">
+          <text class="profile-label">项目经历</text>
+          <text class="profile-text" wx:if="{{valueProfile.project_experience}}">{{valueProfile.project_experience}}</text>
+          <text class="profile-empty" wx:else>记录能证明你能力的项目、案例或成果。</text>
+        </view>
+
+        <view class="profile-section">
+          <text class="profile-label">愿景需求</text>
+          <text class="profile-text" wx:if="{{valueProfile.vision_needs}}">{{valueProfile.vision_needs}}</text>
+          <text class="profile-empty" wx:else>写下你正在寻找的合作、资源、客户或成长方向。</text>
+        </view>
+      </view>
+
+      <view wx:else>
+        <view class="form-group">
+          <text class="form-label">核心价值</text>
+          <textarea class="form-textarea" maxlength="500" data-field="core_value" bindinput="onValueInput" value="{{valueForm.core_value}}" placeholder="例：我帮助本地生活服务者把经验沉淀成可交易、可信任的服务产品。" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">服务能力</text>
+          <textarea class="form-textarea" maxlength="800" data-field="service_capabilities" bindinput="onValueInput" value="{{valueForm.service_capabilities}}" placeholder="例：业务梳理、服务产品设计、AI工具搭建、私域转化、项目陪跑。" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">项目经历</text>
+          <textarea class="form-textarea" maxlength="1000" data-field="project_experience" bindinput="onValueInput" value="{{valueForm.project_experience}}" placeholder="例：做过哪些项目、服务过哪些客户、形成过哪些成果。" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">愿景需求</text>
+          <textarea class="form-textarea" maxlength="800" data-field="vision_needs" bindinput="onValueInput" value="{{valueForm.vision_needs}}" placeholder="例：正在寻找服务方、合作伙伴、种子用户、场地资源或资金支持。" />
+        </view>
+        <view class="editor-actions">
+          <button class="btn-cancel" catch:tap="cancelEditValueProfile">取消</button>
+          <button class="btn-save" catch:tap="saveValueProfile">保存档案</button>
+        </view>
       </view>
     </view>
 
@@ -64,7 +128,7 @@
   </view>
 
   <!-- ═══════════ 技能Tab ═══════════ -->
-  <view wx:elif="{{activeTab === 'skills'}}">
+  <view wx:elif="{{!errorMessage && activeTab === 'skills'}}">
 
     <view class="loading" wx:if="{{loading.skills}}">加载中...</view>
 
@@ -91,7 +155,7 @@
   </view>
 
   <!-- ═══════════ 信任Tab ═══════════ -->
-  <view wx:elif="{{activeTab === 'trust'}}">
+  <view wx:elif="{{!errorMessage && activeTab === 'trust'}}">
 
     <view class="loading" wx:if="{{loading.trust}}">加载中...</view>
 

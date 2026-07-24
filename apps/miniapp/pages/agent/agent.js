@@ -16,6 +16,19 @@ const SYSTEM_OPTIONS = [
 Page({
   data: {
     agent: null,
+    valueProfile: {
+      core_value: '',
+      service_capabilities: '',
+      project_experience: '',
+      vision_needs: '',
+    },
+    valueForm: {
+      core_value: '',
+      service_capabilities: '',
+      project_experience: '',
+      vision_needs: '',
+    },
+    editingValueProfile: false,
     skills: [],
     trustInfo: null,
     loading: {
@@ -27,6 +40,7 @@ Page({
     tempTags: [],
     systemOptions: SYSTEM_OPTIONS,
     activeTab: 'profile', // profile / skills / trust
+    errorMessage: '',
   },
 
   onLoad(options = {}) {
@@ -44,7 +58,16 @@ Page({
 
   async loadAll() {
     if (!app.globalData.cid) {
-      await app.login(true);
+      const loginRes = await app.login(true);
+      if (!loginRes.success) {
+        this.setData({
+          errorMessage: loginRes.error || '登录失败，请检查网络配置',
+          'loading.agent': false,
+          'loading.skills': false,
+          'loading.trust': false,
+        });
+        return;
+      }
     }
     await Promise.all([
       this.loadAgent(),
@@ -57,8 +80,11 @@ Page({
     try {
       const res = await app.request({ url: '/agents/me' });
       if (res.data) {
+        const valueProfile = this.normalizeValueProfile(res.data.agent_config);
         this.setData({
           agent: res.data,
+          valueProfile,
+          valueForm: { ...valueProfile },
           tempTags: res.data.life_stage_tags || [],
           systemOptions: this.markSelectedSystems(res.data.life_stage_tags || []),
           'loading.agent': false,
@@ -66,7 +92,10 @@ Page({
       }
     } catch (err) {
       console.error('[loadAgent error]', err);
-      this.setData({ 'loading.agent': false });
+      this.setData({
+        errorMessage: err.message || err.errMsg || err.error || 'Agent 数据加载失败',
+        'loading.agent': false,
+      });
     }
   },
 
@@ -97,6 +126,72 @@ Page({
     } catch (err) {
       console.error('[loadTrustInfo error]', err);
       this.setData({ 'loading.trust': false });
+    }
+  },
+
+  retryLoad() {
+    this.setData({
+      errorMessage: '',
+      'loading.agent': true,
+      'loading.skills': true,
+      'loading.trust': true,
+    });
+    this.loadAll();
+  },
+
+  startEditValueProfile() {
+    this.setData({
+      editingValueProfile: true,
+      valueForm: { ...this.data.valueProfile },
+    });
+  },
+
+  cancelEditValueProfile() {
+    this.setData({
+      editingValueProfile: false,
+      valueForm: { ...this.data.valueProfile },
+    });
+  },
+
+  onValueInput(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({
+      [`valueForm.${field}`]: e.detail.value,
+    });
+  },
+
+  async saveValueProfile() {
+    const currentConfig = this.data.agent && this.data.agent.agent_config
+      ? this.data.agent.agent_config
+      : {};
+    const valueProfile = this.normalizeValueProfile({
+      value_profile: this.data.valueForm,
+    });
+
+    try {
+      const res = await app.request({
+        url: '/agents/me',
+        method: 'PATCH',
+        data: {
+          agent_config: {
+            ...currentConfig,
+            value_profile: valueProfile,
+          },
+        },
+      });
+
+      if (res.data) {
+        this.setData({
+          agent: res.data,
+          valueProfile,
+          valueForm: { ...valueProfile },
+          editingValueProfile: false,
+        });
+        wx.showToast({ title: '档案已更新', icon: 'success' });
+      }
+    } catch (err) {
+      console.error('[saveValueProfile error]', err);
+      wx.showToast({ title: '保存失败', icon: 'none' });
     }
   },
 
@@ -213,5 +308,15 @@ Page({
       ...item,
       selected: tags.includes(item.value),
     }));
+  },
+
+  normalizeValueProfile(config) {
+    const profile = config && config.value_profile ? config.value_profile : {};
+    return {
+      core_value: profile.core_value || '',
+      service_capabilities: profile.service_capabilities || '',
+      project_experience: profile.project_experience || '',
+      vision_needs: profile.vision_needs || '',
+    };
   },
 });
