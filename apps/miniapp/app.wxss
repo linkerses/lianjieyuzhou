@@ -886,6 +886,36 @@ page {
   flex-shrink: 0;
 }
 
+.todo-empty {
+  padding-top: 18rpx;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.todo-empty-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+}
+
+.todo-empty-desc {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 24rpx;
+  color: #6B7D6E;
+  line-height: 1.6;
+}
+
+.todo-empty-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.todo-empty-actions .btn-inline {
+  flex: 1;
+}
+
 .trust-summary {
   background: #FFFFFF;
   border-radius: 16rpx;
