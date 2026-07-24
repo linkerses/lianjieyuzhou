@@ -26,16 +26,21 @@ Page({
   },
 
   initDates() {
-    // 生成未来7天的日期选项
+    // 生成未来7天的日期选项，默认从明天开始，避免误选已过时间。
     const dates = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date();
-      d.setDate(d.getDate() + i);
+      d.setDate(d.getDate() + i + 1);
       const label = `${d.getMonth() + 1}月${d.getDate()}日 ${['周日', '周一', '周二', '周三', '周四', '周五', '周六'][d.getDay()]}`;
-      const value = d.toISOString().split('T')[0];
+      const value = this.formatDateValue(d);
       dates.push({ label, value });
     }
-    this.setData({ dateOptions: dates });
+    this.setData({
+      dateOptions: dates,
+      scheduledDate: dates[0] ? dates[0].value : '',
+      selectedDateLabel: dates[0] ? dates[0].label : '',
+      scheduledTime: '10:00',
+    });
   },
 
   async loadService(id) {
@@ -67,6 +72,11 @@ Page({
     this.setData({ note: e.detail.value });
   },
 
+  formatDateValue(date) {
+    const pad = value => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  },
+
   async submitBooking() {
     if (!this.data.scheduledDate || !this.data.scheduledTime) {
       wx.showToast({ title: '请选择预约时间', icon: 'none' });
@@ -76,6 +86,12 @@ Page({
     this.setData({ submitting: true });
 
     try {
+      if (this.data.service && this.data.service.provider_cid === app.globalData.cid) {
+        wx.showToast({ title: '不能预约自己的服务', icon: 'none' });
+        this.setData({ submitting: false });
+        return;
+      }
+
       const scheduledAt = `${this.data.scheduledDate}T${this.data.scheduledTime}:00+08:00`;
 
       const res = await app.request({

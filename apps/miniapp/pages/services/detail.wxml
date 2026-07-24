@@ -5,37 +5,6 @@
 
   <view wx:elif="{{service}}">
 
-    <!-- 预演评分卡 -->
-    <view class="pre-score-card" wx:if="{{preEnact}}" style="border-left-color: {{preScoreColor}}">
-      <view class="pre-score-header">
-        <text class="pre-score-label">预演匹配度</text>
-        <text class="pre-score-value" style="color: {{preScoreColor}}">{{preEnact.total_score}}<text class="pre-score-unit">/100</text></text>
-      </view>
-      <text class="pre-score-summary">{{preEnact.summary}}</text>
-      <view class="pre-dimensions">
-        <view class="dim-item">
-          <text class="dim-label">系统共振</text>
-          <text class="dim-score">{{dimensionScores.resonance}}</text>
-        </view>
-        <view class="dim-item">
-          <text class="dim-label">阶段适配</text>
-          <text class="dim-score">{{dimensionScores.stage_fit}}</text>
-        </view>
-        <view class="dim-item">
-          <text class="dim-label">历史一致</text>
-          <text class="dim-score">{{dimensionScores.history}}</text>
-        </view>
-        <view class="dim-item">
-          <text class="dim-label">信任可信</text>
-          <text class="dim-score">{{dimensionScores.trust}}</text>
-        </view>
-      </view>
-      <view class="pre-risks" wx:if="{{preEnact.risks && preEnact.risks.length > 0}}">
-        <text class="risk-title">请注意</text>
-        <text class="risk-item" wx:for="{{preEnact.risks}}" wx:for-item="r" wx:key="r">⚠️ {{r}}</text>
-      </view>
-    </view>
-
     <!-- 服务信息卡 -->
     <view class="card">
       <view class="card-header">
@@ -71,6 +40,57 @@
         <view class="service-desc-section" wx:for="{{descriptionSections}}" wx:key="label">
           <text class="desc-label">{{item.label}}</text>
           <text class="desc-text">{{item.text}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 预演评分卡 -->
+    <view class="pre-score-card" wx:if="{{preEnact}}" style="border-left-color: {{preScoreColor}}">
+      <view class="pre-score-header">
+        <text class="pre-score-label">预演匹配度</text>
+        <text class="pre-score-value" style="color: {{preScoreColor}}">{{preEnact.total_score}}<text class="pre-score-unit">/100</text></text>
+      </view>
+      <text class="pre-score-summary">{{preEnact.summary}}</text>
+      <view class="pre-dimensions">
+        <view class="dim-item">
+          <text class="dim-label">系统共振</text>
+          <text class="dim-score">{{dimensionScores.resonance}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">阶段适配</text>
+          <text class="dim-score">{{dimensionScores.stage_fit}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">历史一致</text>
+          <text class="dim-score">{{dimensionScores.history}}</text>
+        </view>
+        <view class="dim-item">
+          <text class="dim-label">信任可信</text>
+          <text class="dim-score">{{dimensionScores.trust}}</text>
+        </view>
+      </view>
+      <view class="pre-risks" wx:if="{{preEnact.risks && preEnact.risks.length > 0}}">
+        <text class="risk-title">请注意</text>
+        <text class="risk-item" wx:for="{{preEnact.risks}}" wx:for-item="r" wx:key="r">⚠️ {{r}}</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">预约前确认</text>
+      </view>
+      <view class="booking-check-list">
+        <view class="booking-check-item">
+          <text class="action-dot"></text>
+          <text class="action-text">先看“适合谁 / 不适合谁”，确认这个服务确实匹配你的问题。</text>
+        </view>
+        <view class="booking-check-item">
+          <text class="action-dot"></text>
+          <text class="action-text">如果你不确定，可以先查看服务方档案或生成匹配分析。</text>
+        </view>
+        <view class="booking-check-item">
+          <text class="action-dot"></text>
+          <text class="action-text">预约备注里写清楚目标、背景和希望解决的问题，服务方更容易判断。</text>
         </view>
       </view>
     </view>

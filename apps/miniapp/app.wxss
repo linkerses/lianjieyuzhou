@@ -959,6 +959,59 @@ page {
 .bs-provider { font-size: 26rpx; color: #6B7D6E; display: block; margin: 8rpx 0; }
 .bs-price { font-size: 32rpx; color: #B8860B; font-weight: 700; display: block; }
 
+.booking-flow-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 26rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.booking-flow-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #2D3E2F;
+  margin-bottom: 18rpx;
+}
+
+.booking-flow-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  padding: 12rpx 0;
+}
+
+.booking-flow-index {
+  width: 36rpx;
+  height: 36rpx;
+  line-height: 36rpx;
+  border-radius: 50%;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  font-size: 22rpx;
+  font-weight: 700;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.booking-flow-text {
+  flex: 1;
+  font-size: 25rpx;
+  color: #6B7D6E;
+  line-height: 1.6;
+}
+
+.booking-check-list {
+  padding-top: 4rpx;
+}
+
+.booking-check-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 10rpx 0;
+}
+
 /* ── 表单 ── */
 
 .form-group {

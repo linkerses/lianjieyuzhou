@@ -12,6 +12,22 @@
       <text class="bs-price">{{service.price}}元</text>
     </view>
 
+    <view class="booking-flow-card">
+      <text class="booking-flow-title">预约后会发生什么？</text>
+      <view class="booking-flow-step">
+        <text class="booking-flow-index">1</text>
+        <text class="booking-flow-text">提交预约后，服务方会看到你的时间和备注。</text>
+      </view>
+      <view class="booking-flow-step">
+        <text class="booking-flow-index">2</text>
+        <text class="booking-flow-text">服务方确认后，订单进入服务中。</text>
+      </view>
+      <view class="booking-flow-step">
+        <text class="booking-flow-index">3</text>
+        <text class="booking-flow-text">完成后你确认交付并评分，形成信任记录。</text>
+      </view>
+    </view>
+
     <!-- 预约表单 -->
     <view class="card">
       <view class="card-header">
@@ -33,8 +49,9 @@
       </view>
 
       <view class="form-group">
-        <text class="form-label">备注（可选）</text>
-        <input class="form-input" placeholder="有什么想提前沟通的？" bindinput="onNoteInput" value="{{note}}" />
+        <text class="form-label">预约备注（建议填写）</text>
+        <textarea class="form-textarea" maxlength="500" placeholder="请写清楚你的目标、当前情况、希望服务方提前了解的信息。" bindinput="onNoteInput" value="{{note}}" />
+        <text class="form-help">备注越具体，服务方越容易判断是否适合接单。</text>
       </view>
     </view>
 
