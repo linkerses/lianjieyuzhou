@@ -73,6 +73,7 @@ export const CreateTransactionSchema = z.object({
   service_id: z.string().uuid(),
   seller_cid: z.string().min(1),
   scheduled_at: z.string().datetime({ offset: true }).optional(),
+  booking_note: z.string().max(1000).optional(),
 });
 
 export const FeedbackSchema = z.object({

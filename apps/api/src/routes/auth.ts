@@ -21,7 +21,7 @@ router.post('/wechat-login', async (req: Request, res: Response) => {
 
     // V0.2 开发模式：使用 dev_mode 跳过微信登录
     if (code === 'dev_mode' || code === 'dev_seller') {
-      return handleDevLogin(res, code);
+      return await handleDevLogin(res, code);
     }
 
     const appId = process.env.WECHAT_APP_ID || '';
@@ -112,7 +112,7 @@ async function handleDevLogin(res: Response, code = 'dev_mode') {
     .from('agents')
     .select('cid, nickname')
     .eq('cid', devCid)
-    .single();
+    .maybeSingle();
 
   if (existing) {
     return res.json({

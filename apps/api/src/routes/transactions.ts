@@ -35,6 +35,7 @@ router.post('/', async (req: Request, res: Response) => {
         service_id: body.service_id,
         amount: service.price,
         scheduled_at: body.scheduled_at || null,
+        booking_note: body.booking_note || null,
         auto_release_at: autoReleaseAt,
         status: 'pending',
       })
@@ -202,6 +203,28 @@ router.post('/:id/feedback', async (req: Request, res: Response) => {
       .single();
 
     if (error) throw error;
+
+    const { data: serviceStats } = await supabase
+      .from('transactions')
+      .select('actual_score')
+      .eq('service_id', transaction.service_id)
+      .eq('status', 'rated');
+
+    const ratedTransactions = serviceStats || [];
+    const deliveryCount = ratedTransactions.length;
+    const avgRating = deliveryCount > 0
+      ? ratedTransactions.reduce((sum, item) => sum + (Number(item.actual_score) || 0), 0) / deliveryCount
+      : 0;
+
+    await supabase
+      .from('services')
+      .update({
+        delivery_count: deliveryCount,
+        avg_rating: Math.round(avgRating * 100) / 100,
+        trust_score: Math.round(avgRating * 100) / 100,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', transaction.service_id);
 
     // 记录预演偏差
     await supabase

@@ -85,6 +85,7 @@ Page({
           service_id: this.data.serviceId,
           seller_cid: this.data.sellerCid,
           scheduled_at: scheduledAt,
+          booking_note: this.data.note.trim(),
         },
       });
 

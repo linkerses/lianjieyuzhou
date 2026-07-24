@@ -155,7 +155,7 @@ router.post('/state-scan/check', async (req: Request, res: Response) => {
 
     if (recentLogs && recentLogs.length >= 2) {
       const avgDeviation = recentLogs.reduce((sum, log) => {
-        return sum + ((log.actual_score || 0) - log.total_score);
+        return sum + ((Number(log.actual_score || 0) * 20) - log.total_score);
       }, 0) / recentLogs.length;
 
       // 如果实际评分持续低于预演评分，可能反映联结者状态下滑

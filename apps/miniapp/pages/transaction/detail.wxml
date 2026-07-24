@@ -27,6 +27,10 @@
         <text class="info-label">预约时间</text>
         <text class="info-value">{{transaction.scheduled_at}}</text>
       </view>
+      <view class="info-row" wx:if="{{transaction.booking_note}}">
+        <text class="info-label">预约备注</text>
+        <text class="info-value">{{transaction.booking_note}}</text>
+      </view>
       <view class="info-row" wx:if="{{transaction.completed_at}}">
         <text class="info-label">完成时间</text>
         <text class="info-value">{{transaction.completed_at}}</text>
