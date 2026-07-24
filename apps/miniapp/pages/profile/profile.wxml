@@ -14,6 +14,18 @@
     </view>
   </view>
 
+  <view class="quick-card" wx:if="{{quickActions.length > 0}}">
+    <view class="quick-head">
+      <text class="quick-title">下一步建议</text>
+      <text class="quick-subtitle">选择一个动作继续推进</text>
+    </view>
+    <view class="quick-grid">
+      <view class="quick-item" wx:for="{{quickActions}}" wx:key="key" data-key="{{item.key}}" catch:tap="onQuickAction">
+        <text class="quick-item-title">{{item.title}}</text>
+        <text class="quick-item-desc">{{item.desc}}</text>
+      </view>
+    </view>
+  </view>
 
   <view class="todo-card">
     <view class="card-header">

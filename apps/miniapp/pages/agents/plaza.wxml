@@ -47,7 +47,7 @@
         </view>
       </view>
 
-      <view class="agent-value-grid">
+      <view class="agent-value-list">
         <view class="agent-value-block">
           <text class="agent-value-label">可提供</text>
           <text class="agent-value-text">{{item.service_capabilities}}</text>

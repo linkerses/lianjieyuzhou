@@ -13,6 +13,7 @@ Page({
     trustInfo: null,
     todoItems: [],
     hasTodos: false,
+    quickActions: [],
   },
 
   onLoad() {
@@ -34,6 +35,7 @@ Page({
       const agentTags = agent && agent.life_stage_tags ? agent.life_stage_tags : [];
       const transactions = txRes && txRes.data ? txRes.data : [];
       const todoItems = this.buildTodoItems(transactions);
+      const quickActions = this.buildQuickActions(agent, todoItems);
 
       this.setData({
         agent,
@@ -45,6 +47,7 @@ Page({
         trustInfo: trustRes && trustRes.data ? trustRes.data : null,
         todoItems,
         hasTodos: todoItems.length > 0,
+        quickActions,
       });
     } catch (err) {
       console.error('[loadData]', err);
@@ -61,6 +64,19 @@ Page({
 
   openTodo(e) {
     wx.navigateTo({ url: `/pages/transaction/detail?id=${e.currentTarget.dataset.id}` });
+  },
+
+  onQuickAction(e) {
+    const key = e.currentTarget.dataset.key;
+    if (key === 'agent') {
+      this.goAgent();
+    } else if (key === 'plaza') {
+      wx.navigateTo({ url: '/pages/agents/plaza' });
+    } else if (key === 'seller') {
+      this.goSellerWorkbench();
+    } else if (key === 'transactions') {
+      this.goTransactions();
+    }
   },
 
   goSellerWorkbench() {
@@ -121,6 +137,37 @@ Page({
       })
       .filter(Boolean)
       .slice(0, 5);
+  },
+
+  buildQuickActions(agent, todoItems) {
+    const profile = agent && agent.agent_config && agent.agent_config.value_profile
+      ? agent.agent_config.value_profile
+      : {};
+    const hasValueProfile = !!(
+      profile.core_value &&
+      profile.service_capabilities &&
+      profile.project_experience &&
+      profile.vision_needs
+    );
+
+    if (todoItems.length > 0) {
+      return [
+        { key: 'transactions', title: '处理协作事项', desc: '先处理预约、交付或评价' },
+        { key: 'plaza', title: '看看新连接', desc: '从 Agent 广场找下一位匹配对象' },
+      ];
+    }
+
+    if (!hasValueProfile) {
+      return [
+        { key: 'agent', title: '完善数字档案', desc: '补齐价值、能力、经历和需求' },
+        { key: 'seller', title: '发布一个服务', desc: '把可交付能力变成可预约服务' },
+      ];
+    }
+
+    return [
+      { key: 'plaza', title: '发起一次匹配', desc: '选择感兴趣的人生成匹配报告' },
+      { key: 'seller', title: '维护服务内容', desc: '更新服务介绍、定价和上下架状态' },
+    ];
   },
 
   // 完善档案快捷入口
