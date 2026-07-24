@@ -114,6 +114,7 @@ tr:hover td { background: #FBFAF6; }
     <div class="tab" data-view="services" onclick="switchView('services')">服务</div>
     <div class="tab" data-view="transactions" onclick="switchView('transactions')">交易</div>
     <div class="tab" data-view="matches" onclick="switchView('matches')">匹配</div>
+    <div class="tab" data-view="feedback" onclick="switchView('feedback')">反馈</div>
   </div>
 
   <section id="view-agents" class="view active">
@@ -168,6 +169,20 @@ tr:hover td { background: #FBFAF6; }
         </div>
       </div>
       <div id="matchesTable" class="empty">等待加载</div>
+    </div>
+  </section>
+
+  <section id="view-feedback" class="view">
+    <div class="panel">
+      <div class="panel-head">
+        <strong>内测反馈</strong>
+        <div class="filters">
+          <select id="feedbackStatus" class="select"><option value="all">全部状态</option><option value="open">open</option><option value="reviewing">reviewing</option><option value="resolved">resolved</option><option value="ignored">ignored</option></select>
+          <select id="feedbackType" class="select"><option value="all">全部类型</option><option value="suggestion">功能建议</option><option value="confusing">看不懂/不会用</option><option value="service_need">想要的服务</option><option value="bug">错误/无法操作</option><option value="other">其他</option></select>
+          <button class="btn secondary" onclick="loadFeedback()">查询</button>
+        </div>
+      </div>
+      <div id="feedbackTable" class="empty">等待加载</div>
     </div>
   </section>
 </div>
@@ -237,6 +252,7 @@ function switchView(view) {
   if (view === 'services') loadServices();
   if (view === 'transactions') loadTransactions();
   if (view === 'matches') loadMatches();
+  if (view === 'feedback') loadFeedback();
 }
 
 async function loadAll() {
@@ -421,6 +437,54 @@ async function loadMatches() {
       time(m.created_at),
     ])
   );
+}
+
+async function loadFeedback() {
+  const status = document.getElementById('feedbackStatus').value;
+  const type = document.getElementById('feedbackType').value;
+  const feedback = await api(`/admin/feedback?status=${status}&type=${type}&limit=80`);
+  if (!feedback.length) return renderEmpty('feedbackTable', '没有找到内测反馈');
+  document.getElementById('feedbackTable').innerHTML = table(
+    ['反馈', '用户', '类型', '页面', '状态', '时间', '操作'],
+    feedback.map(item => [
+      `<div>${escapeHtml(item.content)}</div>${item.contact ? `<div class="tiny muted">联系：${escapeHtml(item.contact)}</div>` : ''}`,
+      `${escapeHtml(item.agent_nickname || '')}<div class="tiny muted">${escapeHtml(item.agent_cid)}</div>`,
+      feedbackTypeLabel(item.type),
+      escapeHtml(item.page || '-'),
+      statusPill(item.status),
+      time(item.created_at),
+      feedbackActions(item),
+    ])
+  );
+}
+
+async function updateFeedbackStatus(id, status) {
+  await api(`/admin/feedback/${encodeURIComponent(id)}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  await loadFeedback();
+  setStatus(`反馈已更新为 ${status}`);
+}
+
+function feedbackActions(item) {
+  const id = escapeAttr(item.id);
+  return `<div class="actions">
+    ${item.status === 'open' ? `<button class="btn secondary" onclick="updateFeedbackStatus('${id}','reviewing')">处理中</button>` : ''}
+    ${item.status !== 'resolved' ? `<button class="btn secondary" onclick="updateFeedbackStatus('${id}','resolved')">已解决</button>` : ''}
+    ${item.status !== 'ignored' ? `<button class="btn ghost" onclick="updateFeedbackStatus('${id}','ignored')">忽略</button>` : ''}
+  </div>`;
+}
+
+function feedbackTypeLabel(type) {
+  const labels = {
+    suggestion: '功能建议',
+    confusing: '看不懂/不会用',
+    service_need: '想要的服务',
+    bug: '错误/无法操作',
+    other: '其他',
+  };
+  return escapeHtml(labels[type] || type || '-');
 }
 
 function openAgentModal(cid) {

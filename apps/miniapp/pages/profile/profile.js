@@ -2,6 +2,14 @@
 
 const app = getApp();
 
+const FEEDBACK_TYPES = [
+  { key: 'suggestion', label: '功能建议' },
+  { key: 'confusing', label: '看不懂 / 不会用' },
+  { key: 'service_need', label: '想要的服务' },
+  { key: 'bug', label: '错误 / 无法操作' },
+  { key: 'other', label: '其他' },
+];
+
 Page({
   data: {
     agent: null,
@@ -14,6 +22,12 @@ Page({
     todoItems: [],
     hasTodos: false,
     quickActions: [],
+    feedbackTypes: FEEDBACK_TYPES,
+    feedbackTypeIndex: 0,
+    selectedFeedbackTypeLabel: FEEDBACK_TYPES[0].label,
+    feedbackContent: '',
+    feedbackContact: '',
+    submittingFeedback: false,
   },
 
   onLoad() {
@@ -102,6 +116,57 @@ Page({
 
   goTrustNetwork() {
     wx.navigateTo({ url: '/pages/agent/agent?tab=trust' });
+  },
+
+  onFeedbackTypeChange(e) {
+    const feedbackTypeIndex = Number(e.detail.value || 0);
+    const type = this.data.feedbackTypes[feedbackTypeIndex] || this.data.feedbackTypes[0];
+    this.setData({
+      feedbackTypeIndex,
+      selectedFeedbackTypeLabel: type.label,
+    });
+  },
+
+  onFeedbackInput(e) {
+    this.setData({ feedbackContent: e.detail.value });
+  },
+
+  onFeedbackContactInput(e) {
+    this.setData({ feedbackContact: e.detail.value });
+  },
+
+  async submitFeedback() {
+    const content = (this.data.feedbackContent || '').trim();
+    if (content.length < 5) {
+      wx.showToast({ title: '请至少写 5 个字', icon: 'none' });
+      return;
+    }
+
+    this.setData({ submittingFeedback: true });
+    try {
+      const type = this.data.feedbackTypes[this.data.feedbackTypeIndex] || this.data.feedbackTypes[0];
+      await app.request({
+        url: '/feedback',
+        method: 'POST',
+        data: {
+          type: type.key,
+          page: 'profile',
+          content,
+          contact: (this.data.feedbackContact || '').trim(),
+        },
+      });
+      this.setData({
+        feedbackContent: '',
+        feedbackContact: '',
+        feedbackTypeIndex: 0,
+        selectedFeedbackTypeLabel: this.data.feedbackTypes[0].label,
+        submittingFeedback: false,
+      });
+      wx.showToast({ title: '已提交反馈', icon: 'success' });
+    } catch (err) {
+      this.setData({ submittingFeedback: false });
+      wx.showToast({ title: err.error || '提交失败', icon: 'none' });
+    }
   },
 
   buildTodoItems(transactions) {

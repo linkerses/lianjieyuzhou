@@ -82,6 +82,13 @@ export const FeedbackSchema = z.object({
   seller_note: z.string().max(2000).optional(),
 });
 
+export const BetaFeedbackSchema = z.object({
+  type: z.enum(['bug', 'confusing', 'suggestion', 'service_need', 'other']).default('suggestion'),
+  page: z.string().max(100).optional(),
+  content: z.string().min(5).max(1000),
+  contact: z.string().max(100).optional(),
+});
+
 // ── 预演 ──
 
 export const PreEnactScoreSchema = z.object({

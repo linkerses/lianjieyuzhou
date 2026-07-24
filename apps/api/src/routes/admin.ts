@@ -258,6 +258,68 @@ router.get('/matches', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/feedback', async (req: Request, res: Response) => {
+  try {
+    const { status, type, limit } = req.query;
+    let query = supabase
+      .from('beta_feedback')
+      .select('id, agent_cid, type, page, content, contact, status, created_at, resolved_at, agents(nickname)')
+      .order('created_at', { ascending: false });
+
+    if (status && status !== 'all') {
+      query = query.eq('status', String(status));
+    }
+    if (type && type !== 'all') {
+      query = query.eq('type', String(type));
+    }
+
+    const parsedLimit = Number(limit);
+    query = query.limit(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 50);
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json({
+      data: (data || []).map((item: any) => ({
+        ...item,
+        agent_nickname: item.agents?.nickname,
+        agents: undefined,
+      })),
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取内测反馈失败' });
+  }
+});
+
+router.patch('/feedback/:id/status', async (req: Request, res: Response) => {
+  try {
+    const { status } = req.body || {};
+    if (!['open', 'reviewing', 'resolved', 'ignored'].includes(status)) {
+      return res.status(400).json({ error: '无效的反馈状态' });
+    }
+
+    const updateData: Record<string, any> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+    if (status === 'resolved' || status === 'ignored') {
+      updateData.resolved_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('beta_feedback')
+      .update(updateData)
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: '反馈不存在' });
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '更新反馈状态失败' });
+  }
+});
+
 router.patch('/agents/:cid', async (req: Request, res: Response) => {
   try {
     const { cid } = req.params;

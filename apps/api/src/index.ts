@@ -10,6 +10,7 @@ import skillsRouter from './routes/skills';
 import trustRouter from './routes/trust';
 import matchesRouter from './routes/matches';
 import adminRouter from './routes/admin';
+import feedbackRouter from './routes/feedback';
 import { verifyToken } from './lib/auth-token';
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/api/pre-enact', preEnactRouter);
 app.use('/api/skills', skillsRouter);
 app.use('/api/trust', trustRouter);
 app.use('/api/matches', matchesRouter);
+app.use('/api/feedback', feedbackRouter);
 app.use('/api/admin', adminRouter);
 
 // ── 健康检查 ──
@@ -86,5 +88,6 @@ app.listen(PORT, () => {
   console.log(`  GET  /api/trust/my-score      — 我的信任评分`);
   console.log(`  GET  /api/trust/network/mine  — 信任网络`);
   console.log(`  POST /api/matches/analyze     — Agent匹配报告`);
+  console.log(`  POST /api/feedback            — 内测反馈`);
   console.log(`\n  🔧 开发模式: code=dev_mode 可跳过微信登录\n`);
 });

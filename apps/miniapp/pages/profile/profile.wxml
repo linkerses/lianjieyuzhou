@@ -85,6 +85,29 @@
     </view>
   </view>
 
+  <view class="feedback-card">
+    <view class="feedback-head">
+      <text class="feedback-title">内测反馈</text>
+      <text class="feedback-desc">哪里卡住、看不懂、想要什么服务，都可以直接告诉我们。</text>
+    </view>
+    <picker mode="selector" range="{{feedbackTypes}}" range-key="label" value="{{feedbackTypeIndex}}" bindchange="onFeedbackTypeChange">
+      <view class="feedback-picker">
+        <text>{{selectedFeedbackTypeLabel}}</text>
+        <text class="menu-arrow">›</text>
+      </view>
+    </picker>
+    <textarea class="feedback-textarea"
+              value="{{feedbackContent}}"
+              maxlength="1000"
+              placeholder="请写下你遇到的问题、建议，或希望平台补充的服务。"
+              bindinput="onFeedbackInput"></textarea>
+    <input class="feedback-input"
+           value="{{feedbackContact}}"
+           placeholder="联系方式，可选"
+           bindinput="onFeedbackContactInput" />
+    <button class="btn-primary feedback-submit" loading="{{submittingFeedback}}" disabled="{{submittingFeedback}}" catch:tap="submitFeedback">提交反馈</button>
+  </view>
+
   <!-- 开发信息 -->
   <view class="version" catch:tap="showDevInfo">
     <text>联结宇宙 V0.2</text>
