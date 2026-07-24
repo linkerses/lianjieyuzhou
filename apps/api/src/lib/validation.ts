@@ -17,6 +17,21 @@ export const UpdateAgentSchema = z.object({
   agent_config: z.record(z.any()).optional(),
 });
 
+export const AdminUpdateAgentSchema = z.object({
+  nickname: z.string().min(1).max(50).optional(),
+  life_stage_tags: z.array(z.string()).max(3).optional(),
+  trust_score: z.number().min(0).max(5).optional(),
+  energy_status: z.string().max(50).optional(),
+  status: z.string().max(50).optional(),
+  value_profile: z.object({
+    core_value: z.string().max(500).optional(),
+    service_capabilities: z.string().max(800).optional(),
+    project_experience: z.string().max(1000).optional(),
+    vision_needs: z.string().max(800).optional(),
+  }).optional(),
+  agent_config: z.record(z.any()).optional(),
+});
+
 // ── Agent Profile ──
 
 export const UpsertProfileSchema = z.object({

@@ -9,6 +9,7 @@ import preEnactRouter from './routes/pre-enact';
 import skillsRouter from './routes/skills';
 import trustRouter from './routes/trust';
 import matchesRouter from './routes/matches';
+import adminRouter from './routes/admin';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -43,6 +44,7 @@ app.use('/api/pre-enact', preEnactRouter);
 app.use('/api/skills', skillsRouter);
 app.use('/api/trust', trustRouter);
 app.use('/api/matches', matchesRouter);
+app.use('/api/admin', adminRouter);
 
 // ── 健康检查 ──
 app.get('/api/health', (_req, res) => {
