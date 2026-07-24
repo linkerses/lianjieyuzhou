@@ -9,6 +9,9 @@ Page({
     primaryService: null,
     followMarked: false,
     actionHint: '',
+    primaryActionTitle: '',
+    primaryActionText: '',
+    actionCards: [],
     loading: true,
     scoreColor: '#999',
   },
@@ -103,11 +106,17 @@ Page({
         targetServices: services,
         primaryService: services.length > 0 ? services[0] : null,
         actionHint: this.getActionHint(report, services),
+        primaryActionTitle: services.length > 0 ? `预约「${services[0].name}」` : '先发起连接',
+        primaryActionText: services.length > 0 ? '立即预约服务' : '发起连接',
+        actionCards: this.buildActionCards(report, services),
       });
     } catch (err) {
       console.log('[loadTargetServices]', err);
       this.setData({
         actionHint: this.getActionHint(report, []),
+        primaryActionTitle: '先发起连接',
+        primaryActionText: '发起连接',
+        actionCards: this.buildActionCards(report, []),
       });
     }
   },
@@ -205,6 +214,29 @@ Page({
       return '匹配度中等，建议先看公开档案，确认需求和能力是否足够具体。';
     }
     return '匹配度偏探索，建议先收藏报告或补充双方档案后再判断。';
+  },
+
+  buildActionCards(report, services) {
+    const hasService = services && services.length > 0;
+    const score = report ? Number(report.total_score || 0) : 0;
+    return [
+      {
+        title: hasService ? '从服务开始' : '先建立连接',
+        desc: hasService
+          ? '对方已有可预约服务，适合用一次小交付验证合作感。'
+          : '对方暂无上架服务，先连接并复制破冰话术沟通。',
+      },
+      {
+        title: '发送破冰话术',
+        desc: '复制系统生成的合作意向，发给对方后再确认时间和目标。',
+      },
+      {
+        title: score >= 75 ? '推进试合作' : '先做轻沟通',
+        desc: score >= 75
+          ? '匹配度较高，可以设计一次边界清楚的小型试合作。'
+          : '匹配度仍需验证，建议先用 15-30 分钟沟通补齐信息。',
+      },
+    ];
   },
 
   getScoreColor(score) {

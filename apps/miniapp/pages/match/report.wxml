@@ -31,15 +31,22 @@
       </view>
       <view class="next-step-panel">
         <text class="next-step-label">推荐动作</text>
-        <text class="next-step-title" wx:if="{{primaryService}}">预约「{{primaryService.name}}」</text>
-        <text class="next-step-title" wx:else>先发起连接</text>
+        <text class="next-step-title">{{primaryActionTitle}}</text>
         <text class="next-step-desc">{{actionHint}}</text>
-        <button class="btn-primary" catch:tap="takePrimaryAction">{{primaryService ? '立即预约服务' : '发起连接'}}</button>
+        <button class="btn-primary" catch:tap="takePrimaryAction">{{primaryActionText}}</button>
+      </view>
+      <view class="match-action-grid">
+        <button class="match-action-btn primary" catch:tap="connectTarget">发起连接</button>
+        <button class="match-action-btn" catch:tap="copyIntentMessage">复制破冰话术</button>
+        <button class="match-action-btn" catch:tap="copySummary">复制报告摘要</button>
+      </view>
+      <view class="match-action-cards">
+        <view class="match-action-card" wx:for="{{actionCards}}" wx:key="title">
+          <text class="match-action-card-title">{{item.title}}</text>
+          <text class="match-action-card-desc">{{item.desc}}</text>
+        </view>
       </view>
       <view class="report-actions">
-        <button class="btn-inline" catch:tap="connectTarget">连接对方</button>
-        <button class="btn-inline btn-muted" catch:tap="copyIntentMessage">复制合作意向</button>
-        <button class="btn-inline btn-muted" catch:tap="copySummary">复制报告</button>
         <button class="btn-inline btn-muted" wx:if="{{!followMarked}}" catch:tap="markFollowUp">标记跟进</button>
         <button class="btn-inline btn-muted" wx:else disabled>已跟进</button>
       </view>
