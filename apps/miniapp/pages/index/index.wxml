@@ -44,6 +44,30 @@
     <text class="onboarding-btn">去完善 →</text>
   </view>
 
+  <!-- 新手任务 -->
+  <view class="starter-card" wx:if="{{onboardingTasks.length > 0}}">
+    <view class="starter-header">
+      <view>
+        <text class="starter-title">试用任务</text>
+        <text class="starter-desc">按顺序完成一轮，体验 Agent 从档案到协作的完整路径</text>
+      </view>
+      <text class="starter-count">{{onboardingProgressText}}</text>
+    </view>
+    <view class="starter-list">
+      <view class="starter-task {{item.done ? 'done' : ''}}"
+            wx:for="{{onboardingTasks}}" wx:key="key"
+            data-target="{{item.target}}"
+            catch:tap="onTapOnboardingTask">
+        <view class="starter-check">{{item.done ? '✓' : ''}}</view>
+        <view class="starter-main">
+          <text class="starter-task-title">{{item.title}}</text>
+          <text class="starter-task-desc">{{item.desc}}</text>
+        </view>
+        <text class="starter-action">{{item.action}}</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 推荐服务 -->
   <view class="section">
     <view class="section-header">

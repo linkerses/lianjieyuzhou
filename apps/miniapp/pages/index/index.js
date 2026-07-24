@@ -31,6 +31,8 @@ Page({
       energy_status: '',
     },
     profileGuide: null,
+    onboardingTasks: [],
+    onboardingProgressText: '0/4',
     // 首页三段式内容
     agentNote: null,             // Agent提醒卡片
     recommendations: [],         // 预演推荐列表
@@ -41,6 +43,7 @@ Page({
       recommend: true,
       latest: true,
       transactions: true,
+      onboarding: true,
     },
   },
 
@@ -51,6 +54,7 @@ Page({
   onShow() {
     // 每次显示刷新推荐和交易（服务完成后回来看首页能看到更新）
     if (this.data.userLoaded) {
+      this.loadAgent();
       this.loadRecommendations();
       this.loadLatestServices();
       this.loadTransactions();
@@ -101,6 +105,8 @@ Page({
         if (this.data.isNewUser && profileGuide) {
           this.showOnboarding();
         }
+
+        this.loadOnboardingTasks(res.data);
 
         // 检查Agent是否有提醒
         this.checkAgentNote();
@@ -206,6 +212,66 @@ Page({
     }
   },
 
+  async loadOnboardingTasks(agent) {
+    try {
+      const [matchesRes, servicesRes, transactionsRes] = await Promise.all([
+        app.request({ url: '/matches/mine' }).catch(() => ({ data: [] })),
+        app.request({ url: '/services', data: { provider: app.globalData.cid, status: 'all' } }).catch(() => ({ data: [] })),
+        app.request({ url: '/transactions/mine' }).catch(() => ({ data: [] })),
+      ]);
+
+      const profileDone = !this.buildProfileGuide(agent);
+      const plazaVisited = !!wx.getStorageSync('onboarding_plaza_visited');
+      const hasMatchReport = (matchesRes.data || []).length > 0;
+      const hasServiceOrBooking = (servicesRes.data || []).length > 0 || (transactionsRes.data || []).length > 0;
+
+      const tasks = [
+        {
+          key: 'profile',
+          title: '完善 Agent 档案',
+          desc: '补全价值、能力、经历和需求，推荐与匹配会更准确。',
+          done: profileDone,
+          action: profileDone ? '已完成' : '去完善',
+          target: 'agent',
+        },
+        {
+          key: 'plaza',
+          title: '浏览 Agent 广场',
+          desc: '先看看别人如何展示价值和需求，找到可连接对象。',
+          done: plazaVisited,
+          action: plazaVisited ? '已浏览' : '去看看',
+          target: 'plaza',
+        },
+        {
+          key: 'match',
+          title: '生成一次匹配报告',
+          desc: '选择一个感兴趣的 Agent，获得合作建议和破冰方向。',
+          done: hasMatchReport,
+          action: hasMatchReport ? '已生成' : '去匹配',
+          target: 'match',
+        },
+        {
+          key: 'service',
+          title: '发布或预约一个服务',
+          desc: '用一次轻量服务，把价值连接推进到真实协作。',
+          done: hasServiceOrBooking,
+          action: hasServiceOrBooking ? '已行动' : '去服务',
+          target: 'service',
+        },
+      ];
+
+      const doneCount = tasks.filter(item => item.done).length;
+      this.setData({
+        onboardingTasks: tasks,
+        onboardingProgressText: `${doneCount}/${tasks.length}`,
+        'loading.onboarding': false,
+      });
+    } catch (err) {
+      console.error('[loadOnboardingTasks error]', err);
+      this.setData({ 'loading.onboarding': false });
+    }
+  },
+
   // 新用户引导：完善档案
   showOnboarding() {
     wx.showModal({
@@ -214,7 +280,7 @@ Page({
       confirmText: '去完善',
       success: (res) => {
         if (res.confirm) {
-          wx.navigateTo({ url: '/pages/agent/agent' });
+          wx.switchTab({ url: '/pages/agent/agent' });
         }
       },
     });
@@ -233,7 +299,28 @@ Page({
   },
 
   onTapNewUserGuide() {
-    wx.navigateTo({ url: '/pages/agent/agent' });
+    wx.switchTab({ url: '/pages/agent/agent' });
+  },
+
+  onTapOnboardingTask(e) {
+    const { target } = e.currentTarget.dataset;
+    if (target === 'agent') {
+      wx.switchTab({ url: '/pages/agent/agent' });
+      return;
+    }
+    if (target === 'plaza') {
+      wx.setStorageSync('onboarding_plaza_visited', true);
+      wx.navigateTo({ url: '/pages/agents/plaza' });
+      return;
+    }
+    if (target === 'match') {
+      wx.setStorageSync('agent_default_tab', 'match');
+      wx.switchTab({ url: '/pages/agent/agent' });
+      return;
+    }
+    if (target === 'service') {
+      wx.switchTab({ url: '/pages/services/services' });
+    }
   },
 
   goServices() {

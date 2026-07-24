@@ -66,6 +66,11 @@ Page({
   },
 
   onShow() {
+    const targetTab = wx.getStorageSync('agent_default_tab');
+    if (targetTab) {
+      wx.removeStorageSync('agent_default_tab');
+      this.setData({ activeTab: targetTab });
+    }
     if (app.globalData.cid && this.data.agent) {
       this.loadTrustInfo();
       this.loadTrustNetwork();
