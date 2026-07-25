@@ -1,0 +1,62 @@
+<view class="page">
+  <view class="seller-hero">
+    <view class="demand-hero-head">
+      <text class="seller-title">找需求</text>
+      <text class="demand-count" wx:if="{{!loading}}">{{demands.length}}条</text>
+    </view>
+    <text class="seller-subtitle">先看大家正在寻找什么，再判断你能提供服务、资源还是连接。</text>
+    <view class="demand-hero-action" catch:tap="goPublishDemand">发布我的需求</view>
+  </view>
+
+  <scroll-view class="filter-bar" scroll-x>
+    <view class="filter-item {{activeFilter === item.key ? 'active' : ''}}"
+          wx:for="{{filters}}"
+          wx:key="key"
+          data-key="{{item.key}}"
+          catch:tap="switchFilter">
+      {{item.label}}
+    </view>
+  </scroll-view>
+
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:elif="{{demands.length > 0}}">
+    <view class="demand-plaza-card" wx:for="{{demands}}" wx:key="id">
+      <view class="demand-card-labels">
+        <text class="demand-card-label">正在寻找</text>
+        <text class="demand-card-time">{{item.time_label}}</text>
+      </view>
+
+      <view class="demand-top">
+        <text class="demand-title">{{item.title}}</text>
+        <text class="demand-status demand-open">进行中</text>
+      </view>
+      <text class="demand-desc">{{item.description}}</text>
+      <view class="demand-action-hint">
+        <text>{{item.action_hint}}</text>
+      </view>
+
+      <view class="demand-agent" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">
+        <view class="agent-basic-avatar demand-agent-avatar">{{item.initial}}</view>
+        <view class="demand-agent-main">
+          <text class="demand-agent-name">{{item.nickname}}</text>
+          <text class="demand-agent-meta">{{item.agent_cid}} · 信任 {{item.trust_score || 0}}</text>
+        </view>
+      </view>
+
+      <view class="service-tags" wx:if="{{item.life_stage_tag_labels.length > 0}}">
+        <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+      </view>
+
+      <view class="demand-actions">
+        <button class="btn-inline btn-muted" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">看发布者</button>
+        <button class="btn-inline" data-cid="{{item.agent_cid}}" catch:tap="applyMatch">我能帮他</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="empty" wx:else>
+    <text>当前暂无公开需求。你可以先在「我的Agent-需求」发布一个。</text>
+    <button class="btn-inline" catch:tap="goPublishDemand">发布需求</button>
+  </view>
+</view>

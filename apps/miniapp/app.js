@@ -1,22 +1,19 @@
-// 联结宇宙 · 微信小程序
-// AI基建平台 + C端服务端口
-
 const API_BASE = 'https://api.linkerses.com/api';
-// 开发模式：使用本地服务
 // const API_BASE = 'http://localhost:3001/api';
 
 App({
   globalData: {
-    cid: null,           // 当前登录联结者CID
-    nickname: null,       // 昵称
-    token: null,          // 认证Token
-    agentData: null,      // Agent完整数据
+    cid: null,
+    nickname: null,
+    token: null,
+    agentData: null,
     apiBase: API_BASE,
-    isNewUser: false,     // 是否新注册用户
+    isNewUser: false,
   },
 
+  loginPromise: null,
+
   onLaunch() {
-    // 检查是否已登录
     const token = wx.getStorageSync('token');
     const cid = wx.getStorageSync('cid');
     const nickname = wx.getStorageSync('nickname');
@@ -28,8 +25,26 @@ App({
     }
   },
 
-  // 登录（微信登录或开发模式）
   async login(devMode = false, devCode = 'dev_mode') {
+    if (!devMode && this.loginPromise) {
+      return this.loginPromise;
+    }
+
+    const task = this.doLogin(devMode, devCode);
+    if (!devMode) {
+      this.loginPromise = task;
+    }
+
+    try {
+      return await task;
+    } finally {
+      if (!devMode) {
+        this.loginPromise = null;
+      }
+    }
+  },
+
+  async doLogin(devMode = false, devCode = 'dev_mode') {
     try {
       let code = '';
 
@@ -44,6 +59,7 @@ App({
         url: '/auth/wechat-login',
         method: 'POST',
         data: { code },
+        retryAuth: false,
       });
 
       if (res.data) {
@@ -59,10 +75,11 @@ App({
 
         return { success: true, isNew: is_new };
       }
+
       return { success: false, error: '登录失败' };
     } catch (err) {
       console.error('[login error]', err);
-      return { success: false, error: err.message || '登录异常' };
+      return { success: false, error: err.error || err.message || '登录异常' };
     }
   },
 
@@ -77,8 +94,7 @@ App({
     wx.removeStorageSync('nickname');
   },
 
-  // 统一请求封装
-  request({ url, method = 'GET', data = {} }) {
+  request({ url, method = 'GET', data = {}, retryAuth = true }) {
     return new Promise((resolve, reject) => {
       const token = this.globalData.token || wx.getStorageSync('token');
 
@@ -88,18 +104,34 @@ App({
         data,
         header: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : '',
+          Authorization: token ? `Bearer ${token}` : '',
         },
         success: (res) => {
           if (res.statusCode >= 200 && res.statusCode < 300) {
             resolve(res.data);
-          } else {
-            reject(res.data || { message: '请求失败' });
+            return;
           }
+
+          if (res.statusCode === 401 && retryAuth && url !== '/auth/wechat-login') {
+            this.logout();
+            this.login()
+              .then((loginRes) => {
+                if (!loginRes || !loginRes.success) {
+                  reject(res.data || { error: '未登录' });
+                  return null;
+                }
+                return this.request({ url, method, data, retryAuth: false });
+              })
+              .then((retryRes) => {
+                if (retryRes) resolve(retryRes);
+              })
+              .catch(reject);
+            return;
+          }
+
+          reject(res.data || { message: '请求失败' });
         },
-        fail: (err) => {
-          reject(err);
-        },
+        fail: reject,
       });
     });
   },

@@ -1,0 +1,135 @@
+/* pages/services/services.wxss */
+
+.service-hero-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.service-count {
+  flex-shrink: 0;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  font-size: 23rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.service-guide {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.service-guide text {
+  min-height: 58rpx;
+  padding: 0 8rpx;
+  border-radius: 12rpx;
+  background: #FFFFFF;
+  color: #6B7D6E;
+  font-size: 22rpx;
+  line-height: 1.35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.03);
+}
+
+.service-list .service-card {
+  padding: 26rpx;
+  border-left: 5rpx solid #2D3E2F;
+}
+
+.service-system-block {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-list .service-system {
+  display: inline-flex;
+  width: auto;
+  max-width: 260rpx;
+  padding: 5rpx 14rpx;
+  border-radius: 999rpx;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.service-list .service-provider {
+  display: block;
+  margin-top: 8rpx;
+  margin-bottom: 0;
+  font-size: 23rpx;
+  color: #A8B5A9;
+  line-height: 1.45;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.service-price-block {
+  flex-shrink: 0;
+  min-width: 132rpx;
+  text-align: right;
+}
+
+.service-list .service-price {
+  display: block;
+  font-size: 33rpx;
+  color: #B8860B;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.service-price-sub {
+  display: block;
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  color: #A8B5A9;
+  line-height: 1.35;
+}
+
+.service-list .service-name {
+  margin-top: 18rpx;
+  margin-bottom: 10rpx;
+  font-size: 32rpx;
+  line-height: 1.42;
+}
+
+.service-fit {
+  display: block;
+  padding: 16rpx 18rpx;
+  border-radius: 12rpx;
+  background: #F7F2E8;
+  color: #6B5734;
+  font-size: 24rpx;
+  line-height: 1.55;
+  margin-bottom: 14rpx;
+}
+
+.service-list .service-meta {
+  padding-top: 12rpx;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.service-list .service-card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.service-action-arrow {
+  flex-shrink: 0;
+  color: #B8860B;
+  font-weight: 700;
+}

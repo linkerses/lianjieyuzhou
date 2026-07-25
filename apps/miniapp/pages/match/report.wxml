@@ -7,54 +7,59 @@
         <text class="pre-score-label">Agent匹配度</text>
         <text class="pre-score-value" style="color: {{scoreColor}}">{{report.total_score}}<text class="pre-score-unit">/100</text></text>
       </view>
+      <text class="match-type-badge" wx:if="{{report.match_type && report.match_type.label}}">{{report.match_type.label}}</text>
+      <text class="match-pair">{{report.source_agent.nickname}} × {{report.target_agent.nickname}}</text>
       <text class="pre-score-summary">{{report.summary}}</text>
     </view>
 
     <view class="card">
       <view class="card-header">
-        <text class="card-title">匹配双方</text>
-        <text class="card-action" catch:tap="viewTargetAgent">看对方档案</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">我的Agent</text>
-        <text class="info-value">{{report.source_agent.nickname}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">对方Agent</text>
-        <text class="info-value">{{report.target_agent.nickname}}</text>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-header">
-        <text class="card-title">下一步协作</text>
+        <text class="card-title">下一步</text>
+        <text class="card-action" catch:tap="viewTargetAgent">看档案</text>
       </view>
       <view class="next-step-panel">
-        <text class="next-step-label">推荐动作</text>
+        <text class="next-step-label">建议先做</text>
         <text class="next-step-title">{{primaryActionTitle}}</text>
         <text class="next-step-desc">{{actionHint}}</text>
         <button class="btn-primary" catch:tap="takePrimaryAction">{{primaryActionText}}</button>
       </view>
-      <view class="match-action-grid">
-        <button class="match-action-btn primary" catch:tap="connectTarget">发起连接</button>
-        <button class="match-action-btn" catch:tap="copyIntentMessage">复制破冰话术</button>
-        <button class="match-action-btn" catch:tap="copySummary">复制报告摘要</button>
-      </view>
-      <view class="match-action-cards">
-        <view class="match-action-card" wx:for="{{actionCards}}" wx:key="title">
-          <text class="match-action-card-title">{{item.title}}</text>
-          <text class="match-action-card-desc">{{item.desc}}</text>
+      <view class="concrete-actions">
+        <view class="concrete-action" wx:for="{{concreteActions}}" wx:key="item">
+          <text class="concrete-index">{{index + 1}}</text>
+          <text class="concrete-text">{{item}}</text>
         </view>
       </view>
-      <view class="report-actions">
-        <button class="btn-inline btn-muted" wx:if="{{!followMarked}}" catch:tap="markFollowUp">标记跟进</button>
-        <button class="btn-inline btn-muted" wx:else disabled>已跟进</button>
+      <view class="match-link-row">
+        <text class="match-link" wx:if="{{primaryService}}" catch:tap="connectTarget">先连接</text>
+        <text class="match-link" wx:else catch:tap="viewTargetAgent">看对方档案</text>
+        <text class="match-link" catch:tap="copyIntentMessage">复制破冰话术</text>
+        <text class="match-link" wx:if="{{!followMarked}}" catch:tap="markFollowUp">标记跟进</text>
+        <text class="match-link muted" wx:else>已跟进</text>
       </view>
     </view>
 
     <view class="card">
       <view class="card-header">
-        <text class="card-title">维度评分</text>
+        <text class="card-title">合作切入点</text>
+      </view>
+      <view class="match-evidence action" wx:if="{{entrypoints.length > 0}}">
+        <text class="evidence-text" wx:for="{{entrypoints}}" wx:key="item">{{item}}</text>
+      </view>
+      <view class="empty compact" wx:else>
+        <text>暂无明确切入点，建议先补充双方需求和服务边界。</text>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">判断依据</text>
+      </view>
+      <view class="match-evidence" wx:if="{{keyFindings.length > 0}}">
+        <text class="evidence-text" wx:for="{{keyFindings}}" wx:key="item">{{item}}</text>
+      </view>
+      <view class="match-evidence caution" wx:if="{{cautionItems.length > 0}}">
+        <text class="evidence-label">风险提醒</text>
+        <text class="evidence-text" wx:for="{{cautionItems}}" wx:key="item">{{item}}</text>
       </view>
       <view class="pre-dimensions">
         <view class="dim-item">
@@ -77,31 +82,6 @@
           <text class="dim-label">信任基础</text>
           <text class="dim-score">{{report.dimensions.trust_fit}}</text>
         </view>
-      </view>
-    </view>
-
-    <view class="card">
-      <view class="card-header">
-        <text class="card-title">协作机会</text>
-      </view>
-      <text class="profile-text" wx:for="{{report.opportunities}}" wx:key="item">{{item}}</text>
-    </view>
-
-    <view class="card" wx:if="{{report.risks.length > 0}}">
-      <view class="card-header">
-        <text class="card-title">注意事项</text>
-      </view>
-      <text class="risk-item" wx:for="{{report.risks}}" wx:key="item">{{item}}</text>
-    </view>
-
-    <view class="card">
-      <view class="card-header">
-        <text class="card-title">下一步行动</text>
-        <text class="card-action" catch:tap="copySummary">复制摘要</text>
-      </view>
-      <view class="action-item" wx:for="{{report.next_actions}}" wx:key="item">
-        <text class="action-dot"></text>
-        <text class="action-text">{{item}}</text>
       </view>
     </view>
 

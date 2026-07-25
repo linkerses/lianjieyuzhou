@@ -9,7 +9,10 @@
     <view class="booking-summary">
       <text class="bs-name">{{service.name}}</text>
       <text class="bs-provider">{{service.provider_nickname || service.provider_cid}}</text>
-      <text class="bs-price">{{service.price}}元</text>
+      <text class="bs-price">{{priceText}}</text>
+      <view class="booking-meta-list" wx:if="{{serviceMeta.length > 0}}">
+        <text class="booking-meta" wx:for="{{serviceMeta}}" wx:key="item">{{item}}</text>
+      </view>
     </view>
 
     <view class="booking-flow-card">
@@ -50,15 +53,34 @@
 
       <view class="form-group">
         <text class="form-label">预约备注（建议填写）</text>
+        <view class="note-template-list">
+          <text class="note-template" wx:for="{{noteTemplates}}" wx:key="index" data-index="{{index}}" catch:tap="useNoteTemplate">模板{{index + 1}}</text>
+        </view>
         <textarea class="form-textarea" maxlength="500" placeholder="请写清楚你的目标、当前情况、希望服务方提前了解的信息。" bindinput="onNoteInput" value="{{note}}" />
         <text class="form-help">备注越具体，服务方越容易判断是否适合接单。</text>
+      </view>
+    </view>
+
+    <view class="booking-confirm-card">
+      <text class="booking-confirm-title">提交前确认</text>
+      <view class="booking-confirm-item">
+        <text class="booking-confirm-dot"></text>
+        <text class="booking-confirm-text">这个服务解决的问题，和你的当前需求一致。</text>
+      </view>
+      <view class="booking-confirm-item">
+        <text class="booking-confirm-dot"></text>
+        <text class="booking-confirm-text">你已经写清楚背景、目标和希望得到的结果。</text>
+      </view>
+      <view class="booking-confirm-item">
+        <text class="booking-confirm-dot"></text>
+        <text class="booking-confirm-text">服务方确认后，再进入正式服务流程。</text>
       </view>
     </view>
 
     <!-- 提交 -->
     <view class="action-bar">
       <button class="btn-primary" catch:tap="submitBooking" disabled="{{submitting}}">
-        {{submitting ? '提交中...' : '确认预约 · ' + service.price + '元'}}
+        {{submitting ? '提交中...' : '确认预约 · ' + priceText}}
       </button>
     </view>
   </view>

@@ -18,10 +18,14 @@
   font-size: 27rpx;
 }
 
-.form-input,
-.picker {
+.form-input {
   min-height: 78rpx;
   line-height: 78rpx;
+}
+
+.picker {
+  min-height: 78rpx;
+  line-height: normal;
 }
 
 .form-textarea {

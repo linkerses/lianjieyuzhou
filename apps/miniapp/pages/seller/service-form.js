@@ -27,6 +27,8 @@ const DEFAULT_FORM = {
   suitable_stages_text: '',
   description: '',
   suitable_for: '',
+  deliverables: '',
+  case_description: '',
   not_suitable_for: '',
   price: '',
   duration_minutes: '',
@@ -76,6 +78,8 @@ Page({
           suitable_stages_text: (service.suitable_stages || []).join('、'),
           description: parsedDescription.description,
           suitable_for: parsedDescription.suitable_for,
+          deliverables: parsedDescription.deliverables,
+          case_description: parsedDescription.case_description,
           not_suitable_for: parsedDescription.not_suitable_for,
           price: service.price ? String(service.price) : '',
           duration_minutes: service.duration_minutes ? String(service.duration_minutes) : '',
@@ -126,7 +130,8 @@ Page({
     const form = this.data.form;
     if (!form.name.trim()) return '请填写服务名称';
     if (!form.description.trim()) return '请填写服务介绍';
-    if (!form.suitable_for.trim()) return '请填写适合谁';
+    if (!form.suitable_for.trim()) return '请填写适合人群';
+    if (!form.deliverables.trim()) return '请填写交付物';
     if (!form.price || Number(form.price) <= 0) return '请填写有效价格';
     if (form.duration_minutes && Number(form.duration_minutes) <= 0) return '时长必须大于0';
     if ((form.delivery_method === 'offline' || form.delivery_method === 'hybrid') && !form.location.trim()) {
@@ -165,6 +170,12 @@ Page({
       '适合谁：',
       form.suitable_for.trim(),
       '',
+      '交付物：',
+      form.deliverables.trim(),
+      '',
+      '案例描述：',
+      form.case_description.trim() || '暂无案例描述，可在完成首个交付后补充。',
+      '',
       '不适合谁：',
       form.not_suitable_for.trim() || '暂无明确限制，预约前可先沟通确认。',
     ].join('\n');
@@ -174,6 +185,8 @@ Page({
     const fallback = {
       description: text,
       suitable_for: '',
+      deliverables: '',
+      case_description: '',
       not_suitable_for: '',
     };
 
@@ -181,7 +194,9 @@ Page({
 
     return {
       description: this.extractSection(text, '服务介绍：', '适合谁：') || '',
-      suitable_for: this.extractSection(text, '适合谁：', '不适合谁：') || '',
+      suitable_for: this.extractSection(text, '适合谁：', '交付物：') || this.extractSection(text, '适合谁：', '不适合谁：') || '',
+      deliverables: this.extractSection(text, '交付物：', '案例描述：') || '',
+      case_description: this.extractSection(text, '案例描述：', '不适合谁：') || '',
       not_suitable_for: this.extractSection(text, '不适合谁：', '') || '',
     };
   },

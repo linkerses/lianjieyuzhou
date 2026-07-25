@@ -29,6 +29,13 @@ export const AdminUpdateAgentSchema = z.object({
     project_experience: z.string().max(1000).optional(),
     vision_needs: z.string().max(800).optional(),
   }).optional(),
+  basic_profile: z.object({
+    province: z.string().max(100).optional(),
+    city: z.string().max(100).optional(),
+    gender: z.string().max(20).optional(),
+    bio: z.string().max(500).optional(),
+  }).optional(),
+  avatar_url: z.string().max(1000).optional(),
   agent_config: z.record(z.any()).optional(),
 });
 
@@ -56,7 +63,7 @@ export const CreateServiceSchema = z.object({
   primary_system: z.enum(['health', 'living', 'connection', 'growth', 'wealth', 'create', 'explore', 'spirit', 'future']),
   secondary_system: z.enum(['health', 'living', 'connection', 'growth', 'wealth', 'create', 'explore', 'spirit', 'future']).nullable().optional(),
   suitable_stages: z.array(z.string()).default([]),
-  description: z.string().max(2000).default(''),
+  description: z.string().max(4000).default(''),
   price: z.number().positive(),
   duration_minutes: z.number().int().positive().optional(),
   delivery_method: z.enum(['online', 'offline', 'hybrid']).default('offline'),
@@ -88,6 +95,25 @@ export const BetaFeedbackSchema = z.object({
   content: z.string().min(5).max(1000),
   contact: z.string().max(100).optional(),
 });
+
+// ── 社区动态 ──
+
+export const CreateCommunityPostSchema = z.object({
+  type: z.enum(['announcement', 'demand', 'service', 'agent', 'update', 'activity']).default('announcement'),
+  title: z.string().min(1).max(120),
+  summary: z.string().max(500).default(''),
+  action_text: z.string().max(30).default('查看'),
+  target_type: z.enum(['none', 'demand', 'service', 'agent', 'url']).default('none'),
+  target_id: z.string().max(120).optional().nullable(),
+  target_cid: z.string().max(120).optional().nullable(),
+  target_url: z.string().max(1000).optional().nullable(),
+  status: z.enum(['active', 'hidden']).default('active'),
+  is_pinned: z.boolean().default(false),
+  sort_weight: z.number().int().min(0).max(9999).default(0),
+  published_at: z.string().datetime({ offset: true }).optional().nullable(),
+});
+
+export const UpdateCommunityPostSchema = CreateCommunityPostSchema.partial();
 
 // ── 预演 ──
 

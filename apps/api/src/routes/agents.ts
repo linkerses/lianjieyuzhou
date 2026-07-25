@@ -109,6 +109,17 @@ function formatPublicAgent(data: any) {
   const config = data.agent_config || {};
   const profile = config.value_profile || {};
   const basicProfile = config.basic_profile || {};
+  const demandPosts = Array.isArray(config.demand_posts)
+    ? config.demand_posts
+      .filter((item: any) => item && item.status === 'open' && item.title)
+      .map((item: any) => ({
+        id: item.id || '',
+        title: item.title || '',
+        description: item.description || '',
+        status: item.status || 'open',
+        created_at: item.created_at || '',
+      }))
+    : [];
 
   return {
     cid: data.cid,
@@ -130,6 +141,7 @@ function formatPublicAgent(data: any) {
       project_experience: profile.project_experience || '',
       vision_needs: profile.vision_needs || '',
     },
+    demand_posts: demandPosts,
   };
 }
 
@@ -161,7 +173,7 @@ function calculateProfileCompletion(agent: any) {
     profile.core_value,
     profile.service_capabilities,
     profile.project_experience,
-    profile.vision_needs,
+    (agent.demand_posts && agent.demand_posts.length > 0) || profile.vision_needs,
   ];
   const completed = fields.filter(value => String(value || '').trim().length > 0).length;
   return Math.round((completed / fields.length) * 100);

@@ -1,92 +1,135 @@
 <!-- 联结宇宙 · 首页 -->
 <view class="page">
 
-  <!-- 顶部Agent摘要 -->
-  <view class="agent-banner" wx:if="{{!loading.agent}}">
-    <view class="agent-info">
-      <view class="agent-avatar">{{agentSummary.nickname ? agentSummary.nickname[0] : '?'}}</view>
-      <view class="agent-meta">
-        <text class="agent-name">{{agentSummary.nickname || '联结者'}}</text>
-        <view class="agent-tags">
-          <text class="tag" wx:for="{{agentSummary.life_stage_tags}}" wx:key="item">{{item}}</text>
-          <text class="tag-empty" wx:if="{{agentSummary.life_stage_tags.length === 0}}">完善生命阶段</text>
-        </view>
-      </view>
-      <view class="trust-badge">
-        <text>信任 {{agentSummary.trust_score || 0}}</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- Agent提醒卡片 -->
-  <view class="note-card" wx:if="{{agentNote}}" catch:tap="onDismissNote">
-    <view class="note-header">
-      <text class="note-icon">👋</text>
-      <text class="note-title">你的Agent注意到</text>
-      <text class="note-dismiss">×</text>
-    </view>
-    <text class="note-body">{{agentNote.message}}</text>
-    <view class="note-suggestions" wx:if="{{agentNote.suggestions.length > 0}}">
-      <view class="suggestion-btn" wx:for="{{agentNote.suggestions}}" wx:for-item="s" wx:key="s" catch:tap="onTapService">
-        {{s}}
-      </view>
-    </view>
-  </view>
-
-  <!-- 新用户引导 -->
-  <view class="onboarding" wx:if="{{profileGuide}}" catch:tap="onTapNewUserGuide">
-    <text class="onboarding-title">{{profileGuide.title}}</text>
-    <text class="onboarding-desc">{{profileGuide.desc}}</text>
-    <view class="onboarding-progress">
-      <text>档案完成度 {{profileGuide.progress}}/6</text>
-      <text class="onboarding-missing">{{profileGuide.missing.length}} 项待完善</text>
-    </view>
-    <text class="onboarding-btn">去完善 →</text>
-  </view>
-
-  <!-- 新手任务 -->
-  <view class="starter-card" wx:if="{{onboardingTasks.length > 0}}">
-    <view class="starter-header">
+  <view class="community-feed-card">
+    <view class="community-feed-head">
       <view>
-        <text class="starter-title">试用任务</text>
-        <text class="starter-desc">按顺序完成一轮，体验 Agent 从档案到协作的完整路径</text>
+        <text class="community-feed-title">社区动态</text>
+        <text class="community-feed-desc">看看今天有哪些需求、服务和新连接。</text>
       </view>
-      <text class="starter-count">{{onboardingProgressText}}</text>
+      <text class="community-feed-more" catch:tap="goDemands">全部</text>
     </view>
-    <view class="starter-list">
-      <view class="starter-task {{item.done ? 'done' : ''}}"
-            wx:for="{{onboardingTasks}}" wx:key="key"
-            data-target="{{item.target}}"
-            catch:tap="onTapOnboardingTask">
-        <view class="starter-check">{{item.done ? '✓' : ''}}</view>
-        <view class="starter-main">
-          <text class="starter-task-title">{{item.title}}</text>
-          <text class="starter-task-desc">{{item.desc}}</text>
+    <scroll-view class="community-feed-scroll" scroll-x enhanced show-scrollbar="{{false}}">
+      <view class="community-feed-track">
+        <view class="community-feed-item {{item.kind}}" wx:for="{{communityFeed}}" wx:key="id" data-type="{{item.type}}" data-target-type="{{item.target_type}}" data-id="{{item.target_id}}" data-cid="{{item.target_cid}}" data-url="{{item.target_url}}" catch:tap="onTapCommunityItem">
+          <text class="community-feed-type">{{item.label}}</text>
+          <text class="community-feed-item-title">{{item.title}}</text>
+          <text class="community-feed-item-desc">{{item.desc}}</text>
+          <text class="community-feed-action">{{item.action}} ›</text>
         </view>
-        <text class="starter-action">{{item.action}}</text>
       </view>
+    </scroll-view>
+  </view>
+
+  <!-- 首页只给一个优先动作，避免新用户同时看到太多任务 -->
+  <view class="home-focus-card" wx:if="{{profileGuide}}" catch:tap="onTapNewUserGuide">
+    <text class="home-focus-eyebrow">建议先完成</text>
+    <text class="home-focus-title">{{profileGuide.title}}</text>
+    <text class="home-focus-desc">{{profileGuide.desc}}</text>
+    <view class="home-focus-footer">
+      <text class="home-focus-progress">档案 {{profileGuide.progress}}/6</text>
+      <text class="home-focus-action">去完善 →</text>
     </view>
+  </view>
+
+  <view class="home-focus-card" wx:elif="{{primaryTask}}" data-target="{{primaryTask.target}}" catch:tap="onTapOnboardingTask">
+    <text class="home-focus-eyebrow">下一步建议</text>
+    <text class="home-focus-title">{{primaryTask.title}}</text>
+    <text class="home-focus-desc">{{primaryTask.desc}}</text>
+    <view class="home-focus-footer">
+      <text class="home-focus-progress">进度 {{onboardingProgressText}}</text>
+      <text class="home-focus-action">{{primaryTask.action}} →</text>
+    </view>
+  </view>
+
+  <view class="home-focus-card note-compact" wx:elif="{{agentNote}}">
+    <view class="home-focus-head">
+      <text class="home-focus-eyebrow">Agent 提醒</text>
+      <text class="note-dismiss" catch:tap="onDismissNote">×</text>
+    </view>
+    <text class="home-focus-desc">{{agentNote.message}}</text>
   </view>
 
   <view class="discovery-card">
     <view class="discovery-head">
-      <text class="discovery-title">今天想解决什么？</text>
-      <text class="discovery-desc">找服务是直接获得交付，找人是先发现可连接对象。</text>
+      <text class="discovery-title">你今天想推进什么？</text>
+      <text class="discovery-desc">需求、服务、人与人连接，是联结宇宙的三个核心入口。</text>
     </view>
-    <view class="discovery-grid">
+    <view class="home-action-grid">
+      <view class="discovery-item" catch:tap="goDemands">
+        <text class="discovery-item-title">找需求</text>
+        <text class="discovery-item-desc">看谁正在找资源、客户、合作</text>
+      </view>
       <view class="discovery-item" catch:tap="goServices">
         <text class="discovery-item-title">找服务</text>
-        <text class="discovery-item-desc">看可预约项目、价格和交付方式</text>
+        <text class="discovery-item-desc">直接预约可交付项目</text>
       </view>
       <view class="discovery-item" catch:tap="goAgentPlaza">
         <text class="discovery-item-title">找人</text>
-        <text class="discovery-item-desc">看公开档案，生成匹配报告</text>
+        <text class="discovery-item-desc">看档案并生成匹配</text>
       </view>
     </view>
   </view>
 
+  <view class="section" wx:if="{{latestDemands.length > 0 || latestServices.length > 0 || latestAgents.length > 0 || loading.demands || loading.latest || loading.agents}}">
+    <view class="section-header">
+      <text class="section-title">正在发生</text>
+    </view>
+
+    <view class="home-market-block" wx:if="{{latestDemands.length > 0 || loading.demands}}">
+      <view class="home-market-head">
+        <text class="home-market-title">最新需求</text>
+        <text class="section-more" catch:tap="goDemands">查看全部</text>
+      </view>
+      <view class="loading" wx:if="{{loading.demands}}">加载中...</view>
+      <block wx:else>
+        <view class="home-demand-card" wx:for="{{latestDemands}}" wx:key="id" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">
+          <text class="home-demand-title">{{item.title}}</text>
+          <text class="home-demand-desc">{{item.description}}</text>
+          <text class="home-demand-meta">{{item.nickname}}</text>
+        </view>
+      </block>
+    </view>
+
+    <view class="home-market-block" wx:if="{{latestServices.length > 0 || loading.latest}}">
+      <view class="home-market-head">
+        <text class="home-market-title">新上架服务</text>
+        <text class="section-more" catch:tap="goServices">查看全部</text>
+      </view>
+      <view class="loading" wx:if="{{loading.latest}}">加载中...</view>
+      <view class="service-list" wx:elif="{{latestServices.length > 0}}">
+        <view class="service-card compact" wx:for="{{latestServices}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
+          <view class="service-top">
+            <text class="service-system">{{item.system_label}}</text>
+            <text class="service-price">{{item.price}}元</text>
+          </view>
+          <text class="service-name">{{item.name}}</text>
+          <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="home-market-block" wx:if="{{latestAgents.length > 0 || loading.agents}}">
+      <view class="home-market-head">
+        <text class="home-market-title">新公开 Agent</text>
+        <text class="section-more" catch:tap="goAgentPlaza">查看全部</text>
+      </view>
+      <view class="loading" wx:if="{{loading.agents}}">加载中...</view>
+      <block wx:else>
+        <view class="home-agent-card" wx:for="{{latestAgents}}" wx:key="cid" data-cid="{{item.cid}}" catch:tap="viewAgent">
+          <view class="agent-basic-avatar home-agent-avatar">{{item.initial}}</view>
+          <view class="home-agent-main">
+            <text class="home-agent-name">{{item.nickname}}</text>
+            <text class="home-agent-desc">{{item.demand_title}}</text>
+          </view>
+          <text class="trust-badge-small">信任 {{item.trust_score || 0}}</text>
+        </view>
+      </block>
+    </view>
+  </view>
+
   <!-- 推荐服务 -->
-  <view class="section">
+  <view class="section" wx:if="{{recommendations.length > 0 || loading.recommend}}">
     <view class="section-header">
       <text class="section-title">为你推荐</text>
       <text class="section-more" catch:tap="goServices">查看全部</text>
@@ -113,36 +156,10 @@
       </view>
     </view>
 
-    <view class="empty" wx:elif="{{!loading.recommend}}">
-      <text>暂无推荐，完善档案后即可获得精准推荐</text>
-    </view>
-  </view>
-
-  <view class="section">
-    <view class="section-header">
-      <text class="section-title">新上架服务</text>
-      <text class="section-more" catch:tap="goServices">查看全部</text>
-    </view>
-
-    <view class="loading" wx:if="{{loading.latest}}">加载中...</view>
-
-    <view class="service-list" wx:elif="{{latestServices.length > 0}}">
-      <view class="service-card" wx:for="{{latestServices}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
-        <view class="service-top">
-          <text class="service-system">{{item.system_label}}</text>
-          <text class="service-price">{{item.price}}元</text>
-        </view>
-        <text class="service-name">{{item.name}}</text>
-        <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
-        <view class="service-tags">
-          <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
-        </view>
-      </view>
-    </view>
   </view>
 
   <!-- 最近交易 -->
-  <view class="section">
+  <view class="section" wx:if="{{recentTransactions.length > 0 || loading.transactions}}">
     <view class="section-header">
       <text class="section-title">最近交易</text>
       <text class="section-more" wx:if="{{recentTransactions.length > 0}}" catch:tap="goTransactions">查看全部</text>
@@ -158,9 +175,6 @@
       </view>
     </view>
 
-    <view class="empty" wx:elif="{{!loading.transactions}}">
-      <text>还没有交易记录，去服务页面看看吧</text>
-    </view>
   </view>
 
 </view>

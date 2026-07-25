@@ -14,6 +14,13 @@ Page({
     selectedDateLabel: '',
     scheduledTime: '',
     note: '',
+    priceText: '',
+    serviceMeta: [],
+    noteTemplates: [
+      '我想解决的问题是：\n目前情况：\n希望本次服务后得到：',
+      '我正在做的项目：\n卡住的地方：\n希望服务方提前了解：',
+      '我适合线上沟通，期望先做一次初步诊断。',
+    ],
     dateOptions: [],
     timeOptions: ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '19:00', '20:00'],
   },
@@ -48,6 +55,8 @@ Page({
       const res = await app.request({ url: `/services/${id}` });
       this.setData({
         service: res.data,
+        priceText: this.formatPrice(res.data && res.data.price),
+        serviceMeta: this.buildServiceMeta(res.data),
         loading: false,
       });
     } catch (err) {
@@ -72,6 +81,32 @@ Page({
     this.setData({ note: e.detail.value });
   },
 
+  useNoteTemplate(e) {
+    const index = Number(e.currentTarget.dataset.index || 0);
+    const template = this.data.noteTemplates[index] || this.data.noteTemplates[0];
+    this.setData({ note: template });
+  },
+
+  formatPrice(price) {
+    const value = Number(price || 0);
+    if (!Number.isFinite(value) || value <= 0) return '面议';
+    return `${value}元`;
+  },
+
+  buildServiceMeta(service) {
+    if (!service) return [];
+    const deliveryMap = {
+      online: '线上',
+      offline: '线下',
+      hybrid: '线上/线下',
+    };
+    return [
+      service.duration_minutes ? `${service.duration_minutes}分钟` : '',
+      deliveryMap[service.delivery_method] || service.delivery_method || '',
+      service.delivery_count ? `已交付 ${service.delivery_count}次` : '',
+    ].filter(Boolean);
+  },
+
   formatDateValue(date) {
     const pad = value => String(value).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
@@ -80,6 +115,11 @@ Page({
   async submitBooking() {
     if (!this.data.scheduledDate || !this.data.scheduledTime) {
       wx.showToast({ title: '请选择预约时间', icon: 'none' });
+      return;
+    }
+
+    if ((this.data.note || '').trim().length < 8) {
+      wx.showToast({ title: '请补充预约备注', icon: 'none' });
       return;
     }
 

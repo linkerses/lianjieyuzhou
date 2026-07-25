@@ -23,6 +23,12 @@ interface ValueProfile {
   vision_needs?: string;
 }
 
+interface DemandPost {
+  title?: string;
+  description?: string;
+  status?: string;
+}
+
 router.get('/mine', async (req: Request, res: Response) => {
   try {
     const cid = getCurrentCid(req);
@@ -140,13 +146,19 @@ function buildMatchReport(me: any, target: any) {
 
   const opportunities = buildOpportunities(myProfile, targetProfile, sharedTags, complementTags);
   const risks = buildRisks(myProfile, targetProfile, sharedTags, trustFit);
-  const nextActions = buildNextActions(totalScore, myProfile, targetProfile);
+  const matchType = classifyMatch(myProfile, targetProfile, myTags, targetTags, totalScore);
+  const evidence = buildEvidence(matchType.key, myProfile, targetProfile, sharedTags, complementTags);
+  const entrypoints = buildEntrypoints(matchType.key, myProfile, targetProfile, target.nickname);
+  const nextActions = buildNextActions(totalScore, matchType.key, myProfile, targetProfile);
+  const conclusion = buildConclusion(totalScore, matchType.label, me.nickname, target.nickname);
 
   return {
     id: `match-${me.cid}-${target.cid}-${Date.now()}`,
     created_at: new Date().toISOString(),
     source_agent: publicAgent(me, myProfile),
     target_agent: publicAgent(target, targetProfile),
+    match_type: matchType,
+    conclusion,
     total_score: totalScore,
     dimensions: {
       demand_fit: demandFit,
@@ -155,7 +167,9 @@ function buildMatchReport(me: any, target: any) {
       system_fit: systemFit,
       trust_fit: trustFit,
     },
-    summary: buildSummary(totalScore, me.nickname, target.nickname, opportunities),
+    summary: conclusion,
+    evidence,
+    collaboration_entrypoints: entrypoints,
     opportunities,
     risks,
     next_actions: nextActions,
@@ -166,6 +180,11 @@ function getValueProfile(config: any): ValueProfile {
   return config && config.value_profile ? config.value_profile : {};
 }
 
+function getOpenDemands(config: any): DemandPost[] {
+  const posts = config && Array.isArray(config.demand_posts) ? config.demand_posts : [];
+  return posts.filter((item: DemandPost) => item && item.status === 'open' && item.title);
+}
+
 function publicAgent(agent: any, profile: ValueProfile) {
   return {
     cid: agent.cid,
@@ -174,6 +193,7 @@ function publicAgent(agent: any, profile: ValueProfile) {
     trust_score: agent.trust_score || 0,
     energy_status: agent.energy_status || 'unknown',
     value_profile: profile,
+    demand_posts: getOpenDemands(agent.agent_config),
   };
 }
 
@@ -212,6 +232,96 @@ function buildOpportunities(myProfile: ValueProfile, targetProfile: ValueProfile
   return items.length > 0 ? items : ['双方公开档案信息还不完整，建议先通过一次15分钟互相介绍建立上下文。'];
 }
 
+function classifyMatch(myProfile: ValueProfile, targetProfile: ValueProfile, myTags: string[], targetTags: string[], totalScore: number) {
+  const myNeed = hasText(myProfile.vision_needs);
+  const targetNeed = hasText(targetProfile.vision_needs);
+  const myCapability = hasText(myProfile.service_capabilities);
+  const targetCapability = hasText(targetProfile.service_capabilities);
+  const sharedTags = myTags.filter(tag => targetTags.includes(tag));
+
+  if (myNeed && targetCapability && scoreTextFit(myProfile.vision_needs, targetProfile.service_capabilities) >= 58) {
+    return { key: 'need_service', label: '需求-服务型' };
+  }
+  if (myCapability && targetNeed && scoreTextFit(targetProfile.vision_needs, myProfile.service_capabilities) >= 58) {
+    return { key: 'resource_exchange', label: '资源互补型' };
+  }
+  if (sharedTags.length > 0 && totalScore >= 60) {
+    return { key: 'peer_cocreation', label: '同阶段共创型' };
+  }
+  if (targetCapability && !myCapability) {
+    return { key: 'mentor_support', label: '经验支持型' };
+  }
+  return { key: 'exploratory', label: '轻量认识型' };
+}
+
+function buildConclusion(totalScore: number, matchTypeLabel: string, myName: string, targetName: string) {
+  if (totalScore >= 75) {
+    return `${myName || '你'}和${targetName || '对方'}属于${matchTypeLabel}，建议直接用一次小交付或短沟通验证合作。`;
+  }
+  if (totalScore >= 60) {
+    return `${myName || '你'}和${targetName || '对方'}属于${matchTypeLabel}，适合先交换需求边界，再决定是否推进。`;
+  }
+  return `${myName || '你'}和${targetName || '对方'}目前更适合轻量认识，暂不建议直接进入正式合作。`;
+}
+
+function buildEvidence(matchType: string, myProfile: ValueProfile, targetProfile: ValueProfile, sharedTags: string[], complementTags: string[]) {
+  const items: string[] = [];
+  if (matchType === 'need_service') {
+    items.push(`你的当前需求是「${shortText(myProfile.vision_needs)}」，对方能力里出现了可回应的方向。`);
+    items.push(`对方能力描述为「${shortText(targetProfile.service_capabilities)}」，适合先验证一次具体问题。`);
+  } else if (matchType === 'resource_exchange') {
+    items.push(`对方有明确需求「${shortText(targetProfile.vision_needs)}」，你的能力可能形成反向支持。`);
+    items.push(`你的能力描述为「${shortText(myProfile.service_capabilities)}」，可以先提出一个小范围帮助。`);
+  } else if (matchType === 'peer_cocreation') {
+    items.push(`你们共同处在${sharedTags.map(tag => SYSTEM_LABELS[tag] || tag).join('、')}相关方向，理解成本较低。`);
+    items.push('双方适合先互相拆解一个真实问题，而不是一开始谈长期合作。');
+  } else if (matchType === 'mentor_support') {
+    items.push(`对方已有能力沉淀「${shortText(targetProfile.service_capabilities)}」，适合向其请教路径或预约服务。`);
+    items.push('你可以先把自己的问题压缩成一个具体场景，让对方判断是否能支持。');
+  } else {
+    items.push('双方公开信息还不足，当前结论只能支持轻量认识。');
+    items.push('建议先补充需求、服务能力和项目经历后再重新匹配。');
+  }
+
+  if (sharedTags.length > 0) {
+    items.push(`共同标签：${sharedTags.map(tag => SYSTEM_LABELS[tag] || tag).join('、')}。`);
+  } else if (complementTags.length > 0) {
+    items.push(`对方补充方向：${complementTags.map(tag => SYSTEM_LABELS[tag] || tag).join('、')}。`);
+  }
+  return items.filter(item => !item.includes('「」')).slice(0, 3);
+}
+
+function buildEntrypoints(matchType: string, myProfile: ValueProfile, targetProfile: ValueProfile, targetName: string) {
+  if (matchType === 'need_service') {
+    return [
+      `把你的需求收窄成一个问题，发给${targetName || '对方'}判断是否能交付。`,
+      '如果对方已有服务，优先预约一次低金额或短时长服务验证。',
+    ];
+  }
+  if (matchType === 'resource_exchange') {
+    return [
+      `先告诉${targetName || '对方'}：你能为其当前需求提供哪一个具体资源或动作。`,
+      '用一次资源互换或样本共创测试双方配合感。',
+    ];
+  }
+  if (matchType === 'peer_cocreation') {
+    return [
+      '各自带一个正在推进的问题，做一次30分钟互相拆解。',
+      '沟通后只保留一个3-7天能完成的小共创动作。',
+    ];
+  }
+  if (matchType === 'mentor_support') {
+    return [
+      '先请对方看你的当前卡点，并请求一个方向判断。',
+      '如果对方有服务，优先用一次咨询替代泛泛聊天。',
+    ];
+  }
+  return [
+    '先看对方公开档案，不急着谈合作。',
+    '只发起一次低承诺沟通，确认彼此是否值得继续了解。',
+  ];
+}
+
 function buildRisks(myProfile: ValueProfile, targetProfile: ValueProfile, sharedTags: string[], trustFit: number) {
   const risks: string[] = [];
   if (!myProfile.vision_needs || !targetProfile.service_capabilities) {
@@ -226,25 +336,36 @@ function buildRisks(myProfile: ValueProfile, targetProfile: ValueProfile, shared
   return risks;
 }
 
-function buildNextActions(totalScore: number, myProfile: ValueProfile, targetProfile: ValueProfile) {
-  const actions = [
-    '先交换各自当前最想解决的一个问题。',
-    '约一次15-30分钟线上沟通，明确是否有具体协作场景。',
-  ];
-  if (totalScore >= 75) {
-    actions.push('可以直接设计一次小型试合作：明确交付物、时间、费用或互换价值。');
-  } else {
-    actions.push('暂不建议直接进入长期合作，先用一次低成本沟通验证匹配度。');
-  }
+function buildNextActions(totalScore: number, matchType: string, myProfile: ValueProfile, targetProfile: ValueProfile) {
+  const actionByType: Record<string, string> = {
+    need_service: '先用一句话说明你的需求、预算或时间边界，再询问对方是否能交付。',
+    resource_exchange: '先提出一个你能给对方的具体资源，再询问对方是否愿意互换一次。',
+    peer_cocreation: '先约一次30分钟问题互拆，不讨论长期合作。',
+    mentor_support: '先请对方判断你的下一步路径，不要直接索要完整方案。',
+    exploratory: '先补充双方档案，再重新生成匹配报告。',
+  };
+  const actions = [actionByType[matchType] || actionByType.exploratory];
+  actions.push(totalScore >= 75
+    ? '把下一步拆成一个3-7天可完成的小任务，并写清交付物。'
+    : '先做一次低承诺沟通，确认目标一致后再推进。');
   if (!myProfile.core_value || !targetProfile.core_value) {
     actions.push('双方都应先补全核心价值档案，让Agent后续判断更准确。');
   }
-  return actions;
+  return actions.slice(0, 3);
 }
 
 function buildSummary(totalScore: number, myName: string, targetName: string, opportunities: string[]) {
   const level = totalScore >= 75 ? '较高' : totalScore >= 60 ? '中等' : '初步';
   return `${myName || '你'} 与 ${targetName || '对方'} 的协作匹配度为${level}。${opportunities[0] || '建议先补充公开档案后再判断下一步。'}`;
+}
+
+function hasText(value = '') {
+  return String(value || '').trim().length >= 4;
+}
+
+function shortText(value = '', max = 42) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  return text.length > max ? `${text.slice(0, max)}...` : text;
 }
 
 export default router;

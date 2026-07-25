@@ -11,7 +11,10 @@ Page({
     actionHint: '',
     primaryActionTitle: '',
     primaryActionText: '',
-    actionCards: [],
+    concreteActions: [],
+    keyFindings: [],
+    entrypoints: [],
+    cautionItems: [],
     loading: true,
     scoreColor: '#999',
   },
@@ -106,9 +109,12 @@ Page({
         targetServices: services,
         primaryService: services.length > 0 ? services[0] : null,
         actionHint: this.getActionHint(report, services),
-        primaryActionTitle: services.length > 0 ? `预约「${services[0].name}」` : '先发起连接',
-        primaryActionText: services.length > 0 ? '立即预约服务' : '发起连接',
-        actionCards: this.buildActionCards(report, services),
+        primaryActionTitle: services.length > 0 ? `先预约「${services[0].name}」` : '先发起连接',
+        primaryActionText: services.length > 0 ? '预约这个服务' : '发起连接',
+        concreteActions: this.buildConcreteActions(report, services),
+        keyFindings: this.buildKeyFindings(report),
+        entrypoints: this.buildEntrypoints(report),
+        cautionItems: this.buildCautionItems(report),
       });
     } catch (err) {
       console.log('[loadTargetServices]', err);
@@ -116,7 +122,10 @@ Page({
         actionHint: this.getActionHint(report, []),
         primaryActionTitle: '先发起连接',
         primaryActionText: '发起连接',
-        actionCards: this.buildActionCards(report, []),
+        concreteActions: this.buildConcreteActions(report, []),
+        keyFindings: this.buildKeyFindings(report),
+        entrypoints: this.buildEntrypoints(report),
+        cautionItems: this.buildCautionItems(report),
       });
     }
   },
@@ -165,21 +174,6 @@ Page({
     wx.navigateTo({ url: `/pages/services/detail?id=${e.currentTarget.dataset.id}` });
   },
 
-  copySummary() {
-    if (!this.data.report) return;
-    const report = this.data.report;
-    const text = [
-      `Agent匹配度：${report.total_score}/100`,
-      report.summary,
-      '下一步建议：',
-      ...(report.next_actions || []).map((item, index) => `${index + 1}. ${item}`),
-    ].join('\n');
-    wx.setClipboardData({
-      data: text,
-      success: () => wx.showToast({ title: '已复制报告摘要', icon: 'none' }),
-    });
-  },
-
   copyIntentMessage() {
     if (!this.data.report) return;
     const report = this.data.report;
@@ -191,10 +185,8 @@ Page({
       : '建议先做一次轻量沟通，确认双方目标、资源和可协作事项。';
     const text = [
       `${targetName}，你好，我看了我们的 Agent 匹配报告。`,
-      `匹配度：${report.total_score}/100。`,
-      `我的理解：${report.summary}`,
-      `建议下一步：${nextAction}`,
-      '如果你也感兴趣，我们可以先约一次短沟通，确认是否适合继续推进。',
+      `我理解我们可以先从一个很小的点验证：${nextAction}`,
+      '如果你也感兴趣，我们可以先约 15 分钟，确认目标、边界和下一步动作。',
     ].join('\n');
 
     wx.setClipboardData({
@@ -204,39 +196,67 @@ Page({
   },
 
   getActionHint(report, services) {
+    if (report && report.collaboration_entrypoints && report.collaboration_entrypoints.length > 0) {
+      return report.collaboration_entrypoints[0];
+    }
     if (services && services.length > 0) {
-      return '对方已有可预约服务，建议直接选择一个低风险服务开始验证。';
+      return '不要先聊太散。对方已有服务，优先用一次小交付验证是否合适。';
     }
     if (report && report.total_score >= 75) {
-      return '匹配度较高，建议先发起连接，再复制合作意向进行沟通。';
+      return '匹配度较高，先建立连接，并把沟通目标压缩到一次 15 分钟短沟通。';
     }
     if (report && report.total_score >= 60) {
-      return '匹配度中等，建议先看公开档案，确认需求和能力是否足够具体。';
+      return '先别急着合作。先看对方档案，确认需求和能力是否足够具体。';
     }
-    return '匹配度偏探索，建议先收藏报告或补充双方档案后再判断。';
+    return '当前更适合观察。先补充双方需求和服务边界，再重新判断。';
   },
 
-  buildActionCards(report, services) {
+  buildConcreteActions(report, services) {
+    if (report && report.next_actions && report.next_actions.length > 0) {
+      return report.next_actions.slice(0, 2);
+    }
     const hasService = services && services.length > 0;
     const score = report ? Number(report.total_score || 0) : 0;
+    if (hasService) {
+      return [
+        `先点预约「${services[0].name}」，用一次小交付验证配合感。`,
+        '预约备注里写清楚：你的目标、当前卡点、希望对方交付什么。',
+      ];
+    }
+    if (score >= 75) {
+      return [
+        '先发起连接，说明你对哪一个需求或能力感兴趣。',
+        '约一次 15 分钟短沟通，只确认目标、资源、下一步小实验。',
+      ];
+    }
+    if (score >= 60) {
+      return [
+        '先看对方档案，确认对方需求是否与你的能力有关。',
+        '只问一个具体问题：现在最需要别人帮你推进哪一步？',
+      ];
+    }
     return [
-      {
-        title: hasService ? '从服务开始' : '先建立连接',
-        desc: hasService
-          ? '对方已有可预约服务，适合用一次小交付验证合作感。'
-          : '对方暂无上架服务，先连接并复制破冰话术沟通。',
-      },
-      {
-        title: '发送破冰话术',
-        desc: '复制系统生成的合作意向，发给对方后再确认时间和目标。',
-      },
-      {
-        title: score >= 75 ? '推进试合作' : '先做轻沟通',
-        desc: score >= 75
-          ? '匹配度较高，可以设计一次边界清楚的小型试合作。'
-          : '匹配度仍需验证，建议先用 15-30 分钟沟通补齐信息。',
-      },
+      '暂时不要推进合作，先把双方需求和服务边界写清楚。',
+      '如果仍感兴趣，只做一次低承诺沟通，不谈正式合作。',
     ];
+  },
+
+  buildKeyFindings(report) {
+    return (report && report.evidence && report.evidence.length > 0 ? report.evidence : report && report.opportunities ? report.opportunities : [])
+      .filter(Boolean)
+      .slice(0, 3);
+  },
+
+  buildEntrypoints(report) {
+    return (report && report.collaboration_entrypoints ? report.collaboration_entrypoints : [])
+      .filter(Boolean)
+      .slice(0, 2);
+  },
+
+  buildCautionItems(report) {
+    return (report && report.risks ? report.risks : [])
+      .filter(Boolean)
+      .slice(0, 2);
   },
 
   getScoreColor(score) {

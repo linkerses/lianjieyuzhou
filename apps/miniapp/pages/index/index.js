@@ -44,16 +44,34 @@ Page({
     },
     profileGuide: null,
     onboardingTasks: [],
+    primaryTask: null,
     onboardingProgressText: '0/4',
     // 首页三段式内容
     agentNote: null,             // Agent提醒卡片
     recommendations: [],         // 预演推荐列表
+    latestDemands: [],
     latestServices: [],
+    latestAgents: [],
+    configuredCommunityPosts: [],
+    communityFeed: [
+      {
+        id: 'announcement_onboarding',
+        type: 'announcement',
+        kind: 'announcement',
+        label: '公告',
+        title: '联结宇宙 · 联结者招募中',
+        desc: '发布你的需求、服务和公开档案，让合适的人更容易找到你。',
+        action: '去看看',
+      },
+    ],
     recentTransactions: [],      // 最近交易
     loading: {
       agent: true,
       recommend: true,
+      demands: true,
       latest: true,
+      agents: true,
+      community: true,
       transactions: true,
       onboarding: true,
     },
@@ -68,7 +86,10 @@ Page({
     if (this.data.userLoaded) {
       this.loadAgent();
       this.loadRecommendations();
+      this.loadCommunityPosts();
+      this.loadLatestDemands();
       this.loadLatestServices();
+      this.loadLatestAgents();
       this.loadTransactions();
     }
   },
@@ -93,7 +114,10 @@ Page({
     await Promise.all([
       this.loadAgent(),
       this.loadRecommendations(),
+      this.loadCommunityPosts(),
+      this.loadLatestDemands(),
       this.loadLatestServices(),
+      this.loadLatestAgents(),
       this.loadTransactions(),
     ]);
   },
@@ -190,13 +214,14 @@ Page({
     try {
       const res = await app.request({
         url: '/services',
-        data: { limit: 3 },
+        data: { limit: 2 },
       });
 
       this.setData({
         latestServices: (res.data || []).map(item => this.formatService(item)),
         'loading.latest': false,
       });
+      this.updateCommunityFeed();
     } catch (err) {
       console.error('[loadLatestServices error]', err);
       this.setData({ 'loading.latest': false });
@@ -224,6 +249,59 @@ Page({
     }
   },
 
+  async loadCommunityPosts() {
+    try {
+      const res = await app.request({
+        url: '/community/posts',
+        data: { limit: 6 },
+      });
+
+      this.setData({
+        configuredCommunityPosts: (res.data || []).map(item => this.formatCommunityPost(item)),
+        'loading.community': false,
+      });
+      this.updateCommunityFeed();
+    } catch (err) {
+      console.error('[loadCommunityPosts error]', err);
+      this.setData({ 'loading.community': false });
+      this.updateCommunityFeed();
+    }
+  },
+
+  async loadLatestDemands() {
+    try {
+      const res = await app.request({
+        url: '/agents/public',
+        data: { limit: 30, sort: 'latest' },
+      });
+      this.setData({
+        latestDemands: this.flattenDemands(res.data || []).slice(0, 2),
+        'loading.demands': false,
+      });
+      this.updateCommunityFeed();
+    } catch (err) {
+      console.error('[loadLatestDemands error]', err);
+      this.setData({ 'loading.demands': false });
+    }
+  },
+
+  async loadLatestAgents() {
+    try {
+      const res = await app.request({
+        url: '/agents/public',
+        data: { limit: 2, sort: 'latest' },
+      });
+      this.setData({
+        latestAgents: (res.data || []).slice(0, 2).map(item => this.formatAgent(item)),
+        'loading.agents': false,
+      });
+      this.updateCommunityFeed();
+    } catch (err) {
+      console.error('[loadLatestAgents error]', err);
+      this.setData({ 'loading.agents': false });
+    }
+  },
+
   async loadOnboardingTasks(agent) {
     try {
       const [matchesRes, servicesRes, transactionsRes] = await Promise.all([
@@ -241,7 +319,7 @@ Page({
         {
           key: 'profile',
           title: '完善 Agent 档案',
-          desc: '补全价值、能力、经历和需求，推荐与匹配会更准确。',
+          desc: '补全价值、能力和经历，推荐与匹配会更准确。',
           done: profileDone,
           action: profileDone ? '已完成' : '去完善',
           target: 'agent',
@@ -275,6 +353,7 @@ Page({
       const doneCount = tasks.filter(item => item.done).length;
       this.setData({
         onboardingTasks: tasks,
+        primaryTask: tasks.find(item => !item.done) || null,
         onboardingProgressText: `${doneCount}/${tasks.length}`,
         'loading.onboarding': false,
       });
@@ -292,7 +371,7 @@ Page({
       confirmText: '去完善',
       success: (res) => {
         if (res.confirm) {
-          wx.switchTab({ url: '/pages/agent/agent' });
+          wx.navigateTo({ url: '/pages/agent/agent' });
         }
       },
     });
@@ -311,13 +390,13 @@ Page({
   },
 
   onTapNewUserGuide() {
-    wx.switchTab({ url: '/pages/agent/agent' });
+    wx.navigateTo({ url: '/pages/agent/agent' });
   },
 
   onTapOnboardingTask(e) {
     const { target } = e.currentTarget.dataset;
     if (target === 'agent') {
-      wx.switchTab({ url: '/pages/agent/agent' });
+      wx.navigateTo({ url: '/pages/agent/agent' });
       return;
     }
     if (target === 'plaza') {
@@ -327,12 +406,16 @@ Page({
     }
     if (target === 'match') {
       wx.setStorageSync('agent_default_tab', 'match');
-      wx.switchTab({ url: '/pages/agent/agent' });
+      wx.navigateTo({ url: '/pages/agent/agent' });
       return;
     }
     if (target === 'service') {
       wx.switchTab({ url: '/pages/services/services' });
     }
+  },
+
+  goDemands() {
+    wx.switchTab({ url: '/pages/demands/demands' });
   },
 
   goServices() {
@@ -345,6 +428,35 @@ Page({
 
   goTransactions() {
     wx.navigateTo({ url: '/pages/transaction/transaction' });
+  },
+
+  viewAgent(e) {
+    wx.navigateTo({ url: `/pages/agents/public?cid=${e.currentTarget.dataset.cid}` });
+  },
+
+  applyMatch(e) {
+    wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
+  },
+
+  onTapCommunityItem(e) {
+    const { type, targetType, id, cid, url } = e.currentTarget.dataset;
+    const navType = targetType && targetType !== 'none' ? targetType : type;
+    if (navType === 'service' && id) {
+      wx.navigateTo({ url: `/pages/services/detail?id=${id}` });
+      return;
+    }
+    if ((navType === 'demand' || navType === 'agent') && cid) {
+      wx.navigateTo({ url: `/pages/agents/public?cid=${cid}` });
+      return;
+    }
+    if (navType === 'url' && url) {
+      wx.setClipboardData({ data: url });
+      wx.showToast({ title: '链接已复制', icon: 'none' });
+      return;
+    }
+    if (type === 'announcement' || type === 'activity' || type === 'update') {
+      this.goDemands();
+    }
   },
 
   onDismissNote() {
@@ -372,7 +484,9 @@ Page({
     if (!valueProfile.core_value) missing.push('核心价值');
     if (!valueProfile.service_capabilities) missing.push('服务能力');
     if (!valueProfile.project_experience) missing.push('项目经历');
-    if (!valueProfile.vision_needs) missing.push('愿景需求');
+    const demandPosts = config.demand_posts || [];
+    const hasOpenDemand = demandPosts.some(item => item && item.status === 'open' && item.title);
+    if (!hasOpenDemand && !valueProfile.vision_needs) missing.push('当前需求');
 
     if (missing.length === 0) return null;
 
@@ -400,7 +514,121 @@ Page({
     };
   },
 
+  flattenDemands(agents) {
+    const demands = [];
+    (agents || []).forEach(agent => {
+      const posts = (agent.demand_posts || []).filter(item => item && item.status === 'open' && item.title);
+      posts.forEach(post => {
+        demands.push({
+          id: `${agent.cid}_${post.id || post.title}`,
+          title: post.title || '',
+          description: post.description || '',
+          agent_cid: agent.cid,
+          nickname: agent.nickname || '联结者',
+          created_at: post.created_at || agent.updated_at || '',
+        });
+      });
+    });
+    return demands.sort((a, b) => String(b.created_at || '').localeCompare(String(a.created_at || '')));
+  },
+
+  formatAgent(item) {
+    const profile = item.value_profile || {};
+    const demands = (item.demand_posts || []).filter(post => post && post.status === 'open' && post.title);
+    return {
+      ...item,
+      initial: item.nickname ? item.nickname.slice(0, 1) : '?',
+      core_value: profile.core_value || '暂未填写核心价值',
+      demand_title: demands.length > 0 ? demands[0].title : '暂未发布需求',
+    };
+  },
+
+  formatCommunityPost(item) {
+    const labels = {
+      announcement: '公告',
+      demand: '需求',
+      service: '服务',
+      agent: 'Agent',
+      update: '动态',
+      activity: '活动',
+    };
+    return {
+      id: item.id,
+      type: item.type || 'announcement',
+      kind: item.type || 'announcement',
+      label: labels[item.type] || '动态',
+      title: item.title || '社区动态',
+      desc: item.summary || '有新的社区信息更新',
+      action: item.action_text || '查看',
+      target_type: item.target_type || 'none',
+      target_id: item.target_id || '',
+      target_cid: item.target_cid || '',
+      target_url: item.target_url || '',
+    };
+  },
+
   formatTags(tags) {
     return (tags || []).map(tag => TAG_LABELS[tag] || tag);
+  },
+
+  updateCommunityFeed() {
+    const feed = (this.data.configuredCommunityPosts || []).slice(0, 6);
+
+    const fallbackFeed = [
+      {
+        id: 'announcement_onboarding',
+        type: 'announcement',
+        kind: 'announcement',
+        label: '公告',
+        title: '联结宇宙 · 联结者招募中',
+        desc: '发布你的需求、服务和公开档案，让合适的人更容易找到你。',
+        action: '去看看',
+      },
+    ];
+
+    (this.data.latestDemands || []).slice(0, 2).forEach(item => {
+      fallbackFeed.push({
+        id: `demand_${item.id}`,
+        type: 'demand',
+        kind: 'demand',
+        label: '需求',
+        title: item.title || '新的公开需求',
+        desc: item.nickname ? `${item.nickname} 正在寻找帮助` : '有人发布了新的需求',
+        action: '看需求',
+        target_cid: item.agent_cid,
+      });
+    });
+
+    (this.data.latestServices || []).slice(0, 2).forEach(item => {
+      fallbackFeed.push({
+        id: `service_${item.id}`,
+        type: 'service',
+        kind: 'service',
+        label: '服务',
+        title: item.name || '新上架服务',
+        desc: `${item.system_label || '服务'} · ${item.price || 0}元`,
+        action: '看服务',
+        target_id: item.id,
+      });
+    });
+
+    (this.data.latestAgents || []).slice(0, 2).forEach(item => {
+      fallbackFeed.push({
+        id: `agent_${item.cid}`,
+        type: 'agent',
+        kind: 'agent',
+        label: '新Agent',
+        title: item.nickname || '联结者',
+        desc: item.demand_title || item.core_value || '公开档案已更新',
+        action: '看档案',
+        target_cid: item.cid,
+      });
+    });
+
+    fallbackFeed.forEach(item => {
+      if (feed.length < 6) feed.push(item);
+    });
+
+    this.setData({ communityFeed: feed.slice(0, 6) });
   },
 });

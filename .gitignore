@@ -1,0 +1,13 @@
+.env
+*.local
+node_modules/
+dist/
+sourcemap.zip
+
+.DS_Store
+Thumbs.db
+
+.obsidian/
+.claudian/
+
+apps/miniapp/project.private.config.json

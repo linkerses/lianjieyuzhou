@@ -5,9 +5,23 @@
 
   <view wx:elif="{{transaction}}">
 
-    <!-- 状态横幅 -->
-    <view class="status-banner status-{{transaction.status}}">
-      <text>{{statusLabel}}</text>
+    <view class="tx-detail-hero status-{{transaction.status}}">
+      <view class="tx-detail-head">
+        <text class="tx-role">{{roleLabel}}</text>
+        <text class="tx-status-pill">{{statusLabel}}</text>
+      </view>
+      <text class="tx-detail-title">{{serviceName}}</text>
+      <text class="tx-detail-hint">{{statusHint}}</text>
+      <view class="tx-summary-grid">
+        <view class="tx-summary-item">
+          <text class="tx-summary-label">金额</text>
+          <text class="tx-summary-value">{{amountText}}</text>
+        </view>
+        <view class="tx-summary-item">
+          <text class="tx-summary-label">预约时间</text>
+          <text class="tx-summary-value">{{scheduledText || '未设置'}}</text>
+        </view>
+      </view>
     </view>
 
     <!-- 交易信息 -->
@@ -21,11 +35,11 @@
       </view>
       <view class="info-row">
         <text class="info-label">金额</text>
-        <text class="info-value price">{{transaction.amount}}元</text>
+        <text class="info-value price">{{amountText}}</text>
       </view>
       <view class="info-row" wx:if="{{transaction.scheduled_at}}">
         <text class="info-label">预约时间</text>
-        <text class="info-value">{{transaction.scheduled_at}}</text>
+        <text class="info-value">{{scheduledText}}</text>
       </view>
       <view class="info-row" wx:if="{{transaction.booking_note}}">
         <text class="info-label">预约备注</text>
@@ -33,7 +47,7 @@
       </view>
       <view class="info-row" wx:if="{{transaction.completed_at}}">
         <text class="info-label">完成时间</text>
-        <text class="info-value">{{transaction.completed_at}}</text>
+        <text class="info-value">{{completedText}}</text>
       </view>
       <view class="info-row" wx:if="{{transaction.pre_score}}">
         <text class="info-label">预演评分</text>
@@ -81,13 +95,14 @@
 
       <!-- 评分表单 -->
       <view class="score-form" wx:if="{{scoring}}">
+        <text class="score-form-title">给这次协作一个真实反馈</text>
         <view class="form-group">
           <text class="form-label">评分</text>
           <slider min="0" max="5" step="0.5" value="{{rating}}" show-value bindchange="onRatingChange" />
         </view>
         <view class="form-group">
           <text class="form-label">文字反馈</text>
-          <input class="form-input" placeholder="分享你的体验..." bindinput="onNoteInput" />
+          <textarea class="form-textarea" maxlength="300" placeholder="例如：对方是否准时、是否解决问题、交付是否清楚。" bindinput="onNoteInput" />
         </view>
         <button class="btn-primary" catch:tap="submitFeedback">提交评分</button>
       </view>

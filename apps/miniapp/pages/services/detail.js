@@ -15,7 +15,10 @@ Page({
     },
     serviceSystemText: '',
     deliveryMethodText: '',
+    priceText: '',
+    providerInitial: '?',
     descriptionSections: [],
+    summaryPills: [],
     loading: true,
     booking: false,
   },
@@ -56,7 +59,10 @@ Page({
         },
         serviceSystemText: this.formatServiceSystem(service),
         deliveryMethodText: this.formatDeliveryMethod(service && service.delivery_method),
+        priceText: this.formatPrice(service && service.price),
+        providerInitial: this.getProviderInitial(service),
         descriptionSections: this.parseDescriptionSections(service && service.description),
+        summaryPills: this.buildSummaryPills(service),
         loading: false,
       });
     } catch (err) {
@@ -107,9 +113,45 @@ Page({
 
   formatServiceSystem(service) {
     if (!service) return '';
-    return service.secondary_system
-      ? `${service.primary_system} + ${service.secondary_system}`
-      : service.primary_system;
+    const primary = this.formatSystem(service.primary_system);
+    const secondary = service.secondary_system ? this.formatSystem(service.secondary_system) : '';
+    return secondary ? `${primary} + ${secondary}` : primary;
+  },
+
+  formatSystem(system) {
+    const map = {
+      health: '健康',
+      living: '生活',
+      connection: '连接',
+      growth: '成长',
+      wealth: '财富',
+      create: '创造',
+      explore: '探索',
+      spirit: '精神',
+      future: '未来',
+    };
+    return map[system] || system || '';
+  },
+
+  formatPrice(price) {
+    const value = Number(price || 0);
+    if (!Number.isFinite(value) || value <= 0) return '面议';
+    return `${value}元`;
+  },
+
+  getProviderInitial(service) {
+    const name = service && (service.provider_nickname || service.provider_cid);
+    return name ? String(name).slice(0, 1) : '?';
+  },
+
+  buildSummaryPills(service) {
+    if (!service) return [];
+    return [
+      this.formatServiceSystem(service),
+      service.duration_minutes ? `${service.duration_minutes}分钟` : '',
+      this.formatDeliveryMethod(service.delivery_method),
+      service.delivery_count ? `交付 ${service.delivery_count}次` : '',
+    ].filter(Boolean);
   },
 
   formatDeliveryMethod(method) {
@@ -127,7 +169,9 @@ Page({
 
     return [
       { label: '服务介绍', text: this.extractSection(text, '服务介绍：', '适合谁：') },
-      { label: '适合谁', text: this.extractSection(text, '适合谁：', '不适合谁：') },
+      { label: '适合人群', text: this.extractSection(text, '适合谁：', '交付物：') || this.extractSection(text, '适合谁：', '不适合谁：') },
+      { label: '交付物', text: this.extractSection(text, '交付物：', '案例描述：') },
+      { label: '案例描述', text: this.extractSection(text, '案例描述：', '不适合谁：') },
       { label: '不适合谁', text: this.extractSection(text, '不适合谁：', '') },
     ].filter(item => item.text);
   },

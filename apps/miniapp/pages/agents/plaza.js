@@ -94,6 +94,8 @@ Page({
 
   formatAgent(item) {
     const profile = item.value_profile || {};
+    const demandPosts = this.normalizeDemandPosts(item.demand_posts || []);
+    const primaryDemand = demandPosts[0];
     const initial = item.nickname ? item.nickname.slice(0, 1) : '?';
     const serviceCount = item.service_count || 0;
     const completion = item.profile_completion || 0;
@@ -104,7 +106,8 @@ Page({
       core_value: profile.core_value || '暂未填写核心价值',
       service_capabilities: profile.service_capabilities || '暂未填写服务能力',
       project_experience: profile.project_experience || '',
-      vision_needs: profile.vision_needs || '暂未填写愿景需求',
+      vision_needs: primaryDemand ? primaryDemand.title : (profile.vision_needs || '暂未发布需求'),
+      demand_posts: demandPosts,
       service_badge: serviceCount > 0 ? `${serviceCount}个服务` : '暂无服务',
       completion_badge: `档案${completion}%`,
       service_badge_class: serviceCount > 0 ? 'metric-pill strong' : 'metric-pill',
@@ -112,11 +115,23 @@ Page({
       has_complete_profile: hasCompleteProfile,
       life_stage_tag_labels: this.formatTags(item.life_stage_tags || []),
       contact_reason: this.buildContactReason(profile, serviceCount, completion),
+      primary_label: this.buildPrimaryLabel(profile, demandPosts, serviceCount, completion),
+      updated_label: this.formatTimeLabel(item.updated_at),
     };
   },
 
   formatTags(tags) {
     return (tags || []).map(tag => TAG_LABELS[tag] || tag);
+  },
+
+  normalizeDemandPosts(posts) {
+    return (posts || [])
+      .filter(item => item && item.status === 'open' && item.title)
+      .map(item => ({
+        id: item.id || item.title,
+        title: item.title || '',
+        description: item.description || '',
+      }));
   },
 
   buildContactReason(profile, serviceCount, completion) {
@@ -130,5 +145,27 @@ Page({
       return '档案较完整，适合先查看公开档案判断合作方向。';
     }
     return '档案还在完善中，建议先查看基础信息或等待对方补充。';
+  },
+
+  buildPrimaryLabel(profile, demandPosts, serviceCount, completion) {
+    if (demandPosts.length > 0) return '有公开需求';
+    if (serviceCount > 0) return '可预约服务';
+    if (profile.service_capabilities) return '开放连接';
+    if (completion >= 80) return '档案完整';
+    return '新Agent';
+  },
+
+  formatTimeLabel(value) {
+    if (!value) return '最近更新';
+    const time = new Date(value).getTime();
+    if (!Number.isFinite(time)) return '最近更新';
+    const diff = Date.now() - time;
+    const hour = 60 * 60 * 1000;
+    const day = 24 * hour;
+    if (diff < hour) return '刚刚更新';
+    if (diff < day) return `${Math.floor(diff / hour)}小时前`;
+    if (diff < 7 * day) return `${Math.floor(diff / day)}天前`;
+    const date = new Date(time);
+    return `${date.getMonth() + 1}月${date.getDate()}日`;
   },
 });

@@ -1,0 +1,92 @@
+/* pages/agents/public.wxss */
+
+.public-agent-hero {
+  background: #FFFFFF;
+  border-radius: 18rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  border-left: 6rpx solid #2D3E2F;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.public-agent-hero .agent-basic {
+  margin-bottom: 18rpx;
+}
+
+.public-agent-summary {
+  display: block;
+  color: #2D3E2F;
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 1.55;
+  margin-bottom: 20rpx;
+}
+
+.public-agent-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  margin-bottom: 18rpx;
+}
+
+.public-agent-metric {
+  min-height: 96rpx;
+  border-radius: 14rpx;
+  background: #FAFAF8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12rpx 6rpx;
+  box-sizing: border-box;
+}
+
+.public-agent-metric-value {
+  display: block;
+  color: #2D3E2F;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.public-agent-metric-label {
+  display: block;
+  margin-top: 6rpx;
+  color: #A8B5A9;
+  font-size: 21rpx;
+  line-height: 1.35;
+}
+
+.public-agent-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+  margin-top: 18rpx;
+}
+
+.public-agent-actions .btn-inline {
+  width: 100%;
+  margin: 0;
+  height: 62rpx;
+  border-radius: 31rpx;
+}
+
+.public-agent-hero .tag-display {
+  margin-top: 4rpx;
+}
+
+.public-agent-hero .agent-basic-name {
+  font-size: 34rpx;
+}
+
+.public-agent-hero .agent-basic-cid {
+  color: #6B7D6E;
+}
+
+.demand-item .demand-desc {
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}

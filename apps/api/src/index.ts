@@ -11,6 +11,7 @@ import trustRouter from './routes/trust';
 import matchesRouter from './routes/matches';
 import adminRouter from './routes/admin';
 import feedbackRouter from './routes/feedback';
+import communityRouter from './routes/community';
 import { verifyToken } from './lib/auth-token';
 
 const app = express();
@@ -42,6 +43,7 @@ app.use('/api/skills', skillsRouter);
 app.use('/api/trust', trustRouter);
 app.use('/api/matches', matchesRouter);
 app.use('/api/feedback', feedbackRouter);
+app.use('/api/community', communityRouter);
 app.use('/api/admin', adminRouter);
 
 // ── 健康检查 ──

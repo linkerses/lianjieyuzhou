@@ -55,6 +55,8 @@ tr:hover td { background: #FBFAF6; }
 .pill.pending { background: #FFF2CD; color: #875C00; }
 .pill.paused, .pill.cancelled { background: #EFE7E0; color: #7B4D35; }
 .pill.archived, .pill.disabled { background: #ECECEC; color: #666; }
+.pill.hidden, .pill.ignored { background: #ECECEC; color: #666; }
+.pill.resolved, .pill.completed { background: #DDEBDD; color: #276135; }
 .actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .link { border: 0; background: none; padding: 0; color: #1F5C8A; cursor: pointer; }
 .empty { padding: 30px; color: #78857A; text-align: center; }
@@ -111,10 +113,12 @@ tr:hover td { background: #FBFAF6; }
 
   <div class="tabs">
     <div class="tab active" data-view="agents" onclick="switchView('agents')">Agent</div>
+    <div class="tab" data-view="demands" onclick="switchView('demands')">需求</div>
     <div class="tab" data-view="services" onclick="switchView('services')">服务</div>
     <div class="tab" data-view="transactions" onclick="switchView('transactions')">交易</div>
     <div class="tab" data-view="matches" onclick="switchView('matches')">匹配</div>
     <div class="tab" data-view="feedback" onclick="switchView('feedback')">反馈</div>
+    <div class="tab" data-view="community" onclick="switchView('community')">社区动态</div>
   </div>
 
   <section id="view-agents" class="view active">
@@ -123,11 +127,25 @@ tr:hover td { background: #FBFAF6; }
         <strong>Agent 列表</strong>
         <div class="filters">
           <input id="agentQ" class="input" placeholder="搜索 CID / 昵称">
-          <select id="agentStatus" class="select"><option value="all">全部状态</option><option value="active">active</option><option value="disabled">disabled</option><option value="left">left</option></select>
+          <select id="agentStatus" class="select"><option value="all">全部状态</option><option value="active">正常</option><option value="disabled">停用</option><option value="left">已离开</option></select>
           <button class="btn secondary" onclick="loadAgents()">查询</button>
         </div>
       </div>
       <div id="agentsTable" class="empty">等待加载</div>
+    </div>
+  </section>
+
+  <section id="view-demands" class="view">
+    <div class="panel">
+      <div class="panel-head">
+        <strong>需求动态</strong>
+        <div class="filters">
+          <input id="demandQ" class="input" placeholder="搜索需求 / CID / 昵称">
+          <select id="demandStatus" class="select"><option value="all">全部状态</option><option value="open">进行中</option><option value="resolved">已解决</option><option value="hidden">已隐藏</option></select>
+          <button class="btn secondary" onclick="loadDemands()">查询</button>
+        </div>
+      </div>
+      <div id="demandsTable" class="empty">等待加载</div>
     </div>
   </section>
 
@@ -137,7 +155,7 @@ tr:hover td { background: #FBFAF6; }
         <strong>服务列表</strong>
         <div class="filters">
           <input id="serviceQ" class="input" placeholder="搜索服务名 / 提供方 CID">
-          <select id="serviceStatus" class="select"><option value="all">全部状态</option><option value="active">active</option><option value="pending">pending</option><option value="paused">paused</option><option value="archived">archived</option></select>
+          <select id="serviceStatus" class="select"><option value="all">全部状态</option><option value="active">已上架</option><option value="pending">待上架</option><option value="paused">已暂停</option><option value="archived">已归档</option></select>
           <button class="btn secondary" onclick="loadServices()">查询</button>
         </div>
       </div>
@@ -151,7 +169,7 @@ tr:hover td { background: #FBFAF6; }
         <strong>交易列表</strong>
         <div class="filters">
           <input id="txCid" class="input" placeholder="按用户 CID 过滤">
-          <select id="txStatus" class="select"><option value="all">全部状态</option><option value="pending">pending</option><option value="confirmed">confirmed</option><option value="completed">completed</option><option value="rated">rated</option><option value="cancelled">cancelled</option></select>
+          <select id="txStatus" class="select"><option value="all">全部状态</option><option value="pending">待确认</option><option value="confirmed">已确认</option><option value="completed">已完成</option><option value="rated">已评价</option><option value="cancelled">已取消</option></select>
           <button class="btn secondary" onclick="loadTransactions()">查询</button>
         </div>
       </div>
@@ -177,12 +195,27 @@ tr:hover td { background: #FBFAF6; }
       <div class="panel-head">
         <strong>内测反馈</strong>
         <div class="filters">
-          <select id="feedbackStatus" class="select"><option value="all">全部状态</option><option value="open">open</option><option value="reviewing">reviewing</option><option value="resolved">resolved</option><option value="ignored">ignored</option></select>
+          <select id="feedbackStatus" class="select"><option value="all">全部状态</option><option value="open">待处理</option><option value="reviewing">处理中</option><option value="resolved">已解决</option><option value="ignored">已忽略</option></select>
           <select id="feedbackType" class="select"><option value="all">全部类型</option><option value="suggestion">功能建议</option><option value="confusing">看不懂/不会用</option><option value="service_need">想要的服务</option><option value="bug">错误/无法操作</option><option value="other">其他</option></select>
           <button class="btn secondary" onclick="loadFeedback()">查询</button>
         </div>
       </div>
       <div id="feedbackTable" class="empty">等待加载</div>
+    </div>
+  </section>
+
+  <section id="view-community" class="view">
+    <div class="panel">
+      <div class="panel-head">
+        <strong>社区动态</strong>
+        <div class="filters">
+          <select id="communityStatus" class="select"><option value="all">全部状态</option><option value="active">公开</option><option value="hidden">隐藏</option></select>
+          <select id="communityType" class="select"><option value="all">全部类型</option><option value="announcement">公告</option><option value="demand">需求</option><option value="service">服务</option><option value="agent">Agent</option><option value="update">动态</option><option value="activity">活动</option></select>
+          <button class="btn secondary" onclick="loadCommunityPosts()">查询</button>
+          <button class="btn" onclick="openCommunityModal()">发布动态</button>
+        </div>
+      </div>
+      <div id="communityTable" class="empty">等待加载</div>
     </div>
   </section>
 </div>
@@ -193,9 +226,15 @@ tr:hover td { background: #FBFAF6; }
     <div class="form-grid">
       <div class="form-item"><label class="form-label">CID</label><input id="editCid" class="input" disabled></div>
       <div class="form-item"><label class="form-label">称呼</label><input id="editNickname" class="input"></div>
-      <div class="form-item"><label class="form-label">状态</label><select id="editAgentStatus" class="select"><option value="active">active</option><option value="disabled">disabled</option><option value="left">left</option></select></div>
+      <div class="form-item"><label class="form-label">状态</label><select id="editAgentStatus" class="select"><option value="active">正常</option><option value="disabled">停用</option><option value="left">已离开</option></select></div>
+      <div class="form-item"><label class="form-label">生命状态</label><select id="editEnergyStatus" class="select"><option value="unknown">未设置</option><option value="输出期">输出期</option><option value="输入期">输入期</option><option value="调整期">调整期</option></select></div>
       <div class="form-item"><label class="form-label">信任分</label><input id="editTrustScore" class="input" type="number" min="0" max="5" step="0.1"></div>
+      <div class="form-item"><label class="form-label">性别</label><select id="editGender" class="select"><option value="">未设置</option><option value="男">男</option><option value="女">女</option><option value="其他">其他</option></select></div>
+      <div class="form-item full"><label class="form-label">头像URL</label><input id="editAvatarUrl" class="input" placeholder="可填图片链接"></div>
+      <div class="form-item"><label class="form-label">省份</label><input id="editProvince" class="input" placeholder="例如：浙江省"></div>
+      <div class="form-item"><label class="form-label">城市</label><input id="editCity" class="input" placeholder="例如：温州市"></div>
       <div class="form-item full"><label class="form-label">生命阶段标签，英文逗号分隔，最多 3 个</label><input id="editTags" class="input" placeholder="create,growth,wealth"></div>
+      <div class="form-item full"><label class="form-label">自我介绍</label><textarea id="editBio" class="textarea"></textarea></div>
       <div class="form-item full"><label class="form-label">核心价值</label><textarea id="editCoreValue" class="textarea"></textarea></div>
       <div class="form-item full"><label class="form-label">服务能力</label><textarea id="editCapabilities" class="textarea"></textarea></div>
       <div class="form-item full"><label class="form-label">项目经历</label><textarea id="editExperience" class="textarea"></textarea></div>
@@ -208,11 +247,141 @@ tr:hover td { background: #FBFAF6; }
   </div>
 </div>
 
+<div id="demandModal" class="modal-mask">
+  <div class="modal">
+    <h2>编辑需求</h2>
+    <div class="form-grid">
+      <div class="form-item"><label class="form-label">发布者 CID</label><input id="editDemandCid" class="input" disabled></div>
+      <div class="form-item"><label class="form-label">需求 ID</label><input id="editDemandId" class="input" disabled></div>
+      <div class="form-item full"><label class="form-label">需求标题</label><input id="editDemandTitle" class="input"></div>
+      <div class="form-item full"><label class="form-label">需求描述</label><textarea id="editDemandDesc" class="textarea"></textarea></div>
+      <div class="form-item"><label class="form-label">状态</label><select id="editDemandStatus" class="select"><option value="open">进行中</option><option value="resolved">已解决</option><option value="hidden">已隐藏</option></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeDemandModal()">取消</button>
+      <button class="btn" onclick="saveDemand()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="serviceModal" class="modal-mask">
+  <div class="modal">
+    <h2>编辑服务</h2>
+    <div class="form-grid">
+      <div class="form-item full"><label class="form-label">服务 ID</label><input id="editServiceId" class="input" disabled></div>
+      <div class="form-item full"><label class="form-label">服务名称</label><input id="editServiceName" class="input"></div>
+      <div class="form-item"><label class="form-label">价格</label><input id="editServicePrice" class="input" type="number" min="0" step="1"></div>
+      <div class="form-item"><label class="form-label">时长/分钟</label><input id="editServiceDuration" class="input" type="number" min="1" step="1"></div>
+      <div class="form-item"><label class="form-label">主系统</label><select id="editServiceSystem" class="select"></select></div>
+      <div class="form-item"><label class="form-label">交付方式</label><select id="editServiceDelivery" class="select"><option value="online">线上</option><option value="offline">线下</option><option value="hybrid">线上/线下</option></select></div>
+      <div class="form-item"><label class="form-label">状态</label><select id="editServiceStatus" class="select"><option value="pending">待上架</option><option value="active">已上架</option><option value="paused">已暂停</option><option value="archived">已归档</option></select></div>
+      <div class="form-item"><label class="form-label">地点</label><input id="editServiceLocation" class="input"></div>
+      <div class="form-item full"><label class="form-label">适合阶段，英文逗号分隔</label><input id="editServiceStages" class="input" placeholder="create,growth"></div>
+      <div class="form-item full"><label class="form-label">服务介绍</label><textarea id="editServiceDesc" class="textarea"></textarea></div>
+      <div class="form-item full"><label class="form-label">适合人群</label><textarea id="editServiceAudience" class="textarea"></textarea></div>
+      <div class="form-item full"><label class="form-label">交付物</label><textarea id="editServiceDeliverables" class="textarea"></textarea></div>
+      <div class="form-item full"><label class="form-label">案例描述</label><textarea id="editServiceCase" class="textarea"></textarea></div>
+      <div class="form-item full"><label class="form-label">不适合谁</label><textarea id="editServiceNotSuitable" class="textarea"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeServiceModal()">取消</button>
+      <button class="btn" onclick="saveService()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="communityModal" class="modal-mask">
+  <div class="modal">
+    <h2 id="communityModalTitle">发布社区动态</h2>
+    <div class="form-grid">
+      <div class="form-item full"><label class="form-label">动态 ID</label><input id="editCommunityId" class="input" disabled placeholder="新建时自动生成"></div>
+      <div class="form-item"><label class="form-label">类型</label><select id="editCommunityType" class="select"><option value="announcement">公告</option><option value="demand">需求</option><option value="service">服务</option><option value="agent">Agent</option><option value="update">动态</option><option value="activity">活动</option></select></div>
+      <div class="form-item"><label class="form-label">状态</label><select id="editCommunityStatus" class="select"><option value="active">公开</option><option value="hidden">隐藏</option></select></div>
+      <div class="form-item full"><label class="form-label">标题</label><input id="editCommunityTitle" class="input" maxlength="120" placeholder="例如：本周新增 3 个可预约服务"></div>
+      <div class="form-item full"><label class="form-label">摘要</label><textarea id="editCommunitySummary" class="textarea" maxlength="500" placeholder="写给首页用户看的 1-2 句话，尽量直接说明价值"></textarea></div>
+      <div class="form-item"><label class="form-label">按钮文案</label><input id="editCommunityAction" class="input" maxlength="30" placeholder="查看"></div>
+      <div class="form-item"><label class="form-label">跳转类型</label><select id="editCommunityTargetType" class="select"><option value="none">不跳转</option><option value="demand">需求/个人档案</option><option value="service">服务详情</option><option value="agent">Agent 档案</option><option value="url">外部链接</option></select></div>
+      <div class="form-item"><label class="form-label">服务/需求 ID</label><input id="editCommunityTargetId" class="input" placeholder="服务详情填服务 ID"></div>
+      <div class="form-item"><label class="form-label">Agent CID</label><input id="editCommunityTargetCid" class="input" placeholder="需求或 Agent 填 UC-M-0001"></div>
+      <div class="form-item full"><label class="form-label">外部链接</label><input id="editCommunityTargetUrl" class="input" placeholder="小程序内会复制链接，正式 web-view 再配置业务域名"></div>
+      <div class="form-item"><label class="form-label">置顶</label><select id="editCommunityPinned" class="select"><option value="false">不置顶</option><option value="true">置顶</option></select></div>
+      <div class="form-item"><label class="form-label">排序权重</label><input id="editCommunityWeight" class="input" type="number" min="0" max="9999" step="1" value="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeCommunityModal()">取消</button>
+      <button class="btn" onclick="saveCommunityPost()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = 'https://api.linkerses.com/api';
-const state = { token: localStorage.getItem('lianjie_admin_token') || '', agents: [], services: [], view: 'agents' };
+const SYSTEMS = ['health', 'living', 'connection', 'growth', 'wealth', 'create', 'explore', 'spirit', 'future'];
+const SYSTEM_LABELS = {
+  health: '健康',
+  living: '生活',
+  connection: '连接',
+  growth: '成长',
+  wealth: '财富',
+  create: '创造',
+  explore: '探索',
+  spirit: '精神',
+  future: '未来',
+};
+const STATUS_LABELS = {
+  active: '正常',
+  disabled: '停用',
+  left: '已离开',
+  open: '进行中',
+  resolved: '已解决',
+  hidden: '已隐藏',
+  pending: '待确认',
+  confirmed: '已确认',
+  completed: '已完成',
+  rated: '已评价',
+  cancelled: '已取消',
+  paused: '已暂停',
+  archived: '已归档',
+  reviewing: '处理中',
+  ignored: '已忽略',
+  generated: '已生成',
+};
+const ENERGY_LABELS = {
+  '输出期': '输出期',
+  '输入期': '输入期',
+  '调整期': '调整期',
+  unknown: '未设置',
+};
+const SERVICE_STATUS_LABELS = {
+  pending: '待上架',
+  active: '已上架',
+  paused: '已暂停',
+  archived: '已归档',
+};
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
+const COMMUNITY_TYPE_LABELS = {
+  announcement: '公告',
+  demand: '需求',
+  service: '服务',
+  agent: 'Agent',
+  update: '动态',
+  activity: '活动',
+};
+const COMMUNITY_TARGET_LABELS = {
+  none: '不跳转',
+  demand: '需求/个人档案',
+  service: '服务详情',
+  agent: 'Agent 档案',
+  url: '外部链接',
+};
+const state = { token: localStorage.getItem('lianjie_admin_token') || '', agents: [], demands: [], services: [], communityPosts: [], view: 'agents' };
 document.getElementById('apiText').textContent = API;
 document.getElementById('tokenInput').value = state.token;
+document.getElementById('editServiceSystem').innerHTML = SYSTEMS.map(item => `<option value="${item}">${SYSTEM_LABELS[item]}</option>`).join('');
 
 function headers() {
   return { 'Content-Type': 'application/json', 'X-Admin-Token': state.token };
@@ -249,10 +418,12 @@ function switchView(view) {
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.view === view));
   document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === `view-${view}`));
   if (view === 'agents') loadAgents();
+  if (view === 'demands') loadDemands();
   if (view === 'services') loadServices();
   if (view === 'transactions') loadTransactions();
   if (view === 'matches') loadMatches();
   if (view === 'feedback') loadFeedback();
+  if (view === 'community') loadCommunityPosts();
 }
 
 async function loadAll() {
@@ -329,6 +500,7 @@ function jumpAction(view, status) {
   if (view === 'transactions') document.getElementById('txStatus').value = status || 'all';
   if (view === 'agents') document.getElementById('agentStatus').value = status || 'all';
   if (view === 'services') document.getElementById('serviceStatus').value = status || 'all';
+  if (view === 'demands') document.getElementById('demandStatus').value = status || 'all';
   switchView(view);
 }
 
@@ -348,7 +520,7 @@ function firstAgentText(items) {
 function firstServiceText(items) {
   if (!items.length) return '暂无待上架服务';
   const first = items[0];
-  return `${first.name} · ${first.status}`;
+  return `${first.name} · ${serviceStatusText(first.status)}`;
 }
 
 function firstMatchText(items) {
@@ -364,12 +536,15 @@ async function loadAgents() {
   state.agents = agents;
   if (!agents.length) return renderEmpty('agentsTable', '没有找到 Agent');
   document.getElementById('agentsTable').innerHTML = table(
-    ['CID', '称呼', '标签', '档案', '信任', '状态', '更新时间', '操作'],
+    ['CID', '称呼', '生命状态', '地区', '标签', '档案', '信任', '状态', '更新时间', '操作'],
     agents.map(a => {
       const profile = getProfile(a);
+      const basic = getBasicProfile(a);
       return [
         `<strong>${escapeHtml(a.cid)}</strong>`,
         escapeHtml(a.nickname || ''),
+        escapeHtml(energyText(a.energy_status)),
+        escapeHtml([basic.province, basic.city].filter(Boolean).join(' ') || '未设置'),
         pills(a.life_stage_tags || []),
         `<span class="tiny muted">${profileSummary(profile)}</span>`,
         Number(a.trust_score || 0).toFixed(1),
@@ -394,10 +569,29 @@ async function loadServices() {
       `${escapeHtml(s.provider_nickname || '')}<div class="tiny muted">${escapeHtml(s.provider_cid)}</div>`,
       pills([s.primary_system, s.secondary_system].filter(Boolean)),
       `${Number(s.price || 0)} 元`,
-      `${escapeHtml(s.delivery_method || '-')}${s.duration_minutes ? ` · ${s.duration_minutes} 分钟` : ''}`,
-      statusPill(s.status),
+      `${escapeHtml(deliveryText(s.delivery_method))}${s.duration_minutes ? ` · ${s.duration_minutes} 分钟` : ''}`,
+      statusPill(s.status, SERVICE_STATUS_LABELS),
       `<span class="tiny muted">交付 ${s.delivery_count || 0} · 评分 ${s.avg_rating || 0}</span>`,
       serviceActions(s),
+    ])
+  );
+}
+
+async function loadDemands() {
+  const q = encodeURIComponent(document.getElementById('demandQ').value.trim());
+  const status = document.getElementById('demandStatus').value;
+  const demands = await api(`/admin/demands?q=${q}&status=${status}&limit=100`);
+  state.demands = demands;
+  if (!demands.length) return renderEmpty('demandsTable', '没有找到需求');
+  document.getElementById('demandsTable').innerHTML = table(
+    ['需求', '发布者', '标签', '状态', '更新时间', '操作'],
+    demands.map(d => [
+      `<strong>${escapeHtml(d.title)}</strong><div class="tiny muted">${escapeHtml(d.description || '')}</div><div class="tiny muted">${escapeHtml(d.id)}</div>`,
+      `${escapeHtml(d.agent_nickname || '')}<div class="tiny muted">${escapeHtml(d.agent_cid)}</div>`,
+      pills(d.life_stage_tags || []),
+      statusPill(d.status),
+      time(d.updated_at || d.created_at),
+      demandActions(d),
     ])
   );
 }
@@ -464,7 +658,7 @@ async function updateFeedbackStatus(id, status) {
     body: JSON.stringify({ status }),
   });
   await loadFeedback();
-  setStatus(`反馈已更新为 ${status}`);
+  setStatus(`反馈已更新为 ${statusText(status)}`);
 }
 
 function feedbackActions(item) {
@@ -487,15 +681,131 @@ function feedbackTypeLabel(type) {
   return escapeHtml(labels[type] || type || '-');
 }
 
+async function loadCommunityPosts() {
+  const status = document.getElementById('communityStatus').value;
+  const type = document.getElementById('communityType').value;
+  const posts = await api(`/admin/community-posts?status=${status}&type=${type}&limit=80`);
+  state.communityPosts = posts;
+  if (!posts.length) return renderEmpty('communityTable', '还没有社区动态，可以先发布一条公告');
+  document.getElementById('communityTable').innerHTML = table(
+    ['动态内容', '类型', '跳转目标', '状态', '排序', '发布时间', '操作'],
+    posts.map(post => [
+      `<strong>${escapeHtml(post.title)}</strong><div class="tiny muted">${escapeHtml(post.summary || '')}</div><div class="tiny muted">${escapeHtml(post.id)}</div>`,
+      escapeHtml(COMMUNITY_TYPE_LABELS[post.type] || post.type || '-'),
+      communityTargetSummary(post),
+      statusPill(post.status),
+      `${post.is_pinned ? '<span class="pill active">置顶</span>' : '<span class="tiny muted">不置顶</span>'}<div class="tiny muted">权重 ${Number(post.sort_weight || 0)}</div>`,
+      time(post.published_at || post.created_at),
+      communityActions(post),
+    ])
+  );
+}
+
+function openCommunityModal(id = '') {
+  const post = id ? state.communityPosts.find(item => item.id === id) : null;
+  document.getElementById('communityModalTitle').textContent = post ? '编辑社区动态' : '发布社区动态';
+  document.getElementById('editCommunityId').value = post ? post.id : '';
+  document.getElementById('editCommunityType').value = post ? post.type || 'announcement' : 'announcement';
+  document.getElementById('editCommunityStatus').value = post ? post.status || 'active' : 'active';
+  document.getElementById('editCommunityTitle').value = post ? post.title || '' : '';
+  document.getElementById('editCommunitySummary').value = post ? post.summary || '' : '';
+  document.getElementById('editCommunityAction').value = post ? post.action_text || '查看' : '查看';
+  document.getElementById('editCommunityTargetType').value = post ? post.target_type || 'none' : 'none';
+  document.getElementById('editCommunityTargetId').value = post ? post.target_id || '' : '';
+  document.getElementById('editCommunityTargetCid').value = post ? post.target_cid || '' : '';
+  document.getElementById('editCommunityTargetUrl').value = post ? post.target_url || '' : '';
+  document.getElementById('editCommunityPinned').value = post && post.is_pinned ? 'true' : 'false';
+  document.getElementById('editCommunityWeight').value = post ? Number(post.sort_weight || 0) : 0;
+  document.getElementById('communityModal').classList.add('show');
+}
+
+function closeCommunityModal() {
+  document.getElementById('communityModal').classList.remove('show');
+}
+
+async function saveCommunityPost() {
+  const id = document.getElementById('editCommunityId').value;
+  const payload = {
+    type: document.getElementById('editCommunityType').value,
+    status: document.getElementById('editCommunityStatus').value,
+    title: document.getElementById('editCommunityTitle').value.trim(),
+    summary: document.getElementById('editCommunitySummary').value.trim(),
+    action_text: document.getElementById('editCommunityAction').value.trim() || '查看',
+    target_type: document.getElementById('editCommunityTargetType').value,
+    target_id: document.getElementById('editCommunityTargetId').value.trim() || null,
+    target_cid: document.getElementById('editCommunityTargetCid').value.trim() || null,
+    target_url: document.getElementById('editCommunityTargetUrl').value.trim() || null,
+    is_pinned: document.getElementById('editCommunityPinned').value === 'true',
+    sort_weight: Number(document.getElementById('editCommunityWeight').value || 0),
+  };
+
+  if (!payload.title) {
+    setStatus('社区动态标题不能为空', true);
+    return;
+  }
+
+  if (id) {
+    await api(`/admin/community-posts/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  } else {
+    await api('/admin/community-posts', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  closeCommunityModal();
+  await loadCommunityPosts();
+  setStatus(id ? '社区动态已保存' : '社区动态已发布');
+}
+
+async function updateCommunityStatus(id, status) {
+  await api(`/admin/community-posts/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  await loadCommunityPosts();
+  setStatus(`社区动态已更新为 ${statusText(status)}`);
+}
+
+function communityActions(post) {
+  const id = escapeAttr(post.id);
+  return `<div class="actions">
+    <button class="link" onclick="openCommunityModal('${id}')">编辑</button>
+    ${post.status !== 'active' ? `<button class="btn secondary" onclick="updateCommunityStatus('${id}','active')">公开</button>` : ''}
+    ${post.status !== 'hidden' ? `<button class="btn warning" onclick="updateCommunityStatus('${id}','hidden')">隐藏</button>` : ''}
+  </div>`;
+}
+
+function communityTargetSummary(post) {
+  const label = COMMUNITY_TARGET_LABELS[post.target_type] || post.target_type || '-';
+  const detail = post.target_type === 'service'
+    ? post.target_id
+    : post.target_type === 'url'
+      ? post.target_url
+      : post.target_cid || post.target_id || '';
+  return `${escapeHtml(label)}${detail ? `<div class="tiny muted">${escapeHtml(detail)}</div>` : ''}`;
+}
+
 function openAgentModal(cid) {
   const agent = state.agents.find(item => item.cid === cid);
   if (!agent) return;
   const profile = getProfile(agent);
+  const basic = getBasicProfile(agent);
+  const config = agent.agent_config || {};
   document.getElementById('editCid').value = agent.cid;
   document.getElementById('editNickname').value = agent.nickname || '';
   document.getElementById('editAgentStatus').value = agent.status || 'active';
+  document.getElementById('editEnergyStatus').value = agent.energy_status || 'unknown';
   document.getElementById('editTrustScore').value = agent.trust_score || 0;
+  document.getElementById('editGender').value = basic.gender || '';
+  document.getElementById('editAvatarUrl').value = config.avatar_url || '';
+  document.getElementById('editProvince').value = basic.province || '';
+  document.getElementById('editCity').value = basic.city || '';
   document.getElementById('editTags').value = (agent.life_stage_tags || []).join(',');
+  document.getElementById('editBio').value = basic.bio || '';
   document.getElementById('editCoreValue').value = profile.core_value || '';
   document.getElementById('editCapabilities').value = profile.service_capabilities || '';
   document.getElementById('editExperience').value = profile.project_experience || '';
@@ -513,8 +823,16 @@ async function saveAgent() {
   const payload = {
     nickname: document.getElementById('editNickname').value.trim(),
     status: document.getElementById('editAgentStatus').value,
+    energy_status: document.getElementById('editEnergyStatus').value,
     trust_score: Number(document.getElementById('editTrustScore').value || 0),
     life_stage_tags: tags,
+    avatar_url: document.getElementById('editAvatarUrl').value.trim(),
+    basic_profile: {
+      province: document.getElementById('editProvince').value.trim(),
+      city: document.getElementById('editCity').value.trim(),
+      gender: document.getElementById('editGender').value,
+      bio: document.getElementById('editBio').value.trim(),
+    },
     value_profile: {
       core_value: document.getElementById('editCoreValue').value.trim(),
       service_capabilities: document.getElementById('editCapabilities').value.trim(),
@@ -528,22 +846,174 @@ async function saveAgent() {
   setStatus(`已保存 ${cid}`);
 }
 
+function openDemandModal(agentCid, demandId) {
+  const demand = state.demands.find(item => item.agent_cid === agentCid && item.id === demandId);
+  if (!demand) return;
+  document.getElementById('editDemandCid').value = demand.agent_cid;
+  document.getElementById('editDemandId').value = demand.id;
+  document.getElementById('editDemandTitle').value = demand.title || '';
+  document.getElementById('editDemandDesc').value = demand.description || '';
+  document.getElementById('editDemandStatus').value = demand.status || 'open';
+  document.getElementById('demandModal').classList.add('show');
+}
+
+function closeDemandModal() {
+  document.getElementById('demandModal').classList.remove('show');
+}
+
+async function saveDemand() {
+  const cid = document.getElementById('editDemandCid').value;
+  const demandId = document.getElementById('editDemandId').value;
+  const payload = {
+    title: document.getElementById('editDemandTitle').value.trim(),
+    description: document.getElementById('editDemandDesc').value.trim(),
+    status: document.getElementById('editDemandStatus').value,
+  };
+  await api(`/admin/agents/${encodeURIComponent(cid)}/demands/${encodeURIComponent(demandId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+  closeDemandModal();
+  await Promise.all([loadSummary(), loadDemands()]);
+  setStatus(`已保存需求 ${demandId}`);
+}
+
+async function updateDemandStatus(cid, demandId, status) {
+  await api(`/admin/agents/${encodeURIComponent(cid)}/demands/${encodeURIComponent(demandId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  });
+  await Promise.all([loadSummary(), loadDemands()]);
+  setStatus(`需求已更新为 ${statusText(status)}`);
+}
+
+function demandActions(demand) {
+  const cid = escapeAttr(demand.agent_cid);
+  const id = escapeAttr(demand.id);
+  return `<div class="actions">
+    <button class="link" onclick="openDemandModal('${cid}','${id}')">编辑</button>
+    ${demand.status !== 'open' ? `<button class="btn secondary" onclick="updateDemandStatus('${cid}','${id}','open')">公开</button>` : ''}
+    ${demand.status !== 'resolved' ? `<button class="btn ghost" onclick="updateDemandStatus('${cid}','${id}','resolved')">已解决</button>` : ''}
+    ${demand.status !== 'hidden' ? `<button class="btn warning" onclick="updateDemandStatus('${cid}','${id}','hidden')">隐藏</button>` : ''}
+  </div>`;
+}
+
 async function updateServiceStatus(id, status) {
   await api(`/admin/services/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify({ status }),
   });
   await Promise.all([loadSummary(), loadServices()]);
-  setStatus(`服务已更新为 ${status}`);
+  setStatus(`服务已更新为 ${serviceStatusText(status)}`);
 }
 
 function serviceActions(service) {
   const id = escapeAttr(service.id);
   return `<div class="actions">
+    <button class="link" onclick="openServiceModal('${id}')">编辑</button>
     ${service.status !== 'active' ? `<button class="btn secondary" onclick="updateServiceStatus('${id}','active')">上架</button>` : ''}
     ${service.status === 'active' ? `<button class="btn warning" onclick="updateServiceStatus('${id}','paused')">暂停</button>` : ''}
     ${service.status !== 'archived' ? `<button class="btn danger" onclick="updateServiceStatus('${id}','archived')">归档</button>` : ''}
   </div>`;
+}
+
+function openServiceModal(id) {
+  const service = state.services.find(item => item.id === id);
+  if (!service) return;
+  const desc = parseServiceDescription(service.description || '');
+  document.getElementById('editServiceId').value = service.id;
+  document.getElementById('editServiceName').value = service.name || '';
+  document.getElementById('editServicePrice').value = service.price || 0;
+  document.getElementById('editServiceDuration').value = service.duration_minutes || '';
+  document.getElementById('editServiceSystem').value = service.primary_system || 'connection';
+  document.getElementById('editServiceDelivery').value = service.delivery_method || 'offline';
+  document.getElementById('editServiceStatus').value = service.status || 'pending';
+  document.getElementById('editServiceLocation').value = service.location || '';
+  document.getElementById('editServiceStages').value = (service.suitable_stages || []).join(',');
+  document.getElementById('editServiceDesc').value = desc.description || '';
+  document.getElementById('editServiceAudience').value = desc.suitable_for || '';
+  document.getElementById('editServiceDeliverables').value = desc.deliverables || '';
+  document.getElementById('editServiceCase').value = desc.case_description || '';
+  document.getElementById('editServiceNotSuitable').value = desc.not_suitable_for || '';
+  document.getElementById('serviceModal').classList.add('show');
+}
+
+function closeServiceModal() {
+  document.getElementById('serviceModal').classList.remove('show');
+}
+
+async function saveService() {
+  const id = document.getElementById('editServiceId').value;
+  const payload = {
+    name: document.getElementById('editServiceName').value.trim(),
+    price: Number(document.getElementById('editServicePrice').value || 0),
+    duration_minutes: Number(document.getElementById('editServiceDuration').value || 0) || undefined,
+    primary_system: document.getElementById('editServiceSystem').value,
+    delivery_method: document.getElementById('editServiceDelivery').value,
+    status: document.getElementById('editServiceStatus').value,
+    location: document.getElementById('editServiceLocation').value.trim(),
+    suitable_stages: document.getElementById('editServiceStages').value.split(',').map(item => item.trim()).filter(Boolean),
+    description: composeServiceDescription({
+      description: document.getElementById('editServiceDesc').value.trim(),
+      suitable_for: document.getElementById('editServiceAudience').value.trim(),
+      deliverables: document.getElementById('editServiceDeliverables').value.trim(),
+      case_description: document.getElementById('editServiceCase').value.trim(),
+      not_suitable_for: document.getElementById('editServiceNotSuitable').value.trim(),
+    }),
+  };
+  await api(`/admin/services/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+  closeServiceModal();
+  await Promise.all([loadSummary(), loadServices()]);
+  setStatus(`已保存服务 ${id}`);
+}
+
+function composeServiceDescription(form) {
+  return [
+    '服务介绍：',
+    form.description || '',
+    '',
+    '适合谁：',
+    form.suitable_for || '',
+    '',
+    '交付物：',
+    form.deliverables || '',
+    '',
+    '案例描述：',
+    form.case_description || '暂无案例描述，可在完成首个交付后补充。',
+    '',
+    '不适合谁：',
+    form.not_suitable_for || '暂无明确限制，预约前可先沟通确认。',
+  ].join('\n');
+}
+
+function parseServiceDescription(text) {
+  if (!text || !text.includes('服务介绍：')) {
+    return {
+      description: text || '',
+      suitable_for: '',
+      deliverables: '',
+      case_description: '',
+      not_suitable_for: '',
+    };
+  }
+  return {
+    description: extractSection(text, '服务介绍：', '适合谁：'),
+    suitable_for: extractSection(text, '适合谁：', '交付物：') || extractSection(text, '适合谁：', '不适合谁：'),
+    deliverables: extractSection(text, '交付物：', '案例描述：'),
+    case_description: extractSection(text, '案例描述：', '不适合谁：'),
+    not_suitable_for: extractSection(text, '不适合谁：', ''),
+  };
+}
+
+function extractSection(text, start, end) {
+  const startIndex = text.indexOf(start);
+  if (startIndex === -1) return '';
+  const contentStart = startIndex + start.length;
+  const endIndex = end ? text.indexOf(end, contentStart) : -1;
+  return text.slice(contentStart, endIndex === -1 ? undefined : endIndex).trim();
 }
 
 async function updateTransactionStatus(id, status) {
@@ -552,7 +1022,7 @@ async function updateTransactionStatus(id, status) {
     body: JSON.stringify({ status }),
   });
   await Promise.all([loadSummary(), loadTransactions()]);
-  setStatus(`交易已更新为 ${status}`);
+  setStatus(`交易已更新为 ${statusText(status)}`);
 }
 
 function transactionActions(tx) {
@@ -588,18 +1058,41 @@ function getProfile(agent) {
   return config.value_profile || {};
 }
 
+function getBasicProfile(agent) {
+  const config = agent.agent_config || {};
+  return config.basic_profile || {};
+}
+
 function profileSummary(profile) {
   const fields = ['core_value', 'service_capabilities', 'project_experience', 'vision_needs'];
   const done = fields.filter(key => profile[key]).length;
   return `核心档案 ${done}/4`;
 }
 
-function pills(items) {
-  return items.length ? items.map(item => `<span class="pill">${escapeHtml(item)}</span>`).join('') : '<span class="muted tiny">未设置</span>';
+function pills(items, labels = SYSTEM_LABELS) {
+  return items.length
+    ? items.map(item => `<span class="pill">${escapeHtml(labels[item] || item)}</span>`).join('')
+    : '<span class="muted tiny">未设置</span>';
 }
 
-function statusPill(status) {
-  return `<span class="pill ${escapeAttr(status || '')}">${escapeHtml(status || '-')}</span>`;
+function statusPill(status, labels = STATUS_LABELS) {
+  return `<span class="pill ${escapeAttr(status || '')}">${escapeHtml(labels[status] || status || '-')}</span>`;
+}
+
+function statusText(status) {
+  return STATUS_LABELS[status] || status || '-';
+}
+
+function serviceStatusText(status) {
+  return SERVICE_STATUS_LABELS[status] || STATUS_LABELS[status] || status || '-';
+}
+
+function deliveryText(method) {
+  return DELIVERY_LABELS[method] || method || '-';
+}
+
+function energyText(status) {
+  return ENERGY_LABELS[status] || status || '未设置';
 }
 
 function time(value) {

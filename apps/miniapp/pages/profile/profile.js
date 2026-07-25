@@ -22,6 +22,15 @@ const TAG_LABELS = {
   future: '🔮 未来',
 };
 
+const DEFAULT_AGENT_HUB_ITEMS = [
+  { tab: 'profile', title: '档案', desc: '加载中', metric: '-', state: 'todo' },
+  { tab: 'demands', title: '需求', desc: '加载中', metric: '-', state: 'todo' },
+  { tab: 'services', title: '服务', desc: '加载中', metric: '-', state: 'todo' },
+  { tab: 'skills', title: '技能', desc: '加载中', metric: '-', state: 'todo' },
+  { tab: 'trust', title: '信任', desc: '加载中', metric: '-', state: 'todo' },
+  { tab: 'match', title: '匹配', desc: '加载中', metric: '-', state: 'todo' },
+];
+
 Page({
   data: {
     agent: null,
@@ -34,12 +43,15 @@ Page({
     todoItems: [],
     hasTodos: false,
     quickActions: [],
+    agentHubItems: DEFAULT_AGENT_HUB_ITEMS,
     feedbackTypes: FEEDBACK_TYPES,
     feedbackTypeIndex: 0,
     selectedFeedbackTypeLabel: FEEDBACK_TYPES[0].label,
     feedbackContent: '',
     feedbackContact: '',
     submittingFeedback: false,
+    showAbout: false,
+    loadingData: false,
   },
 
   onLoad() {
@@ -51,17 +63,37 @@ Page({
   },
 
   async loadData() {
+    if (this.data.loadingData) return;
+    this.setData({ loadingData: true });
+
     try {
-      const [agentRes, trustRes, txRes] = await Promise.all([
+      if (!app.globalData.token && !wx.getStorageSync('token')) {
+        const loginRes = await app.login();
+        if (!loginRes.success) {
+          wx.showToast({ title: loginRes.error || '登录失败', icon: 'none' });
+          this.setData({ loadingData: false });
+          return;
+        }
+      }
+
+      const [agentRes, trustRes, txRes, servicesRes, matchesRes] = await Promise.all([
         app.request({ url: '/agents/me' }).catch(() => null),
         app.request({ url: '/trust/my-score' }).catch(() => null),
         app.request({ url: '/transactions/mine' }).catch(() => null),
+        app.request({
+          url: '/services',
+          data: { provider: app.globalData.cid, status: 'all' },
+        }).catch(() => null),
+        app.request({ url: '/matches/mine' }).catch(() => null),
       ]);
       const agent = agentRes && agentRes.data ? agentRes.data : null;
       const agentTags = agent && agent.life_stage_tags ? this.formatTags(agent.life_stage_tags) : [];
       const transactions = txRes && txRes.data ? txRes.data : [];
+      const services = servicesRes && servicesRes.data ? servicesRes.data : [];
+      const matches = matchesRes && matchesRes.data ? matchesRes.data : [];
       const todoItems = this.buildTodoItems(transactions);
       const quickActions = this.buildQuickActions(agent, todoItems);
+      const agentHubItems = this.buildAgentHubItems(agent, services, matches, trustRes && trustRes.data);
 
       this.setData({
         agent,
@@ -74,14 +106,23 @@ Page({
         todoItems,
         hasTodos: todoItems.length > 0,
         quickActions,
+        agentHubItems,
+        loadingData: false,
       });
     } catch (err) {
       console.error('[loadData]', err);
+      this.setData({ loadingData: false });
     }
   },
 
   goAgent() {
-    wx.switchTab({ url: '/pages/agent/agent' });
+    wx.navigateTo({ url: '/pages/agent/agent' });
+  },
+
+  goAgentTab(e) {
+    const tab = e.currentTarget.dataset.tab || 'profile';
+    wx.setStorageSync('agent_default_tab', tab);
+    wx.navigateTo({ url: '/pages/agent/agent' });
   },
 
   goTransactions() {
@@ -108,6 +149,17 @@ Page({
   goSellerWorkbench() {
     wx.navigateTo({ url: '/pages/seller/workbench' });
   },
+
+  // 关于联结宇宙
+  onShowAbout() {
+    this.setData({ showAbout: true });
+  },
+
+  onHideAbout() {
+    this.setData({ showAbout: false });
+  },
+
+  noop() {},
 
   switchDevRole() {
     wx.showActionSheet({
@@ -223,8 +275,7 @@ Page({
     const hasValueProfile = !!(
       profile.core_value &&
       profile.service_capabilities &&
-      profile.project_experience &&
-      profile.vision_needs
+      profile.project_experience
     );
 
     if (todoItems.length > 0) {
@@ -247,13 +298,76 @@ Page({
     ];
   },
 
+  buildAgentHubItems(agent, services, matches, trustInfo) {
+    const config = agent && agent.agent_config ? agent.agent_config : {};
+    const profile = config.value_profile || {};
+    const demandPosts = Array.isArray(config.demand_posts) ? config.demand_posts : [];
+    const openDemands = demandPosts.filter(item => item && item.status === 'open' && item.title);
+    const activeServices = (services || []).filter(item => item && item.status === 'active');
+    const skillStatus = agent && agent.skill_status ? agent.skill_status : {};
+    const activeSkills = Object.keys(skillStatus).filter(key => skillStatus[key] === 'active');
+    const profileFields = [
+      profile.core_value,
+      profile.service_capabilities,
+      profile.project_experience,
+    ];
+    const completeProfileFields = profileFields.filter(value => String(value || '').trim()).length;
+    const profileStatus = `${completeProfileFields}/${profileFields.length}`;
+    const trustScore = trustInfo && trustInfo.trust_score !== undefined ? Number(trustInfo.trust_score || 0) : 0;
+
+    return [
+      {
+        tab: 'profile',
+        title: '档案',
+        desc: completeProfileFields >= profileFields.length ? '已完整' : '待补全',
+        metric: profileStatus,
+        state: completeProfileFields >= profileFields.length ? 'done' : 'todo',
+      },
+      {
+        tab: 'demands',
+        title: '需求',
+        desc: openDemands.length > 0 ? '公开中' : '待发布',
+        metric: `${openDemands.length}条`,
+        state: openDemands.length > 0 ? 'active' : 'todo',
+      },
+      {
+        tab: 'services',
+        title: '服务',
+        desc: activeServices.length > 0 ? '已上架' : '待上架',
+        metric: `${activeServices.length}个`,
+        state: activeServices.length > 0 ? 'active' : 'todo',
+      },
+      {
+        tab: 'skills',
+        title: '技能',
+        desc: activeSkills.length > 0 ? '已开启' : '待开启',
+        metric: `${activeSkills.length}项`,
+        state: activeSkills.length > 0 ? 'done' : 'todo',
+      },
+      {
+        tab: 'trust',
+        title: '信任',
+        desc: trustScore > 0 ? '有记录' : '待积累',
+        metric: trustScore.toFixed(1),
+        state: trustScore > 0 ? 'done' : 'todo',
+      },
+      {
+        tab: 'match',
+        title: '匹配',
+        desc: matches.length > 0 ? '已有报告' : '待生成',
+        metric: `${matches.length}份`,
+        state: matches.length > 0 ? 'active' : 'todo',
+      },
+    ];
+  },
+
   formatTags(tags) {
     return (tags || []).map(tag => TAG_LABELS[tag] || tag);
   },
 
   // 完善档案快捷入口
   goEditTags() {
-    wx.switchTab({ url: '/pages/agent/agent' });
+    wx.navigateTo({ url: '/pages/agent/agent' });
   },
 
   // V0.2: 开发模式切换（仅在开发环境使用）

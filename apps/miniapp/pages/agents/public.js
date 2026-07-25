@@ -16,6 +16,8 @@ Page({
   data: {
     cid: '',
     agent: null,
+    locationText: '',
+    profileSummary: '',
     loading: true,
   },
 
@@ -33,8 +35,11 @@ Page({
     this.setData({ loading: true });
     try {
       const res = await app.request({ url: `/agents/public/${cid}` });
+      const agent = this.formatAgent(res.data);
       this.setData({
-        agent: this.formatAgent(res.data),
+        agent,
+        locationText: this.formatLocation(agent.basic_profile),
+        profileSummary: this.buildProfileSummary(agent),
         loading: false,
       });
       wx.setNavigationBarTitle({ title: res.data.nickname || '公开档案' });
@@ -61,7 +66,7 @@ Page({
 
   formatAgent(agent) {
     const basicProfile = agent.basic_profile || {};
-    return {
+    const formatted = {
       ...agent,
       basic_profile: {
         province: basicProfile.province || '',
@@ -71,10 +76,41 @@ Page({
       },
       initial: agent.nickname ? agent.nickname.slice(0, 1) : '?',
       life_stage_tag_labels: this.formatTags(agent.life_stage_tags || []),
+      demand_posts: this.normalizeDemandPosts(agent.demand_posts || []),
     };
+    return formatted;
+  },
+
+  normalizeDemandPosts(posts) {
+    return (posts || [])
+      .filter(item => item && item.status === 'open' && item.title)
+      .map(item => ({
+        id: item.id || item.title,
+        title: item.title || '',
+        description: item.description || '',
+      }));
   },
 
   formatTags(tags) {
     return (tags || []).map(tag => TAG_LABELS[tag] || tag);
+  },
+
+  formatLocation(profile) {
+    const parts = [profile.province, profile.city].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : '位置未填写';
+  },
+
+  buildProfileSummary(agent) {
+    const profile = agent.value_profile || {};
+    if (agent.demand_posts && agent.demand_posts.length > 0) {
+      return `正在寻找：${agent.demand_posts[0].title}`;
+    }
+    if (profile.service_capabilities) {
+      return `可提供：${profile.service_capabilities}`;
+    }
+    if (profile.core_value) {
+      return profile.core_value;
+    }
+    return '档案还在完善中，可以先查看基础信息。';
   },
 });

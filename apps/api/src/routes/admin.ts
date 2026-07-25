@@ -1,6 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { supabase } from '../lib/supabase';
-import { AdminUpdateAgentSchema, UpdateServiceSchema } from '../lib/validation';
+import {
+  AdminUpdateAgentSchema,
+  CreateCommunityPostSchema,
+  UpdateCommunityPostSchema,
+  UpdateServiceSchema,
+} from '../lib/validation';
 
 const router = Router();
 
@@ -200,6 +205,65 @@ router.get('/services', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/demands', async (req: Request, res: Response) => {
+  try {
+    const { q, status, cid, limit } = req.query;
+    let query = supabase
+      .from('agents')
+      .select('cid, nickname, life_stage_tags, trust_score, status, agent_config, updated_at')
+      .order('updated_at', { ascending: false });
+
+    if (cid) {
+      query = query.eq('cid', String(cid));
+    }
+
+    const parsedLimit = Number(limit);
+    query = query.limit(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 80);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const keyword = sanitizeSearch(String(q || '')).toLowerCase();
+    const statusFilter = String(status || 'all');
+    const demands = (data || []).flatMap((agent: any) => {
+      const posts = Array.isArray(agent.agent_config?.demand_posts)
+        ? agent.agent_config.demand_posts
+        : [];
+      return posts
+        .filter((post: any) => post && post.title)
+        .map((post: any) => ({
+          id: post.id || '',
+          title: post.title || '',
+          description: post.description || '',
+          status: post.status || 'open',
+          created_at: post.created_at || '',
+          updated_at: post.updated_at || '',
+          agent_cid: agent.cid,
+          agent_nickname: agent.nickname,
+          agent_status: agent.status,
+          trust_score: agent.trust_score || 0,
+          life_stage_tags: agent.life_stage_tags || [],
+        }));
+    })
+      .filter((post: any) => statusFilter === 'all' || post.status === statusFilter)
+      .filter((post: any) => {
+        if (!keyword) return true;
+        return [
+          post.id,
+          post.title,
+          post.description,
+          post.agent_cid,
+          post.agent_nickname,
+        ].some(value => String(value || '').toLowerCase().includes(keyword));
+      })
+      .sort((a: any, b: any) => String(b.updated_at || b.created_at || '').localeCompare(String(a.updated_at || a.created_at || '')));
+
+    res.json({ data: demands });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取需求列表失败' });
+  }
+});
+
 router.get('/transactions', async (req: Request, res: Response) => {
   try {
     const { status, cid, limit } = req.query;
@@ -320,6 +384,73 @@ router.patch('/feedback/:id/status', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/community-posts', async (req: Request, res: Response) => {
+  try {
+    const { status, type, limit } = req.query;
+    let query = supabase
+      .from('community_posts')
+      .select('*');
+
+    if (status && status !== 'all') {
+      query = query.eq('status', String(status));
+    }
+    if (type && type !== 'all') {
+      query = query.eq('type', String(type));
+    }
+
+    const parsedLimit = Number(limit);
+    query = query.limit(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 50);
+
+    const { data, error } = await query
+      .order('is_pinned', { ascending: false })
+      .order('sort_weight', { ascending: false })
+      .order('published_at', { ascending: false })
+      .order('updated_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ data: data || [] });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取社区动态失败' });
+  }
+});
+
+router.post('/community-posts', async (req: Request, res: Response) => {
+  try {
+    const body = CreateCommunityPostSchema.parse(req.body);
+    const { data, error } = await supabase
+      .from('community_posts')
+      .insert(normalizeCommunityPost(body))
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '创建社区动态失败' });
+  }
+});
+
+router.patch('/community-posts/:id', async (req: Request, res: Response) => {
+  try {
+    const body = UpdateCommunityPostSchema.parse(req.body);
+    const { data, error } = await supabase
+      .from('community_posts')
+      .update({
+        ...normalizeCommunityPost(body),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: '社区动态不存在' });
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '更新社区动态失败' });
+  }
+});
+
 router.patch('/agents/:cid', async (req: Request, res: Response) => {
   try {
     const { cid } = req.params;
@@ -345,10 +476,21 @@ router.patch('/agents/:cid', async (req: Request, res: Response) => {
     if (body.energy_status !== undefined) updateData.energy_status = body.energy_status;
     if (body.status !== undefined) updateData.status = body.status;
 
-    if (body.agent_config !== undefined || body.value_profile !== undefined) {
+    if (
+      body.agent_config !== undefined
+      || body.value_profile !== undefined
+      || body.basic_profile !== undefined
+      || body.avatar_url !== undefined
+    ) {
       updateData.agent_config = {
         ...currentConfig,
         ...(body.agent_config || {}),
+        avatar_url: body.avatar_url !== undefined ? body.avatar_url : currentConfig.avatar_url,
+        basic_profile: {
+          ...((currentConfig.basic_profile || {}) as Record<string, any>),
+          ...((body.agent_config && body.agent_config.basic_profile) || {}),
+          ...(body.basic_profile || {}),
+        },
         value_profile: {
           ...((currentConfig.value_profile || {}) as Record<string, any>),
           ...((body.agent_config && body.agent_config.value_profile) || {}),
@@ -368,6 +510,66 @@ router.patch('/agents/:cid', async (req: Request, res: Response) => {
     res.json({ data });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '更新Agent失败' });
+  }
+});
+
+router.patch('/agents/:cid/demands/:demandId', async (req: Request, res: Response) => {
+  try {
+    const { cid, demandId } = req.params;
+    const { title, description, status } = req.body || {};
+    if (status !== undefined && !['open', 'resolved', 'hidden'].includes(status)) {
+      return res.status(400).json({ error: '无效的需求状态' });
+    }
+
+    const { data: existing, error: readError } = await supabase
+      .from('agents')
+      .select('agent_config')
+      .eq('cid', cid)
+      .single();
+
+    if (readError) throw readError;
+    if (!existing) return res.status(404).json({ error: 'Agent不存在' });
+
+    const currentConfig = (existing.agent_config || {}) as Record<string, any>;
+    const demandPosts = Array.isArray(currentConfig.demand_posts)
+      ? currentConfig.demand_posts
+      : [];
+    let found = false;
+    const updatedPosts = demandPosts.map((post: any) => {
+      if (String(post.id || '') !== demandId) return post;
+      found = true;
+      return {
+        ...post,
+        title: title !== undefined ? String(title).trim().slice(0, 120) : post.title,
+        description: description !== undefined ? String(description).trim().slice(0, 1000) : post.description,
+        status: status || post.status || 'open',
+        updated_at: new Date().toISOString(),
+      };
+    });
+
+    if (!found) return res.status(404).json({ error: '需求不存在' });
+
+    const valueProfile = {
+      ...((currentConfig.value_profile || {}) as Record<string, any>),
+      vision_needs: composeOpenDemandSummary(updatedPosts),
+    };
+    const agentConfig = {
+      ...currentConfig,
+      demand_posts: updatedPosts,
+      value_profile: valueProfile,
+    };
+
+    const { data, error } = await supabase
+      .from('agents')
+      .update({ agent_config: agentConfig, updated_at: new Date().toISOString() })
+      .eq('cid', cid)
+      .select('cid, nickname, agent_config, updated_at')
+      .single();
+
+    if (error) throw error;
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '更新需求失败' });
   }
 });
 
@@ -444,6 +646,45 @@ function calculateAgentCompletion(agent: any) {
   ];
   const completed = fields.filter(value => String(value || '').trim().length > 0).length;
   return Math.round((completed / fields.length) * 100);
+}
+
+function composeOpenDemandSummary(posts: any[]) {
+  return (posts || [])
+    .filter(item => item && item.status === 'open' && item.title)
+    .map(item => `${item.title}：${item.description || ''}`)
+    .join('\n');
+}
+
+function normalizeCommunityPost(input: Record<string, any>) {
+  const data: Record<string, any> = {};
+  const allowed = [
+    'type',
+    'title',
+    'summary',
+    'action_text',
+    'target_type',
+    'target_id',
+    'target_cid',
+    'target_url',
+    'status',
+    'is_pinned',
+    'sort_weight',
+    'published_at',
+  ];
+
+  allowed.forEach(key => {
+    if (input[key] !== undefined) data[key] = input[key];
+  });
+
+  if (data.title !== undefined) data.title = String(data.title).trim();
+  if (data.summary !== undefined) data.summary = String(data.summary || '').trim();
+  if (data.action_text !== undefined) data.action_text = String(data.action_text || '查看').trim() || '查看';
+  if (data.target_id !== undefined) data.target_id = data.target_id ? String(data.target_id).trim() : null;
+  if (data.target_cid !== undefined) data.target_cid = data.target_cid ? String(data.target_cid).trim() : null;
+  if (data.target_url !== undefined) data.target_url = data.target_url ? String(data.target_url).trim() : null;
+  if (data.published_at === null || data.published_at === '') delete data.published_at;
+
+  return data;
 }
 
 export default router;

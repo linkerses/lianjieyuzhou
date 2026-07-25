@@ -37,12 +37,24 @@
       <view class="form-group">
         <text class="form-label">服务介绍</text>
         <textarea class="form-textarea form-textarea-large" maxlength="1200" data-field="description" bindinput="onInput" value="{{form.description}}" placeholder="说明你解决什么问题、如何交付、用户会得到什么结果。" />
-        <text class="form-help">建议用 2-4 句话写清楚交付物，不要写成长篇介绍。</text>
+        <text class="form-help">建议用 2-4 句话写清楚你解决的问题，不要写成长篇介绍。</text>
       </view>
 
       <view class="form-group">
-        <text class="form-label">适合谁</text>
-        <textarea class="form-textarea" maxlength="500" data-field="suitable_for" bindinput="onInput" value="{{form.suitable_for}}" placeholder="例：适合正在梳理个人服务、需要把经验产品化的自由职业者或创业者。" />
+        <text class="form-label">适合人群</text>
+        <textarea class="form-textarea" maxlength="600" data-field="suitable_for" bindinput="onInput" value="{{form.suitable_for}}" placeholder="例：适合正在梳理个人服务、需要把经验产品化的自由职业者或创业者。" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">交付物</text>
+        <textarea class="form-textarea" maxlength="700" data-field="deliverables" bindinput="onInput" value="{{form.deliverables}}" placeholder="例：1份服务定位梳理表、1套服务介绍文案、1次60分钟线上复盘。" />
+        <text class="form-help">写清楚用户付费后具体能拿到什么。</text>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">案例描述</text>
+        <textarea class="form-textarea" maxlength="800" data-field="case_description" bindinput="onInput" value="{{form.case_description}}" placeholder="例：曾帮助某位空间主理人把线下咨询整理成3个可售服务，并完成首次上架。" />
+        <text class="form-help">没有案例也可以先写“暂无案例，首批体验价开放”。</text>
       </view>
 
       <view class="form-group">

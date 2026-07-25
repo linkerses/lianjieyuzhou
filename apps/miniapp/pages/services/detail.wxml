@@ -5,37 +5,33 @@
 
   <view wx:elif="{{service}}">
 
-    <!-- 服务信息卡 -->
+    <view class="service-detail-hero">
+      <view class="service-detail-top">
+        <text class="service-detail-system">{{serviceSystemText}}</text>
+        <text class="service-detail-price">{{priceText}}</text>
+      </view>
+      <text class="service-detail-title">{{service.name}}</text>
+      <view class="service-provider-row" catch:tap="viewProviderAgent">
+        <view class="provider-avatar">{{providerInitial}}</view>
+        <view class="provider-main">
+          <text class="provider-name">{{service.provider_nickname || service.provider_cid}}</text>
+          <text class="provider-meta">信任 {{service.trust_score || 0}} · 交付 {{service.delivery_count || 0}}次</text>
+        </view>
+        <text class="provider-action">看档案</text>
+      </view>
+      <view class="summary-pill-list">
+        <text class="summary-pill" wx:for="{{summaryPills}}" wx:key="item">{{item}}</text>
+      </view>
+      <view class="location-card" wx:if="{{service.location}}">
+        <text class="location-label">服务地点</text>
+        <text class="location-text">{{service.location}}</text>
+      </view>
+    </view>
+
     <view class="card">
       <view class="card-header">
-        <text class="card-title">{{service.name}}</text>
+        <text class="card-title">服务边界</text>
       </view>
-
-      <view class="info-row">
-        <text class="info-label">提供者</text>
-        <text class="info-value">{{service.provider_nickname || service.provider_cid}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">系统</text>
-        <text class="info-value">{{serviceSystemText}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">价格</text>
-        <text class="info-value price">{{service.price}}元</text>
-      </view>
-      <view class="info-row" wx:if="{{service.duration_minutes}}">
-        <text class="info-label">时长</text>
-        <text class="info-value">{{service.duration_minutes}}分钟</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">方式</text>
-        <text class="info-value">{{deliveryMethodText}}</text>
-      </view>
-      <view class="info-row" wx:if="{{service.location}}">
-        <text class="info-label">地址</text>
-        <text class="info-value">{{service.location}}</text>
-      </view>
-
       <view class="desc-block" wx:if="{{descriptionSections.length > 0}}">
         <view class="service-desc-section" wx:for="{{descriptionSections}}" wx:key="label">
           <text class="desc-label">{{item.label}}</text>
@@ -118,11 +114,12 @@
         <text class="card-action" catch:tap="viewProviderAgent">看档案</text>
       </view>
       <text class="card-desc">对服务方感兴趣时，可以先生成一份Agent匹配报告，判断双方价值、需求和下一步行动。</text>
-      <button class="btn-inline" catch:tap="applyProviderMatch">申请匹配分析</button>
+      <button class="btn-inline" catch:tap="applyProviderMatch">先做匹配判断</button>
     </view>
 
     <view class="action-bar">
-      <button class="btn-primary" catch:tap="onBook">预约此服务</button>
+      <button class="btn-inline btn-muted action-secondary" catch:tap="applyProviderMatch">先匹配</button>
+      <button class="btn-primary action-primary" catch:tap="onBook">预约此服务</button>
     </view>
   </view>
 </view>

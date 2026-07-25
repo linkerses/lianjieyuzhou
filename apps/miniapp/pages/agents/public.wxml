@@ -2,47 +2,45 @@
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
   <view wx:elif="{{agent}}">
-    <view class="card">
-      <view class="card-header">
-        <text class="card-title">{{agent.nickname || '联结者'}}</text>
-        <text class="card-action" catch:tap="copyCid">复制CID</text>
-      </view>
+    <view class="public-agent-hero">
       <view class="agent-basic">
         <image class="agent-basic-avatar" wx:if="{{agent.avatar_url}}" src="{{agent.avatar_url}}" mode="aspectFill"></image>
         <view class="agent-basic-avatar avatar-fallback" wx:else>{{agent.initial}}</view>
         <view class="agent-basic-meta">
           <text class="agent-basic-name">{{agent.nickname || '联结者'}}</text>
-          <text class="agent-basic-cid">{{agent.cid}}</text>
+          <text class="agent-basic-cid">{{locationText}} · {{agent.basic_profile.gender || '性别未填写'}}</text>
         </view>
       </view>
-      <view class="info-row">
-        <text class="info-label">CID</text>
-        <text class="info-value">{{agent.cid}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">信任评分</text>
-        <text class="info-value">{{agent.trust_score || 0}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">省份城市</text>
-        <text class="info-value">{{agent.basic_profile.province || '未填写'}} {{agent.basic_profile.city || ''}}</text>
-      </view>
-      <view class="info-row">
-        <text class="info-label">性别</text>
-        <text class="info-value">{{agent.basic_profile.gender || '未填写'}}</text>
+      <text class="public-agent-summary">{{profileSummary}}</text>
+      <view class="public-agent-metrics">
+        <view class="public-agent-metric">
+          <text class="public-agent-metric-value">{{agent.trust_score || 0}}</text>
+          <text class="public-agent-metric-label">信任分</text>
+        </view>
+        <view class="public-agent-metric">
+          <text class="public-agent-metric-value">{{agent.demand_posts.length || 0}}</text>
+          <text class="public-agent-metric-label">公开需求</text>
+        </view>
+        <view class="public-agent-metric">
+          <text class="public-agent-metric-value">{{agent.life_stage_tag_labels.length || 0}}</text>
+          <text class="public-agent-metric-label">标签</text>
+        </view>
       </view>
       <view class="tag-display">
         <text class="tag" wx:for="{{agent.life_stage_tag_labels}}" wx:key="item">{{item}}</text>
         <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">未设置标签</text>
       </view>
+      <view class="public-agent-actions">
+        <button class="btn-inline btn-muted" catch:tap="copyCid">复制CID</button>
+        <button class="btn-inline" catch:tap="applyMatch">申请匹配</button>
+      </view>
     </view>
 
-    <view class="card">
+    <view class="card" wx:if="{{agent.basic_profile.bio}}">
       <view class="card-header">
         <text class="card-title">个人简介</text>
       </view>
-      <text class="profile-text" wx:if="{{agent.basic_profile.bio}}">{{agent.basic_profile.bio}}</text>
-      <text class="profile-empty" wx:else>对方暂未填写。</text>
+      <text class="profile-text">{{agent.basic_profile.bio}}</text>
     </view>
 
     <view class="card">
@@ -64,15 +62,26 @@
         <text class="profile-text" wx:if="{{agent.value_profile.project_experience}}">{{agent.value_profile.project_experience}}</text>
         <text class="profile-empty" wx:else>对方暂未填写。</text>
       </view>
-      <view class="profile-section">
-        <text class="profile-label">愿景需求</text>
-        <text class="profile-text" wx:if="{{agent.value_profile.vision_needs}}">{{agent.value_profile.vision_needs}}</text>
-        <text class="profile-empty" wx:else>对方暂未填写。</text>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">正在寻找</text>
       </view>
+      <view wx:if="{{agent.demand_posts.length > 0}}">
+        <view class="demand-item" wx:for="{{agent.demand_posts}}" wx:key="id">
+          <view class="demand-top">
+            <text class="demand-title">{{item.title}}</text>
+            <text class="demand-status demand-open">进行中</text>
+          </view>
+          <text class="demand-desc">{{item.description}}</text>
+        </view>
+      </view>
+      <text class="profile-empty" wx:else>对方暂未发布公开需求。</text>
     </view>
 
     <view class="action-bar">
-      <button class="btn-primary" catch:tap="applyMatch">申请匹配分析</button>
+      <button class="btn-primary" catch:tap="applyMatch">申请匹配</button>
     </view>
   </view>
 </view>

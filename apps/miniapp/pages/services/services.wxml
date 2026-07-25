@@ -2,8 +2,16 @@
 <view class="page">
 
   <view class="seller-hero">
-    <text class="seller-title">找服务</text>
+    <view class="service-hero-head">
+      <text class="seller-title">找服务</text>
+      <text class="service-count" wx:if="{{!loading}}">{{services.length}}个</text>
+    </view>
     <text class="seller-subtitle">直接选择可交付的服务，适合你已经知道自己需要什么。</text>
+    <view class="service-guide">
+      <text>先看适合场景</text>
+      <text>再看交付方式</text>
+      <text>最后预约沟通</text>
+    </view>
   </view>
 
   <!-- 系统筛选 -->
@@ -23,23 +31,29 @@
   <view class="service-list" wx:elif="{{services.length > 0}}">
     <view class="service-card" wx:for="{{services}}" wx:key="id" catch:tap="onTapService" data-id="{{item.id}}">
       <view class="service-top">
-        <text class="service-system">{{item.system_label}}</text>
-        <text class="service-price">{{item.price}}元</text>
+        <view class="service-system-block">
+          <text class="service-system">{{item.system_label}}</text>
+          <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
+        </view>
+        <view class="service-price-block">
+          <text class="service-price">{{item.price_label}}</text>
+          <text class="service-price-sub">{{item.delivery_label}}</text>
+        </view>
       </view>
       <text class="service-name">{{item.name}}</text>
+      <text class="service-fit">{{item.fit_hint}}</text>
       <view class="service-tags">
         <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
       </view>
-      <text class="service-provider">{{item.provider_nickname || '联结者'}}</text>
       <view class="service-meta">
         <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
-        <text wx:if="{{item.delivery_method === 'online'}}">线上</text>
-        <text wx:elif="{{item.delivery_method === 'offline'}}">线下</text>
-        <text wx:else>线上/线下</text>
+        <text>{{item.delivery_label}}</text>
+        <text wx:if="{{item.delivery_count > 0}}">交付 {{item.delivery_count}}</text>
         <text wx:if="{{item.trust_score > 0}}">信任 {{item.trust_score}}</text>
       </view>
       <view class="service-card-action">
-        <text>查看详情并预约</text>
+        <text>查看边界与交付物</text>
+        <text class="service-action-arrow">预约 ›</text>
       </view>
     </view>
   </view>

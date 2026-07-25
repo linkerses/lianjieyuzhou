@@ -1,6 +1,11 @@
 <!-- 交易列表 -->
 <view class="page">
 
+  <view class="seller-hero tx-list-hero">
+    <text class="seller-title">协作中心</text>
+    <text class="seller-subtitle">查看预约、服务进度和待评分事项。优先处理标记为待操作的协作。</text>
+  </view>
+
   <!-- Tab切换 -->
   <view class="tabs">
     <view class="tab {{activeTab === item.key ? 'active' : ''}}"
@@ -14,14 +19,25 @@
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
   <view class="tx-list" wx:elif="{{transactions.length > 0}}">
-    <view class="tx-card" wx:for="{{transactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
+    <view class="tx-card tx-card-{{item.urgency_class}}" wx:for="{{transactions}}" wx:key="id" catch:tap="onTapTransaction" data-id="{{item.id}}">
       <view class="tx-top">
-        <text class="tx-service">{{item.service_name}}</text>
+        <view class="tx-role-block">
+          <text class="tx-role-label">{{item.role_label}}</text>
+          <text class="tx-service">{{item.service_name}}</text>
+        </view>
         <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
       </view>
       <view class="tx-meta">
         <text class="tx-system">{{item.service_system}}</text>
-        <text class="tx-amount">{{item.amount}}元</text>
+        <text>{{item.scheduled_text}}</text>
+        <text class="tx-amount">{{item.amount_text}}</text>
+      </view>
+      <view class="tx-counterparty">
+        <text>{{item.counterparty_label}}：{{item.counterparty_cid}}</text>
+      </view>
+      <view class="tx-action-hint">
+        <text>{{item.action_hint}}</text>
+        <text class="tx-action-more">详情 ›</text>
       </view>
       <text class="tx-score" wx:if="{{item.actual_score}}">评分 {{item.actual_score}}</text>
     </view>

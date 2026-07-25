@@ -4,6 +4,8 @@
   <!-- Tab切换 -->
   <view class="tabs">
     <view class="tab {{activeTab === 'profile' ? 'active' : ''}}" data-tab="profile" catch:tap="switchTab">档案</view>
+    <view class="tab {{activeTab === 'demands' ? 'active' : ''}}" data-tab="demands" catch:tap="switchTab">需求</view>
+    <view class="tab {{activeTab === 'services' ? 'active' : ''}}" data-tab="services" catch:tap="switchTab">服务</view>
     <view class="tab {{activeTab === 'skills' ? 'active' : ''}}" data-tab="skills" catch:tap="switchTab">技能</view>
     <view class="tab {{activeTab === 'trust' ? 'active' : ''}}" data-tab="trust" catch:tap="switchTab">信任</view>
     <view class="tab {{activeTab === 'match' ? 'active' : ''}}" data-tab="match" catch:tap="switchTab">匹配</view>
@@ -38,6 +40,31 @@
           <text class="info-label">能量状态</text>
           <text class="info-value">{{agent.energy_status || '待设置'}}</text>
         </view>
+        <view class="profile-section">
+          <view class="profile-line-head">
+            <text class="profile-label">生命阶段标签</text>
+            <text class="card-action" catch:tap="startEditTags">编辑</text>
+          </view>
+          <view class="tag-display">
+            <view class="tag" wx:for="{{lifeStageTagLabels}}" wx:key="item">{{item}}</view>
+            <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">尚未设置——设置后Agent才能为你精准匹配</text>
+          </view>
+        </view>
+        <view class="tag-editor inline" wx:if="{{editingTags}}">
+          <text class="editor-hint">选择你当前活跃的领域（最多3个）</text>
+          <view class="tag-grid">
+            <view class="tag-option {{item.selected ? 'selected' : ''}}"
+                  wx:for="{{systemOptions}}" wx:key="value"
+                  data-value="{{item.value}}"
+                  catch:tap="toggleTag">
+              {{item.label}}
+            </view>
+          </view>
+          <view class="editor-actions">
+            <button class="btn-cancel" catch:tap="cancelEditTags">取消</button>
+            <button class="btn-save" catch:tap="saveTags">保存</button>
+          </view>
+        </view>
         <view class="info-row">
           <text class="info-label">省份城市</text>
           <text class="info-value">{{basicProfile.province || '待设置'}} {{basicProfile.city || ''}}</text>
@@ -57,6 +84,12 @@
         <view class="form-group">
           <text class="form-label">称呼</text>
           <input class="form-input" data-field="nickname" bindinput="onBasicInput" value="{{basicForm.nickname}}" placeholder="请输入你的称呼" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">生命状态</text>
+          <picker mode="selector" range="{{energyOptions}}" value="{{energyIndex}}" bindchange="onEnergyChange">
+            <view class="picker">{{energyOptions[energyIndex]}}</view>
+          </picker>
         </view>
         <view class="form-group">
           <text class="form-label">头像URL</text>
@@ -88,18 +121,6 @@
       </view>
     </view>
 
-    <view class="card service-manage-card" wx:if="{{agent}}">
-      <view class="card-header">
-        <text class="card-title">服务项目</text>
-        <text class="card-action" catch:tap="goManageServices">管理</text>
-      </view>
-      <text class="card-desc">把你的能力整理成可预约服务，也可以在这里修改服务内容、定价和上下架状态。</text>
-      <view class="agent-service-actions">
-        <button class="btn-primary" catch:tap="goCreateService">发布服务</button>
-        <button class="btn-inline btn-muted" catch:tap="goManageServices">修改已有服务</button>
-      </view>
-    </view>
-
     <!-- 核心价值档案 -->
     <view class="card" wx:if="{{agent}}">
       <view class="card-header">
@@ -107,7 +128,7 @@
         <text class="card-action" wx:if="{{!editingValueProfile}}" catch:tap="startEditValueProfile">编辑</text>
       </view>
 
-      <text class="card-desc">用 Agent 的方式描述你能为他人提供的价值、经验与当下需求。</text>
+      <text class="card-desc">用 Agent 的方式描述你的核心价值、可提供能力和可信经历。需求和服务已拆到独立菜单。</text>
 
       <view wx:if="{{!editingValueProfile}}">
         <view class="profile-section">
@@ -127,12 +148,6 @@
           <text class="profile-text" wx:if="{{valueProfile.project_experience}}">{{valueProfile.project_experience}}</text>
           <text class="profile-empty" wx:else>记录能证明你能力的项目、案例或成果。</text>
         </view>
-
-        <view class="profile-section">
-          <text class="profile-label">愿景需求</text>
-          <text class="profile-text" wx:if="{{valueProfile.vision_needs}}">{{valueProfile.vision_needs}}</text>
-          <text class="profile-empty" wx:else>写下你正在寻找的合作、资源、客户或成长方向。</text>
-        </view>
       </view>
 
       <view wx:else>
@@ -148,10 +163,6 @@
           <text class="form-label">项目经历</text>
           <textarea class="form-textarea" maxlength="1000" data-field="project_experience" bindinput="onValueInput" value="{{valueForm.project_experience}}" placeholder="例：做过哪些项目、服务过哪些客户、形成过哪些成果。" />
         </view>
-        <view class="form-group">
-          <text class="form-label">愿景需求</text>
-          <textarea class="form-textarea" maxlength="800" data-field="vision_needs" bindinput="onValueInput" value="{{valueForm.vision_needs}}" placeholder="例：正在寻找服务方、合作伙伴、种子用户、场地资源或资金支持。" />
-        </view>
         <view class="editor-actions">
           <button class="btn-cancel" catch:tap="cancelEditValueProfile">取消</button>
           <button class="btn-save" catch:tap="saveValueProfile">保存档案</button>
@@ -159,34 +170,120 @@
       </view>
     </view>
 
-    <!-- 生命阶段标签（核心） -->
-    <view class="card" wx:if="{{agent}}">
+  </view>
+
+  <!-- ═══════════ 需求Tab ═══════════ -->
+  <view wx:elif="{{!errorMessage && activeTab === 'demands'}}">
+    <view class="card demand-publish-card">
       <view class="card-header">
-        <text class="card-title">生命阶段标签</text>
-        <text class="card-action" wx:if="{{!editingTags}}" catch:tap="startEditTags">编辑</text>
+        <text class="card-title">需求动态</text>
+        <text class="card-action" wx:if="{{!editingDemand}}" catch:tap="startCreateDemand">发布</text>
       </view>
+      <text class="card-desc">需求要放在第一位。这里发布你正在寻找的资源、合作、客户、人才或具体帮助；满足后可标记解决或隐藏。</text>
 
-      <view class="tag-display" wx:if="{{!editingTags}}">
-        <view class="tag" wx:for="{{lifeStageTagLabels}}" wx:key="item">{{item}}</view>
-        <text class="tag-empty" wx:if="{{agent.life_stage_tags.length === 0}}">尚未设置——设置后Agent才能为你精准匹配</text>
-      </view>
-
-      <!-- 编辑模式 -->
-      <view class="tag-editor" wx:elif="{{editingTags}}">
-        <text class="editor-hint">选择你当前活跃的领域（最多3个）</text>
-        <view class="tag-grid">
-          <view class="tag-option {{item.selected ? 'selected' : ''}}"
-                wx:for="{{systemOptions}}" wx:key="value"
-                data-value="{{item.value}}"
-                catch:tap="toggleTag">
-            {{item.label}}
-          </view>
+      <view wx:if="{{editingDemand}}">
+        <view class="form-group">
+          <text class="form-label">需求标题</text>
+          <input class="form-input" maxlength="40" data-field="title" bindinput="onDemandInput" value="{{demandForm.title}}" placeholder="例：寻找AI工具落地共创伙伴" />
+        </view>
+        <view class="form-group">
+          <text class="form-label">具体描述</text>
+          <textarea class="form-textarea form-textarea-large" maxlength="800" data-field="description" bindinput="onDemandInput" value="{{demandForm.description}}" placeholder="写清楚你需要什么、希望对方具备什么、下一步怎么联系或验证。" />
         </view>
         <view class="editor-actions">
-          <button class="btn-cancel" catch:tap="cancelEditTags">取消</button>
-          <button class="btn-save" catch:tap="saveTags">保存</button>
+          <button class="btn-cancel" catch:tap="cancelEditDemand">取消</button>
+          <button class="btn-save" catch:tap="saveDemand">{{demandForm.id ? '保存需求' : '发布需求'}}</button>
         </view>
       </view>
+
+      <button class="btn-primary" wx:else catch:tap="startCreateDemand">发布新需求</button>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
+        <text class="card-title">正在寻找</text>
+        <text class="card-action">{{openDemandPosts.length || 0}}条</text>
+      </view>
+
+      <view wx:if="{{openDemandPosts.length > 0}}">
+        <view class="demand-item" wx:for="{{openDemandPosts}}" wx:key="id">
+          <view class="demand-top">
+            <text class="demand-title">{{item.title}}</text>
+            <text class="demand-status demand-open">{{item.status_label}}</text>
+          </view>
+          <text class="demand-desc">{{item.description}}</text>
+          <view class="demand-actions">
+            <button class="btn-inline btn-muted" data-id="{{item.id}}" catch:tap="startEditDemand">编辑</button>
+            <button class="btn-inline" data-id="{{item.id}}" data-status="resolved" catch:tap="updateDemandStatus">已解决</button>
+            <button class="btn-inline btn-muted" data-id="{{item.id}}" data-status="hidden" catch:tap="updateDemandStatus">隐藏</button>
+          </view>
+        </view>
+      </view>
+
+      <view class="empty" wx:else>
+        <text>暂时没有公开需求。发布一个需求后，别人更容易知道如何帮你。</text>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{inactiveDemandPosts.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">已处理需求</text>
+      </view>
+      <view class="demand-item compact" wx:for="{{inactiveDemandPosts}}" wx:key="id">
+        <view class="demand-top">
+          <text class="demand-title">{{item.title}}</text>
+          <text class="demand-status">{{item.status_label}}</text>
+        </view>
+        <text class="demand-desc">{{item.description}}</text>
+        <view class="demand-actions">
+          <button class="btn-inline btn-muted" data-id="{{item.id}}" catch:tap="startEditDemand">编辑</button>
+          <button class="btn-inline" data-id="{{item.id}}" data-status="open" catch:tap="updateDemandStatus">重新公开</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ═══════════ 服务Tab ═══════════ -->
+  <view wx:elif="{{!errorMessage && activeTab === 'services'}}">
+    <view class="card service-manage-card" wx:if="{{agent}}">
+      <view class="card-header">
+        <text class="card-title">我的服务</text>
+        <text class="card-action" catch:tap="goManageServices">工作台</text>
+      </view>
+      <text class="card-desc">服务是你为别人解决一个具体问题的产品。标题、边界、适合谁和不适合谁越清楚，越容易被预约。</text>
+      <button class="btn-primary" catch:tap="goCreateService">发布服务</button>
+    </view>
+
+    <view class="loading" wx:if="{{loading.services}}">加载中...</view>
+
+    <view wx:elif="{{services.length > 0}}">
+      <view class="service-card" wx:for="{{services}}" wx:key="id">
+        <view catch:tap="goServiceDetail" data-id="{{item.id}}">
+          <view class="service-top">
+            <text class="service-system">{{item.system_label}}</text>
+            <text class="tx-status tx-{{item.status}}">{{item.status_label}}</text>
+            <text class="service-price">{{item.price}}元</text>
+          </view>
+          <text class="service-name">{{item.name}}</text>
+          <view class="service-tags">
+            <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+          </view>
+          <view class="service-meta">
+            <text wx:if="{{item.duration_minutes}}">{{item.duration_minutes}}分钟</text>
+            <text>{{item.delivery_label}}</text>
+            <text>交付 {{item.delivery_count || 0}}</text>
+          </view>
+        </view>
+        <view class="service-actions">
+          <button class="btn-inline btn-muted" data-id="{{item.id}}" catch:tap="goEditService">编辑</button>
+          <button class="btn-inline" wx:if="{{item.can_activate}}" data-id="{{item.id}}" data-status="active" catch:tap="updateServiceStatus">上架</button>
+          <button class="btn-inline btn-muted" wx:if="{{item.can_pause}}" data-id="{{item.id}}" data-status="paused" catch:tap="updateServiceStatus">暂停</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty" wx:else>
+      <text>你还没有发布服务。先把一个能明确解决的问题上架。</text>
     </view>
   </view>
 
@@ -277,8 +374,8 @@
               </view>
             </view>
             <view class="connection-actions">
-              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
-              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+              <text class="connection-link" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link primary" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</text>
             </view>
           </view>
           <view class="connection-empty" wx:if="{{trustNetwork.outgoing.length === 0}}">还没有主动连接的 Agent。</view>
@@ -305,8 +402,8 @@
               </view>
             </view>
             <view class="connection-actions">
-              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
-              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+              <text class="connection-link" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link primary" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</text>
             </view>
           </view>
           <view class="connection-empty" wx:if="{{trustNetwork.incoming.length === 0}}">还没有人主动连接你。</view>
@@ -333,8 +430,8 @@
               </view>
             </view>
             <view class="connection-actions">
-              <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</button>
-              <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</button>
+              <text class="connection-link" data-cid="{{item.cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link primary" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</text>
             </view>
           </view>
           <view class="connection-empty" wx:if="{{trustNetwork.traded.length === 0}}">还没有已完成交易的 Agent。</view>
@@ -363,7 +460,7 @@
       </view>
       <view class="action-item">
         <text class="action-dot"></text>
-        <text class="action-text">先让双方补全核心价值、服务能力、项目经历和愿景需求。</text>
+        <text class="action-text">先让双方补全核心价值、服务能力、项目经历和当前需求。</text>
       </view>
       <view class="action-item">
         <text class="action-dot"></text>

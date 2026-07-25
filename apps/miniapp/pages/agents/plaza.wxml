@@ -1,7 +1,15 @@
 <view class="page">
   <view class="seller-hero">
-    <text class="seller-title">Agent广场</text>
-    <text class="seller-subtitle">发现公开身份档案，查看价值与需求，再发起匹配分析。</text>
+    <view class="plaza-hero-head">
+      <text class="seller-title">找人</text>
+      <text class="plaza-count" wx:if="{{!loading}}">{{agents.length}}人</text>
+    </view>
+    <text class="seller-subtitle">发现公开身份档案，查看价值与需求，再申请匹配。</text>
+    <view class="plaza-guide">
+      <text>看价值</text>
+      <text>看需求</text>
+      <text>再匹配</text>
+    </view>
   </view>
 
   <scroll-view class="filter-bar" scroll-x>
@@ -28,6 +36,11 @@
 
   <view wx:elif="{{agents.length > 0}}">
     <view class="agent-plaza-card" wx:for="{{agents}}" wx:key="cid">
+      <view class="plaza-card-labels">
+        <text class="plaza-card-label">{{item.primary_label}}</text>
+        <text class="plaza-card-time">{{item.updated_label}}</text>
+      </view>
+
       <view class="agent-plaza-main" data-cid="{{item.cid}}" catch:tap="viewAgent">
         <image class="agent-plaza-avatar" wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill"></image>
         <view class="agent-plaza-avatar avatar-fallback" wx:else>{{item.initial}}</view>
@@ -50,11 +63,11 @@
       <view class="agent-value-list">
         <view class="agent-value-block">
           <text class="agent-value-label">可提供</text>
-          <text class="agent-value-text">{{item.service_capabilities}}</text>
+          <text class="agent-value-text line-clamp">{{item.service_capabilities}}</text>
         </view>
         <view class="agent-value-block">
           <text class="agent-value-label">正在找</text>
-          <text class="agent-value-text">{{item.vision_needs}}</text>
+          <text class="agent-value-text line-clamp">{{item.vision_needs}}</text>
         </view>
       </view>
 
@@ -65,7 +78,7 @@
 
       <view class="service-actions">
         <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewAgent">看档案</button>
-        <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="applyMatch">匹配分析</button>
+        <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="applyMatch">申请匹配</button>
       </view>
     </view>
   </view>

@@ -88,18 +88,39 @@ Page({
   },
 
   formatService(item) {
+    const systemLabel = SYSTEM_LABELS[item.primary_system] || item.primary_system;
+    const deliveryLabel = DELIVERY_LABELS[item.delivery_method] || item.delivery_method || '线上/线下';
     const tags = [
-      SYSTEM_LABELS[item.primary_system] || item.primary_system,
+      systemLabel,
       item.secondary_system ? SYSTEM_LABELS[item.secondary_system] || item.secondary_system : '',
-      DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      deliveryLabel,
       item.duration_minutes ? `${item.duration_minutes}分钟` : '',
     ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 5);
 
     return {
       ...item,
-      system_label: SYSTEM_LABELS[item.primary_system] || item.primary_system,
-      delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      system_label: systemLabel,
+      delivery_label: deliveryLabel,
+      price_label: this.formatPrice(item.price),
+      fit_hint: this.buildFitHint(item, systemLabel),
       tags,
     };
+  },
+
+  formatPrice(price) {
+    const value = Number(price || 0);
+    if (!Number.isFinite(value) || value <= 0) return '面议';
+    return `${value}元`;
+  },
+
+  buildFitHint(item, systemLabel) {
+    const stages = Array.isArray(item.suitable_stages) ? item.suitable_stages.filter(Boolean) : [];
+    if (stages.length > 0) {
+      return `适合：${stages.slice(0, 2).join('、')}`;
+    }
+    if (item.delivery_count > 0) {
+      return `已有 ${item.delivery_count} 次交付记录，适合先看详情再预约。`;
+    }
+    return `适合正在处理「${systemLabel}」相关问题的人先了解。`;
   },
 });

@@ -1,50 +1,120 @@
 /* pages/match/report.wxss */
 
-.match-action-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16rpx;
-  margin-top: 22rpx;
+.match-pair {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: 24rpx;
+  color: #A8B5A9;
+  line-height: 1.45;
 }
 
-.match-action-btn {
-  width: 100%;
-  min-height: 84rpx;
-  border: 0;
-  border-radius: 14rpx;
+.match-type-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 4rpx 0 10rpx;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
   background: #E8EDE6;
   color: #2D3E2F;
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 23rpx;
+  font-weight: 700;
 }
 
-.match-action-btn.primary {
+.concrete-actions {
+  margin-top: 14rpx;
+}
+
+.concrete-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  padding: 14rpx 0;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.concrete-index {
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: 50%;
   background: #2D3E2F;
   color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
-.match-action-cards {
-  margin-top: 24rpx;
+.concrete-text {
+  flex: 1;
+  min-width: 0;
+  color: #2D3E2F;
+  font-size: 26rpx;
+  line-height: 1.55;
 }
 
-.match-action-card {
-  background: #FAFAF8;
+.next-step-panel .btn-primary {
+  height: 68rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  margin-top: 4rpx;
+}
+
+.match-link-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18rpx 28rpx;
+  margin-top: 18rpx;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F0F0EC;
+}
+
+.match-link {
+  color: #2D3E2F;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.match-link.muted {
+  color: #A8B5A9;
+}
+
+.match-evidence {
+  padding: 20rpx;
   border-radius: 12rpx;
-  padding: 22rpx;
+  background: #FAFAF8;
   margin-bottom: 14rpx;
 }
 
-.match-action-card-title {
+.match-evidence.caution {
+  background: #FFF8EA;
+}
+
+.match-evidence.action {
+  background: #F4F7F1;
+  border-left: 5rpx solid #2D3E2F;
+}
+
+.empty.compact {
+  padding: 18rpx 0;
+  text-align: left;
+}
+
+.evidence-label {
   display: block;
-  font-size: 27rpx;
-  font-weight: 600;
-  color: #2D3E2F;
+  font-size: 22rpx;
+  color: #8A6A2F;
+  font-weight: 700;
   margin-bottom: 8rpx;
 }
 
-.match-action-card-desc {
+.evidence-text {
   display: block;
   font-size: 25rpx;
   color: #6B7D6E;
   line-height: 1.65;
+  margin-top: 6rpx;
 }

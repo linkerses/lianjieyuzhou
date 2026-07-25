@@ -14,11 +14,31 @@ const SYSTEM_OPTIONS = [
 ];
 
 const GENDER_OPTIONS = ['未设置', '男', '女', '其他'];
+const ENERGY_OPTIONS = ['未设置', '输出期', '输入期', '调整期'];
+
+const SERVICE_STATUS_LABELS = {
+  pending: '待审核',
+  active: '已上架',
+  paused: '已暂停',
+  archived: '已归档',
+};
+
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
 
 const TAG_LABELS = SYSTEM_OPTIONS.reduce((acc, item) => {
   acc[item.value] = item.label;
   return acc;
 }, {});
+
+const DEFAULT_DEMAND_FORM = {
+  id: '',
+  title: '',
+  description: '',
+};
 
 Page({
   data: {
@@ -52,9 +72,17 @@ Page({
     },
     lifeStageTagLabels: [],
     genderOptions: GENDER_OPTIONS,
+    energyOptions: ENERGY_OPTIONS,
     genderIndex: 0,
+    energyIndex: 0,
     editingBasicProfile: false,
     editingValueProfile: false,
+    editingDemand: false,
+    demandForm: { ...DEFAULT_DEMAND_FORM },
+    demandPosts: [],
+    openDemandPosts: [],
+    inactiveDemandPosts: [],
+    services: [],
     skills: [],
     trustInfo: null,
     trustNetwork: {
@@ -67,6 +95,7 @@ Page({
     loading: {
       agent: true,
       skills: true,
+      services: true,
       trust: true,
       network: true,
       matches: true,
@@ -74,7 +103,7 @@ Page({
     editingTags: false,
     tempTags: [],
     systemOptions: SYSTEM_OPTIONS,
-    activeTab: 'profile', // profile / skills / trust / match
+    activeTab: 'profile', // profile / demands / services / skills / trust / match
     matchingTargetCid: '',
     errorMessage: '',
   },
@@ -107,6 +136,7 @@ Page({
           errorMessage: loginRes.error || '登录失败，请检查网络配置',
           'loading.agent': false,
           'loading.skills': false,
+          'loading.services': false,
           'loading.trust': false,
           'loading.network': false,
           'loading.matches': false,
@@ -116,6 +146,7 @@ Page({
     }
     await Promise.all([
       this.loadAgent(),
+      this.loadMyServices(),
       this.loadSkills(),
       this.loadTrustInfo(),
       this.loadTrustNetwork(),
@@ -129,13 +160,16 @@ Page({
       if (res.data) {
         const valueProfile = this.normalizeValueProfile(res.data.agent_config);
         const basicProfile = this.normalizeBasicProfile(res.data);
+        const demandState = this.normalizeDemandState(res.data.agent_config);
         this.setData({
           agent: res.data,
           basicProfile,
           basicForm: { ...basicProfile },
+          energyIndex: this.getEnergyIndex(res.data.energy_status),
           lifeStageTagLabels: this.formatTags(res.data.life_stage_tags || []),
           valueProfile,
           valueForm: { ...valueProfile },
+          ...demandState,
           tempTags: res.data.life_stage_tags || [],
           systemOptions: this.markSelectedSystems(res.data.life_stage_tags || []),
           'loading.agent': false,
@@ -147,6 +181,23 @@ Page({
         errorMessage: err.message || err.errMsg || err.error || 'Agent 数据加载失败',
         'loading.agent': false,
       });
+    }
+  },
+
+  async loadMyServices() {
+    try {
+      const res = await app.request({
+        url: '/services',
+        data: { provider: app.globalData.cid, status: 'all' },
+      });
+
+      this.setData({
+        services: (res.data || []).map(item => this.formatService(item)),
+        'loading.services': false,
+      });
+    } catch (err) {
+      console.error('[loadMyServices error]', err);
+      this.setData({ 'loading.services': false });
     }
   },
 
@@ -217,6 +268,7 @@ Page({
       errorMessage: '',
       'loading.agent': true,
       'loading.skills': true,
+      'loading.services': true,
       'loading.trust': true,
       'loading.network': true,
       'loading.matches': true,
@@ -229,6 +281,7 @@ Page({
       editingBasicProfile: true,
       basicForm: this.normalizeBasicProfile(this.data.agent),
       genderIndex: this.getGenderIndex(this.normalizeBasicProfile(this.data.agent).gender),
+      energyIndex: this.getEnergyIndex(this.data.agent && this.data.agent.energy_status),
     });
   },
 
@@ -237,6 +290,7 @@ Page({
       editingBasicProfile: false,
       basicForm: this.normalizeBasicProfile(this.data.agent),
       genderIndex: this.getGenderIndex(this.normalizeBasicProfile(this.data.agent).gender),
+      energyIndex: this.getEnergyIndex(this.data.agent && this.data.agent.energy_status),
     });
   },
 
@@ -252,6 +306,11 @@ Page({
       genderIndex,
       'basicForm.gender': gender === '未设置' ? '' : gender,
     });
+  },
+
+  onEnergyChange(e) {
+    const energyIndex = Number(e.detail.value || 0);
+    this.setData({ energyIndex });
   },
 
   async saveBasicProfile() {
@@ -271,6 +330,7 @@ Page({
         method: 'PATCH',
         data: {
           nickname,
+          energy_status: this.getEnergyValueByIndex(this.data.energyIndex),
           agent_config: {
             ...currentConfig,
             avatar_url: this.data.basicForm.avatar_url.trim(),
@@ -291,6 +351,7 @@ Page({
           basicProfile,
           basicForm: { ...basicProfile },
           genderIndex: this.getGenderIndex(basicProfile.gender),
+          energyIndex: this.getEnergyIndex(res.data.energy_status),
           editingBasicProfile: false,
         });
         wx.setStorageSync('nickname', res.data.nickname);
@@ -492,12 +553,164 @@ Page({
     wx.switchTab({ url: '/pages/agents/plaza' });
   },
 
+  // ── 需求动态 ──
+
+  startCreateDemand() {
+    this.setData({
+      editingDemand: true,
+      demandForm: { ...DEFAULT_DEMAND_FORM },
+    });
+  },
+
+  startEditDemand(e) {
+    const id = e.currentTarget.dataset.id;
+    const demand = this.data.demandPosts.find(item => item.id === id);
+    if (!demand) return;
+    this.setData({
+      editingDemand: true,
+      demandForm: {
+        id: demand.id,
+        title: demand.title,
+        description: demand.description,
+      },
+    });
+  },
+
+  cancelEditDemand() {
+    this.setData({
+      editingDemand: false,
+      demandForm: { ...DEFAULT_DEMAND_FORM },
+    });
+  },
+
+  onDemandInput(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({ [`demandForm.${field}`]: e.detail.value });
+  },
+
+  async saveDemand() {
+    const title = this.data.demandForm.title.trim();
+    const description = this.data.demandForm.description.trim();
+    if (!title) {
+      wx.showToast({ title: '请填写需求标题', icon: 'none' });
+      return;
+    }
+    if (!description) {
+      wx.showToast({ title: '请描述具体需求', icon: 'none' });
+      return;
+    }
+
+    const now = new Date().toISOString();
+    let demandPosts = [...this.data.demandPosts];
+    if (this.data.demandForm.id) {
+      demandPosts = demandPosts.map(item => item.id === this.data.demandForm.id
+        ? { ...item, title, description, updated_at: now }
+        : item);
+    } else {
+      demandPosts.unshift({
+        id: `demand_${Date.now()}`,
+        title,
+        description,
+        status: 'open',
+        created_at: now,
+        updated_at: now,
+      });
+    }
+
+    await this.saveDemandPosts(demandPosts, '需求已发布');
+    this.setData({
+      editingDemand: false,
+      demandForm: { ...DEFAULT_DEMAND_FORM },
+    });
+  },
+
+  async updateDemandStatus(e) {
+    const { id, status } = e.currentTarget.dataset;
+    const demandPosts = this.data.demandPosts.map(item => item.id === id
+      ? { ...item, status, updated_at: new Date().toISOString() }
+      : item);
+    const titleMap = {
+      open: '已重新公开',
+      resolved: '已标记解决',
+      hidden: '已隐藏',
+    };
+    await this.saveDemandPosts(demandPosts, titleMap[status] || '已更新');
+  },
+
+  async saveDemandPosts(demandPosts, toastTitle) {
+    const cleanDemandPosts = demandPosts.map(item => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      status: item.status,
+      created_at: item.created_at,
+      updated_at: item.updated_at,
+    }));
+    const currentConfig = this.data.agent && this.data.agent.agent_config
+      ? this.data.agent.agent_config
+      : {};
+    const valueProfile = this.normalizeValueProfile(currentConfig);
+    const syncedValueProfile = {
+      ...valueProfile,
+      vision_needs: this.composeOpenDemandSummary(cleanDemandPosts),
+    };
+
+    try {
+      const res = await app.request({
+        url: '/agents/me',
+        method: 'PATCH',
+        data: {
+          agent_config: {
+            ...currentConfig,
+            demand_posts: cleanDemandPosts,
+            value_profile: syncedValueProfile,
+          },
+        },
+      });
+
+      const demandState = this.normalizeDemandState(res.data ? res.data.agent_config : { demand_posts: cleanDemandPosts });
+      this.setData({
+        agent: res.data || this.data.agent,
+        valueProfile: syncedValueProfile,
+        valueForm: { ...syncedValueProfile },
+        ...demandState,
+      });
+      wx.showToast({ title: toastTitle, icon: 'success' });
+    } catch (err) {
+      console.error('[saveDemandPosts error]', err);
+      wx.showToast({ title: '需求保存失败', icon: 'none' });
+    }
+  },
+
   goCreateService() {
     wx.navigateTo({ url: '/pages/seller/service-form' });
   },
 
   goManageServices() {
     wx.navigateTo({ url: '/pages/seller/workbench?tab=services' });
+  },
+
+  goEditService(e) {
+    wx.navigateTo({ url: `/pages/seller/service-form?id=${e.currentTarget.dataset.id}` });
+  },
+
+  goServiceDetail(e) {
+    wx.navigateTo({ url: `/pages/services/detail?id=${e.currentTarget.dataset.id}` });
+  },
+
+  async updateServiceStatus(e) {
+    const { id, status } = e.currentTarget.dataset;
+    try {
+      await app.request({
+        url: `/services/${id}`,
+        method: 'PATCH',
+        data: { status },
+      });
+      wx.showToast({ title: status === 'active' ? '已上架' : '已暂停', icon: 'success' });
+      this.loadMyServices();
+    } catch (err) {
+      wx.showToast({ title: err.error || '操作失败', icon: 'none' });
+    }
   },
 
   openMatchReport(e) {
@@ -530,6 +743,25 @@ Page({
     }));
   },
 
+  formatService(item) {
+    const tags = [
+      TAG_LABELS[item.primary_system] || item.primary_system,
+      item.secondary_system ? TAG_LABELS[item.secondary_system] || item.secondary_system : '',
+      DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      item.duration_minutes ? `${item.duration_minutes}分钟` : '',
+    ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 5);
+
+    return {
+      ...item,
+      system_label: TAG_LABELS[item.primary_system] || item.primary_system,
+      delivery_label: DELIVERY_LABELS[item.delivery_method] || item.delivery_method,
+      status_label: SERVICE_STATUS_LABELS[item.status] || item.status || '已上架',
+      can_activate: item.status !== 'active',
+      can_pause: item.status === 'active',
+      tags,
+    };
+  },
+
   markSelectedSystems(tags) {
     return SYSTEM_OPTIONS.map(item => ({
       ...item,
@@ -560,8 +792,57 @@ Page({
     };
   },
 
+  normalizeDemandState(config) {
+    const posts = this.normalizeDemandPosts(config && config.demand_posts ? config.demand_posts : []);
+    return {
+      demandPosts: posts,
+      openDemandPosts: posts.filter(item => item.status === 'open'),
+      inactiveDemandPosts: posts.filter(item => item.status !== 'open'),
+    };
+  },
+
+  normalizeDemandPosts(posts) {
+    return (posts || [])
+      .filter(item => item && item.title)
+      .map(item => ({
+        id: item.id || `demand_${Date.now()}`,
+        title: item.title || '',
+        description: item.description || '',
+        status: item.status || 'open',
+        created_at: item.created_at || '',
+        updated_at: item.updated_at || '',
+        status_label: this.getDemandStatusLabel(item.status || 'open'),
+      }));
+  },
+
+  getDemandStatusLabel(status) {
+    const map = {
+      open: '进行中',
+      resolved: '已解决',
+      hidden: '已隐藏',
+    };
+    return map[status] || status;
+  },
+
+  composeOpenDemandSummary(posts) {
+    return (posts || [])
+      .filter(item => item.status === 'open')
+      .map(item => `${item.title}：${item.description}`)
+      .join('\n');
+  },
+
   getGenderIndex(gender) {
     const index = GENDER_OPTIONS.indexOf(gender || '未设置');
     return index >= 0 ? index : 0;
+  },
+
+  getEnergyIndex(status) {
+    const index = ENERGY_OPTIONS.indexOf(status || '未设置');
+    return index >= 0 ? index : 0;
+  },
+
+  getEnergyValueByIndex(index) {
+    const value = ENERGY_OPTIONS[index] || '未设置';
+    return value === '未设置' ? 'unknown' : value;
   },
 });
