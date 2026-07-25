@@ -135,6 +135,13 @@ export const AnalyzeMatchSchema = z.object({
 
 export const CreateConnectionSchema = z.object({
   target_cid: z.string().min(1),
+  message: z.string().min(2).max(500).optional(),
+  source_type: z.enum(['agent', 'demand', 'service', 'match', 'manual']).default('agent').optional(),
+  source_id: z.string().max(120).optional(),
+});
+
+export const UpdateConnectionRequestSchema = z.object({
+  status: z.enum(['accepted', 'ignored', 'closed']),
 });
 
 export const UpdateSkillSchema = z.object({

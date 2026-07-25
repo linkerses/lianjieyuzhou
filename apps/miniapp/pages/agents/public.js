@@ -56,6 +56,43 @@ Page({
     });
   },
 
+  startConnection() {
+    if (!this.data.agent) return;
+    const agent = this.data.agent;
+    wx.showModal({
+      title: '发起连接',
+      editable: true,
+      placeholderText: '写一句你为什么想连接对方',
+      content: `给 ${agent.nickname || agent.cid} 留一句连接理由`,
+      confirmText: '发送',
+      success: async (res) => {
+        if (!res.confirm) return;
+        const message = (res.content || '').trim();
+        if (message.length < 2) {
+          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
+          return;
+        }
+        try {
+          const result = await app.request({
+            url: '/trust/connect',
+            method: 'POST',
+            data: {
+              target_cid: agent.cid,
+              message,
+              source_type: 'agent',
+            },
+          });
+          wx.showToast({
+            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
+            icon: 'success',
+          });
+        } catch (err) {
+          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
+        }
+      },
+    });
+  },
+
   copyCid() {
     if (!this.data.agent) return;
     wx.setClipboardData({

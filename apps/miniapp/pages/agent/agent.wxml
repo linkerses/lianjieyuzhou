@@ -345,6 +345,69 @@
 
     <view class="card">
       <view class="card-header">
+        <text class="card-title">连接申请</text>
+        <text class="card-action">{{connectionRequests.incoming.length || 0}}个待看</text>
+      </view>
+      <text class="card-desc">有人对你的档案、需求或匹配报告感兴趣时，会先在这里留下连接理由。</text>
+
+      <view class="loading" wx:if="{{loading.requests}}">加载中...</view>
+
+      <view wx:else>
+        <view class="connection-section" wx:if="{{connectionRequests.incoming.length > 0}}">
+          <view class="connection-section-title">
+            <text>发给我的</text>
+            <text>{{connectionRequests.incoming.length || 0}}</text>
+          </view>
+          <view class="connection-item" wx:for="{{connectionRequests.incoming}}" wx:key="id">
+            <view class="connection-main">
+              <view class="agent-basic-avatar avatar-fallback">{{item.other_name ? item.other_name[0] : '?'}}</view>
+              <view class="connection-info">
+                <view class="connection-top">
+                  <text class="connection-name">{{item.other_name}}</text>
+                  <text class="trust-badge-small">{{item.status_label}}</text>
+                </view>
+                <text class="connection-cid">{{item.other_cid}} · {{item.created_text}}</text>
+                <text class="connection-message">{{item.message}}</text>
+              </view>
+            </view>
+            <view class="connection-actions">
+              <text class="connection-link" data-cid="{{item.other_cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link primary" wx:if="{{item.can_accept}}" data-id="{{item.id}}" data-status="accepted" catch:tap="updateConnectionRequest">接受</text>
+              <text class="connection-link" wx:if="{{item.can_accept}}" data-id="{{item.id}}" data-status="ignored" catch:tap="updateConnectionRequest">忽略</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="connection-section" wx:if="{{connectionRequests.outgoing.length > 0}}">
+          <view class="connection-section-title">
+            <text>我发出的</text>
+            <text>{{connectionRequests.outgoing.length || 0}}</text>
+          </view>
+          <view class="connection-item" wx:for="{{connectionRequests.outgoing}}" wx:key="id">
+            <view class="connection-main">
+              <view class="agent-basic-avatar avatar-fallback">{{item.other_name ? item.other_name[0] : '?'}}</view>
+              <view class="connection-info">
+                <view class="connection-top">
+                  <text class="connection-name">{{item.other_name}}</text>
+                  <text class="trust-badge-small">{{item.status_label}}</text>
+                </view>
+                <text class="connection-cid">{{item.other_cid}} · {{item.created_text}}</text>
+                <text class="connection-message">{{item.message}}</text>
+              </view>
+            </view>
+            <view class="connection-actions">
+              <text class="connection-link" data-cid="{{item.other_cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link" wx:if="{{item.can_close}}" data-id="{{item.id}}" data-status="closed" catch:tap="updateConnectionRequest">关闭</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="connection-empty" wx:if="{{connectionRequests.incoming.length === 0 && connectionRequests.outgoing.length === 0}}">还没有连接申请。你可以从 Agent 广场或匹配报告里发起。</view>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="card-header">
         <text class="card-title">信任网络</text>
         <text class="card-action">{{trustNetwork.connections.length || 0}}人</text>
       </view>

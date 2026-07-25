@@ -2396,6 +2396,14 @@ button {
   color: #A8B5A9;
 }
 
+.connection-message {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 25rpx;
+  line-height: 1.55;
+  color: #566157;
+ }
+
 .connection-actions {
   display: flex;
   justify-content: flex-end;

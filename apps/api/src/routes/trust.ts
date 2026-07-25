@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { supabase, getCurrentCid } from '../lib/supabase';
-import { CreateConnectionSchema } from '../lib/validation';
+import { CreateConnectionSchema, UpdateConnectionRequestSchema } from '../lib/validation';
 
 const router = Router();
 
@@ -36,23 +36,136 @@ router.post('/connect', async (req: Request, res: Response) => {
       return res.json({ data: { ...existing[0], target_nickname: target.nickname, already_connected: true } });
     }
 
+    const { data: pending } = await supabase
+      .from('connection_requests')
+      .select('id, status, created_at')
+      .eq('requester_cid', cid)
+      .eq('target_cid', body.target_cid)
+      .eq('status', 'pending')
+      .limit(1);
+
+    if (pending && pending.length > 0) {
+      return res.json({
+        data: {
+          ...pending[0],
+          target_nickname: target.nickname,
+          already_requested: true,
+          already_connected: false,
+        },
+      });
+    }
+
     const { data, error } = await supabase
-      .from('auth_records')
+      .from('connection_requests')
       .insert({
-        granter_cid: cid,
-        grantee_cid: body.target_cid,
-        auth_scope: 'read',
-        data_fields: ['public_profile'],
-        duration: 'permanent',
-        status: 'active',
+        requester_cid: cid,
+        target_cid: body.target_cid,
+        message: body.message || '我对你的公开档案或需求感兴趣，希望先建立一次轻量连接。',
+        source_type: body.source_type || 'agent',
+        source_id: body.source_id || null,
+        status: 'pending',
       })
       .select()
       .single();
 
     if (error) throw error;
-    res.status(201).json({ data: { ...data, target_nickname: target.nickname, already_connected: false } });
+    res.status(201).json({ data: { ...data, target_nickname: target.nickname, already_requested: false, already_connected: false } });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '发起连接失败' });
+  }
+});
+
+router.get('/requests/mine', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const [incomingResult, outgoingResult] = await Promise.all([
+      supabase
+        .from('connection_requests')
+        .select(`
+          id, requester_cid, target_cid, message, source_type, source_id, status, created_at, updated_at, responded_at,
+          requester:agents!connection_requests_requester_cid_fkey(cid, nickname, trust_score, life_stage_tags, agent_config)
+        `)
+        .eq('target_cid', cid)
+        .order('created_at', { ascending: false })
+        .limit(50),
+      supabase
+        .from('connection_requests')
+        .select(`
+          id, requester_cid, target_cid, message, source_type, source_id, status, created_at, updated_at, responded_at,
+          target:agents!connection_requests_target_cid_fkey(cid, nickname, trust_score, life_stage_tags, agent_config)
+        `)
+        .eq('requester_cid', cid)
+        .order('created_at', { ascending: false })
+        .limit(50),
+    ]);
+
+    if (incomingResult.error) throw incomingResult.error;
+    if (outgoingResult.error) throw outgoingResult.error;
+
+    res.json({
+      data: {
+        incoming: (incomingResult.data || []).map((item: any) => ({
+          ...item,
+          requester: item.requester ? formatConnectionAgent(item.requester) : null,
+        })),
+        outgoing: (outgoingResult.data || []).map((item: any) => ({
+          ...item,
+          target: item.target ? formatConnectionAgent(item.target) : null,
+        })),
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取连接申请失败' });
+  }
+});
+
+router.patch('/requests/:id/status', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const body = UpdateConnectionRequestSchema.parse(req.body);
+    const { data: request, error: readError } = await supabase
+      .from('connection_requests')
+      .select('*')
+      .eq('id', req.params.id)
+      .single();
+
+    if (readError) throw readError;
+    if (!request) return res.status(404).json({ error: '连接申请不存在' });
+    if (body.status === 'closed' && request.requester_cid !== cid) {
+      return res.status(403).json({ error: '只有申请人可以关闭申请' });
+    }
+    if (body.status !== 'closed' && request.target_cid !== cid) {
+      return res.status(403).json({ error: '只有接收方可以处理申请' });
+    }
+    if (request.status !== 'pending') {
+      return res.status(400).json({ error: '该申请已处理' });
+    }
+
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('connection_requests')
+      .update({
+        status: body.status,
+        responded_at: now,
+        updated_at: now,
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    if (body.status === 'accepted') {
+      await ensureActiveConnection(request.requester_cid, request.target_cid);
+    }
+
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '处理连接申请失败' });
   }
 });
 
@@ -199,6 +312,36 @@ function formatConnectionAgent(agent: any) {
     life_stage_tags: agent.life_stage_tags || [],
     avatar_url: config.avatar_url || '',
   };
+}
+
+async function ensureActiveConnection(requesterCid: string, targetCid: string) {
+  const { data: existing } = await supabase
+    .from('auth_records')
+    .select('id')
+    .eq('granter_cid', requesterCid)
+    .eq('grantee_cid', targetCid)
+    .eq('auth_scope', 'read')
+    .eq('status', 'active')
+    .contains('data_fields', ['public_profile'])
+    .limit(1);
+
+  if (existing && existing.length > 0) return existing[0];
+
+  const { data, error } = await supabase
+    .from('auth_records')
+    .insert({
+      granter_cid: requesterCid,
+      grantee_cid: targetCid,
+      auth_scope: 'read',
+      data_fields: ['public_profile'],
+      duration: 'permanent',
+      status: 'active',
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 }
 
 export default router;

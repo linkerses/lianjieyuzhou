@@ -91,6 +91,10 @@ Page({
       traded: [],
       connections: [],
     },
+    connectionRequests: {
+      incoming: [],
+      outgoing: [],
+    },
     matchReports: [],
     loading: {
       agent: true,
@@ -98,6 +102,7 @@ Page({
       services: true,
       trust: true,
       network: true,
+      requests: true,
       matches: true,
     },
     editingTags: false,
@@ -124,6 +129,7 @@ Page({
     if (app.globalData.cid && this.data.agent) {
       this.loadTrustInfo();
       this.loadTrustNetwork();
+      this.loadConnectionRequests();
       this.loadMatchReports();
     }
   },
@@ -139,6 +145,7 @@ Page({
           'loading.services': false,
           'loading.trust': false,
           'loading.network': false,
+          'loading.requests': false,
           'loading.matches': false,
         });
         return;
@@ -150,6 +157,7 @@ Page({
       this.loadSkills(),
       this.loadTrustInfo(),
       this.loadTrustNetwork(),
+      this.loadConnectionRequests(),
       this.loadMatchReports(),
     ]);
   },
@@ -250,6 +258,23 @@ Page({
     }
   },
 
+  async loadConnectionRequests() {
+    try {
+      const res = await app.request({ url: '/trust/requests/mine' });
+      const data = res.data || {};
+      this.setData({
+        connectionRequests: {
+          incoming: (data.incoming || []).map(item => this.formatConnectionRequest(item, 'incoming')),
+          outgoing: (data.outgoing || []).map(item => this.formatConnectionRequest(item, 'outgoing')),
+        },
+        'loading.requests': false,
+      });
+    } catch (err) {
+      console.error('[loadConnectionRequests error]', err);
+      this.setData({ 'loading.requests': false });
+    }
+  },
+
   async loadMatchReports() {
     try {
       const res = await app.request({ url: '/matches/mine' });
@@ -271,6 +296,7 @@ Page({
       'loading.services': true,
       'loading.trust': true,
       'loading.network': true,
+      'loading.requests': true,
       'loading.matches': true,
     });
     this.loadAll();
@@ -536,6 +562,27 @@ Page({
     wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
   },
 
+  async updateConnectionRequest(e) {
+    const { id, status } = e.currentTarget.dataset;
+    const labelMap = {
+      accepted: '已接受',
+      ignored: '已忽略',
+      closed: '已关闭',
+    };
+    try {
+      await app.request({
+        url: `/trust/requests/${id}/status`,
+        method: 'PATCH',
+        data: { status },
+      });
+      wx.showToast({ title: labelMap[status] || '已处理', icon: 'success' });
+      this.loadConnectionRequests();
+      this.loadTrustNetwork();
+    } catch (err) {
+      wx.showToast({ title: err.error || '处理失败', icon: 'none' });
+    }
+  },
+
   onMatchCidInput(e) {
     this.setData({ matchingTargetCid: e.detail.value.trim() });
   },
@@ -741,6 +788,31 @@ Page({
       ...item,
       life_stage_tag_labels: this.formatTags(item.life_stage_tags || []),
     }));
+  },
+
+  formatConnectionRequest(item, direction) {
+    const other = direction === 'incoming' ? item.requester : item.target;
+    const date = new Date(item.created_at);
+    return {
+      ...item,
+      other,
+      other_name: other && other.nickname ? other.nickname : direction === 'incoming' ? item.requester_cid : item.target_cid,
+      other_cid: direction === 'incoming' ? item.requester_cid : item.target_cid,
+      status_label: this.getConnectionRequestStatusLabel(item.status),
+      created_text: Number.isNaN(date.getTime()) ? '' : `${date.getMonth() + 1}月${date.getDate()}日`,
+      can_accept: direction === 'incoming' && item.status === 'pending',
+      can_close: direction === 'outgoing' && item.status === 'pending',
+    };
+  },
+
+  getConnectionRequestStatusLabel(status) {
+    const map = {
+      pending: '待处理',
+      accepted: '已接受',
+      ignored: '已忽略',
+      closed: '已关闭',
+    };
+    return map[status] || status || '-';
   },
 
   formatService(item) {

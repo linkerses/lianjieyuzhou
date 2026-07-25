@@ -132,19 +132,40 @@ Page({
 
   async connectTarget() {
     if (!this.data.report) return;
-    try {
-      const res = await app.request({
-        url: '/trust/connect',
-        method: 'POST',
-        data: { target_cid: this.data.report.target_agent.cid },
-      });
-      wx.showToast({
-        title: res.data && res.data.already_connected ? '已连接过' : '已发起连接',
-        icon: 'success',
-      });
-    } catch (err) {
-      wx.showToast({ title: err.error || '连接失败', icon: 'none' });
-    }
+    const target = this.data.report.target_agent;
+    wx.showModal({
+      title: '发起连接',
+      editable: true,
+      placeholderText: '写一句你想连接对方的原因',
+      content: `给 ${target.nickname || target.cid} 留一句连接理由`,
+      confirmText: '发送',
+      success: async (modalRes) => {
+        if (!modalRes.confirm) return;
+        const message = (modalRes.content || '').trim();
+        if (message.length < 2) {
+          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
+          return;
+        }
+        try {
+          const res = await app.request({
+            url: '/trust/connect',
+            method: 'POST',
+            data: {
+              target_cid: target.cid,
+              message,
+              source_type: 'match',
+              source_id: this.data.report.id || '',
+            },
+          });
+          wx.showToast({
+            title: res.data && res.data.already_connected ? '已连接过' : res.data && res.data.already_requested ? '已申请过' : '申请已发送',
+            icon: 'success',
+          });
+        } catch (err) {
+          wx.showToast({ title: err.error || '连接失败', icon: 'none' });
+        }
+      },
+    });
   },
 
   markFollowUp() {

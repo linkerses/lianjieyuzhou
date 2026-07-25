@@ -80,14 +80,43 @@ Page({
     });
   },
 
-  // 联系服务方（V0.2：复制CID，后续可做直接通信）
+  // 联系服务方：先提交轻量连接申请，不直接进入聊天。
   onContact() {
-    if (this.data.service) {
-      wx.setClipboardData({
-        data: this.data.service.provider_cid,
-        success: () => wx.showToast({ title: '已复制联结者ID', icon: 'none' }),
-      });
-    }
+    if (!this.data.service) return;
+    const service = this.data.service;
+    wx.showModal({
+      title: '联系服务方',
+      editable: true,
+      placeholderText: '写一句你想咨询的问题',
+      content: `给 ${service.provider_nickname || service.provider_cid} 留一句连接理由`,
+      confirmText: '发送',
+      success: async (res) => {
+        if (!res.confirm) return;
+        const message = (res.content || '').trim();
+        if (message.length < 2) {
+          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
+          return;
+        }
+        try {
+          const result = await app.request({
+            url: '/trust/connect',
+            method: 'POST',
+            data: {
+              target_cid: service.provider_cid,
+              message,
+              source_type: 'service',
+              source_id: service.id,
+            },
+          });
+          wx.showToast({
+            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
+            icon: 'success',
+          });
+        } catch (err) {
+          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
+        }
+      },
+    });
   },
 
   viewProviderAgent() {

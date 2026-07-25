@@ -25,7 +25,7 @@ button, input, select, textarea { font: inherit; }
 .tabs { display: flex; gap: 8px; margin: 18px 0; border-bottom: 1px solid #E1DCCF; }
 .tab { padding: 11px 14px; border-radius: 6px 6px 0 0; cursor: pointer; color: #677268; }
 .tab.active { background: #243227; color: #fff; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
 .stat { background: #fff; border: 1px solid #E7E3D8; border-radius: 8px; padding: 16px; }
 .stat .num { font-size: 30px; font-weight: 750; }
 .stat .label { margin-top: 4px; color: #677268; font-size: 13px; }
@@ -117,6 +117,7 @@ tr:hover td { background: #FBFAF6; }
     <div class="tab" data-view="services" onclick="switchView('services')">服务</div>
     <div class="tab" data-view="transactions" onclick="switchView('transactions')">交易</div>
     <div class="tab" data-view="matches" onclick="switchView('matches')">匹配</div>
+    <div class="tab" data-view="connections" onclick="switchView('connections')">连接</div>
     <div class="tab" data-view="feedback" onclick="switchView('feedback')">反馈</div>
     <div class="tab" data-view="community" onclick="switchView('community')">社区动态</div>
   </div>
@@ -187,6 +188,20 @@ tr:hover td { background: #FBFAF6; }
         </div>
       </div>
       <div id="matchesTable" class="empty">等待加载</div>
+    </div>
+  </section>
+
+  <section id="view-connections" class="view">
+    <div class="panel">
+      <div class="panel-head">
+        <strong>连接申请</strong>
+        <div class="filters">
+          <input id="connectionCid" class="input" placeholder="按用户 CID 过滤">
+          <select id="connectionStatus" class="select"><option value="all">全部状态</option><option value="pending">待处理</option><option value="accepted">已接受</option><option value="ignored">已忽略</option><option value="closed">已关闭</option></select>
+          <button class="btn secondary" onclick="loadConnections()">查询</button>
+        </div>
+      </div>
+      <div id="connectionsTable" class="empty">等待加载</div>
     </div>
   </section>
 
@@ -335,6 +350,9 @@ const STATUS_LABELS = {
   open: '进行中',
   resolved: '已解决',
   hidden: '已隐藏',
+  accepted: '已接受',
+  ignored: '已忽略',
+  closed: '已关闭',
   pending: '待确认',
   confirmed: '已确认',
   completed: '已完成',
@@ -422,6 +440,7 @@ function switchView(view) {
   if (view === 'services') loadServices();
   if (view === 'transactions') loadTransactions();
   if (view === 'matches') loadMatches();
+  if (view === 'connections') loadConnections();
   if (view === 'feedback') loadFeedback();
   if (view === 'community') loadCommunityPosts();
 }
@@ -447,6 +466,7 @@ async function loadSummary() {
     stat('服务上架', `${s.services_active}/${s.services_total}`),
     stat('待处理交易', s.transactions_pending),
     stat('匹配报告', s.matches_total),
+    stat('待处理连接', s.connection_requests_pending || 0),
   ].join('');
 }
 
@@ -631,6 +651,34 @@ async function loadMatches() {
       time(m.created_at),
     ])
   );
+}
+
+async function loadConnections() {
+  const cid = encodeURIComponent(document.getElementById('connectionCid').value.trim());
+  const status = document.getElementById('connectionStatus').value;
+  const requests = await api(`/admin/connection-requests?cid=${cid}&status=${status}&limit=80`);
+  if (!requests.length) return renderEmpty('connectionsTable', '没有找到连接申请');
+  document.getElementById('connectionsTable').innerHTML = table(
+    ['申请双方', '留言', '来源', '状态', '时间'],
+    requests.map(item => [
+      `${escapeHtml(item.requester?.nickname || item.requester_cid)} → ${escapeHtml(item.target?.nickname || item.target_cid)}<div class="tiny muted">${escapeHtml(item.requester_cid)} / ${escapeHtml(item.target_cid)}</div>`,
+      escapeHtml(item.message || ''),
+      `${escapeHtml(connectionSourceText(item.source_type))}${item.source_id ? `<div class="tiny muted">${escapeHtml(item.source_id)}</div>` : ''}`,
+      statusPill(item.status),
+      time(item.created_at),
+    ])
+  );
+}
+
+function connectionSourceText(type) {
+  const labels = {
+    agent: '公开档案',
+    demand: '需求',
+    service: '服务',
+    match: '匹配报告',
+    manual: '手动',
+  };
+  return labels[type] || type || '-';
 }
 
 async function loadFeedback() {

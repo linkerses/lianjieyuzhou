@@ -35,6 +35,7 @@ router.get('/summary', async (_req: Request, res: Response) => {
       transactionsTotal,
       transactionsPending,
       matchesTotal,
+      connectionRequestsPending,
     ] = await Promise.all([
       countRows('agents'),
       countRows('agents', query => query.eq('status', 'active')),
@@ -43,6 +44,7 @@ router.get('/summary', async (_req: Request, res: Response) => {
       countRows('transactions'),
       countRows('transactions', query => query.eq('status', 'pending')),
       countRows('agent_matches'),
+      countRows('connection_requests', query => query.eq('status', 'pending')),
     ]);
 
     const { data: recentTransactions, error: txError } = await supabase
@@ -66,6 +68,7 @@ router.get('/summary', async (_req: Request, res: Response) => {
         transactions_total: transactionsTotal,
         transactions_pending: transactionsPending,
         matches_total: matchesTotal,
+        connection_requests_pending: connectionRequestsPending,
         recent_transaction_amount: Math.round(recentTransactionAmount * 100) / 100,
       },
     });
@@ -319,6 +322,36 @@ router.get('/matches', async (req: Request, res: Response) => {
     res.json({ data: data || [] });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '获取匹配报告列表失败' });
+  }
+});
+
+router.get('/connection-requests', async (req: Request, res: Response) => {
+  try {
+    const { status, cid, limit } = req.query;
+    let query = supabase
+      .from('connection_requests')
+      .select(`
+        id, requester_cid, target_cid, message, source_type, source_id, status, created_at, updated_at, responded_at,
+        requester:agents!connection_requests_requester_cid_fkey(cid, nickname),
+        target:agents!connection_requests_target_cid_fkey(cid, nickname)
+      `);
+
+    if (status && status !== 'all') {
+      query = query.eq('status', String(status));
+    }
+    if (cid) {
+      const safeCid = sanitizeSearch(String(cid));
+      query = query.or(`requester_cid.eq.${safeCid},target_cid.eq.${safeCid}`);
+    }
+
+    const parsedLimit = Number(limit);
+    query = query.limit(Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 100) : 50);
+
+    const { data, error } = await query.order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ data: data || [] });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取连接申请列表失败' });
   }
 });
 

@@ -32,7 +32,8 @@
       </view>
       <view class="public-agent-actions">
         <button class="btn-inline btn-muted" catch:tap="copyCid">复制CID</button>
-        <button class="btn-inline" catch:tap="applyMatch">申请匹配</button>
+        <button class="btn-inline btn-muted" catch:tap="applyMatch">匹配</button>
+        <button class="btn-inline" catch:tap="startConnection">留言连接</button>
       </view>
     </view>
 
@@ -81,7 +82,8 @@
     </view>
 
     <view class="action-bar">
-      <button class="btn-primary" catch:tap="applyMatch">申请匹配</button>
+      <button class="btn-inline btn-muted" catch:tap="applyMatch">先看匹配</button>
+      <button class="btn-primary" catch:tap="startConnection">发起连接</button>
     </view>
   </view>
 </view>
