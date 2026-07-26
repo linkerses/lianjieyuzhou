@@ -69,12 +69,9 @@
 }
 
 .demand-plaza-card .demand-desc {
-  display: -webkit-box;
+  display: block;
   line-height: 1.65;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
+  white-space: pre-wrap;
 }
 
 .demand-action-hint {
@@ -91,7 +88,7 @@
   display: flex;
   align-items: center;
   gap: 16rpx;
-  margin-top: 20rpx;
+  margin-top: 18rpx;
   padding: 16rpx;
   border-radius: 12rpx;
   background: #FAFAF8;
@@ -107,6 +104,14 @@
 .demand-agent-main {
   flex: 1;
   min-width: 0;
+}
+
+.demand-agent-label {
+  display: block;
+  margin-bottom: 4rpx;
+  font-size: 21rpx;
+  color: #A8B5A9;
+  line-height: 1.35;
 }
 
 .demand-agent-name {
@@ -129,6 +134,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 12rpx;
   margin-top: 18rpx;
+  margin-bottom: 2rpx;
 }
 
 .demand-plaza-card .demand-actions .btn-inline {

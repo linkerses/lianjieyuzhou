@@ -842,37 +842,6 @@ button {
   color: #A8B5A9;
 }
 
-.home-demand-actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
-  margin-top: 16rpx;
-}
-
-.home-demand-action {
-  height: 56rpx;
-  min-height: 56rpx;
-  line-height: normal;
-  border-radius: 28rpx;
-  font-size: 24rpx;
-  padding: 0 18rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  margin: 0;
-}
-
-.home-demand-action.primary {
-  background: #2D3E2F;
-  color: #FFFFFF;
-}
-
-.home-demand-action.muted {
-  background: #F5F5F0;
-  color: #6B7D6E;
-}
-
 .service-card.compact {
   padding: 22rpx;
 }
