@@ -106,18 +106,18 @@ router.get('/requests/mine', async (req: Request, res: Response) => {
 
     const incoming = incomingResult.data || [];
     const outgoing = outgoingResult.data || [];
-    const messageMeta = await getConnectionMessageMeta([...incoming, ...outgoing].map((item: any) => item.id));
+    const messageMeta = await getConnectionMessageMeta([...incoming, ...outgoing].map((item: any) => item.id), cid);
 
     res.json({
       data: {
         incoming: incoming.map((item: any) => ({
           ...item,
-          ...(messageMeta.get(item.id) || { messages_count: 0, latest_message: null }),
+          ...(messageMeta.get(item.id) || { messages_count: 0, unread_count: 0, latest_message: null }),
           requester: item.requester ? formatConnectionAgent(item.requester) : null,
         })),
         outgoing: outgoing.map((item: any) => ({
           ...item,
-          ...(messageMeta.get(item.id) || { messages_count: 0, latest_message: null }),
+          ...(messageMeta.get(item.id) || { messages_count: 0, unread_count: 0, latest_message: null }),
           target: item.target ? formatConnectionAgent(item.target) : null,
         })),
       },
@@ -264,6 +264,33 @@ router.post('/requests/:id/messages', async (req: Request, res: Response) => {
     res.status(201).json({ data });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '发送联结留言失败' });
+  }
+});
+
+router.post('/requests/:id/read', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const request = await getVisibleConnectionRequest(req.params.id, cid);
+    if (!request) return res.status(404).json({ error: '联结申请不存在' });
+
+    const now = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('connection_read_states')
+      .upsert({
+        request_id: req.params.id,
+        reader_cid: cid,
+        last_read_at: now,
+        updated_at: now,
+      }, { onConflict: 'request_id,reader_cid' })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '标记已读失败' });
   }
 });
 
@@ -442,26 +469,59 @@ async function ensureActiveConnection(requesterCid: string, targetCid: string) {
   return data;
 }
 
-async function getConnectionMessageMeta(requestIds: string[]) {
+async function getVisibleConnectionRequest(requestId: string, cid: string) {
+  const { data, error } = await supabase
+    .from('connection_requests')
+    .select('id, requester_cid, target_cid, status')
+    .eq('id', requestId)
+    .single();
+
+  if (error) throw error;
+  if (!data) return null;
+  if (data.requester_cid !== cid && data.target_cid !== cid) {
+    throw new Error('无权访问该联结会话');
+  }
+  return data;
+}
+
+async function getConnectionMessageMeta(requestIds: string[], viewerCid: string) {
   const ids = [...new Set((requestIds || []).filter(Boolean))];
   const meta = new Map<string, any>();
   if (ids.length === 0) return meta;
 
-  const { data, error } = await supabase
-    .from('connection_messages')
-    .select('id, request_id, sender_cid, content, created_at')
-    .in('request_id', ids)
-    .order('created_at', { ascending: false })
-    .limit(500);
+  const [messagesResult, readStatesResult] = await Promise.all([
+    supabase
+      .from('connection_messages')
+      .select('id, request_id, sender_cid, content, created_at')
+      .in('request_id', ids)
+      .order('created_at', { ascending: false })
+      .limit(500),
+    supabase
+      .from('connection_read_states')
+      .select('request_id, last_read_at')
+      .eq('reader_cid', viewerCid)
+      .in('request_id', ids),
+  ]);
 
-  if (error) throw error;
+  if (messagesResult.error) throw messagesResult.error;
+  if (readStatesResult.error) throw readStatesResult.error;
 
-  (data || []).forEach((message: any) => {
+  const readAtMap = new Map(
+    (readStatesResult.data || []).map((item: any) => [item.request_id, new Date(item.last_read_at).getTime()])
+  );
+
+  (messagesResult.data || []).forEach((message: any) => {
     const current = meta.get(message.request_id) || {
       messages_count: 0,
+      unread_count: 0,
       latest_message: null,
     };
     current.messages_count += 1;
+    const readAt = readAtMap.get(message.request_id) || 0;
+    const messageAt = new Date(message.created_at).getTime();
+    if (message.sender_cid !== viewerCid && (!readAt || messageAt > readAt)) {
+      current.unread_count += 1;
+    }
     if (!current.latest_message) {
       current.latest_message = message;
     }

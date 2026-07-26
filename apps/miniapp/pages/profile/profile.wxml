@@ -65,7 +65,7 @@
         <text class="connection-inbox-empty-text">别人发起联结、回应需求后，会集中显示在这里。</text>
         <button class="connection-inbox-button secondary" catch:tap="goTrustNetwork">查看联结记录</button>
       </view>
-      <view class="connection-inbox-item" wx:for="{{connectionTodoItems}}" wx:key="id" data-id="{{item.id}}" catch:tap="openConnectionThread">
+      <view class="connection-inbox-item {{item.isUnread ? 'unread' : ''}}" wx:for="{{connectionTodoItems}}" wx:key="id" data-id="{{item.id}}" catch:tap="openConnectionThread">
         <view class="todo-title-row">
           <text class="todo-title">{{item.title}}</text>
           <text class="todo-tag">{{item.tag}}</text>

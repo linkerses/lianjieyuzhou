@@ -343,6 +343,7 @@ Page({
     const isDemandMessage = item.source_type === 'demand';
     const latestMessage = item.latest_message || null;
     const messagesCount = Number(item.messages_count || 0);
+    const unreadCount = Number(item.unread_count || 0);
     const updatedTime = new Date(latestMessage && latestMessage.created_at
       ? latestMessage.created_at
       : item.updated_at || item.responded_at || item.created_at).getTime();
@@ -355,6 +356,8 @@ Page({
       desc: `${otherName}：${preview}`,
       updatedTime: Number.isNaN(updatedTime) ? 0 : updatedTime,
       messagesCount,
+      unreadCount,
+      isUnread: unreadCount > 0,
     };
 
     if (direction === 'incoming' && item.status === 'pending') {
@@ -379,10 +382,10 @@ Page({
 
     return {
       ...base,
-      title: direction === 'incoming' ? '已建立联结' : '我发起的联结',
-      tag: messagesCount > 0 ? `${messagesCount}条留言` : '会话',
-      actionText: '继续留言',
-      rank: 2,
+      title: unreadCount > 0 ? '联结有新回复' : direction === 'incoming' ? '已建立联结' : '我发起的联结',
+      tag: unreadCount > 0 ? `${unreadCount}条新回复` : messagesCount > 0 ? `${messagesCount}条留言` : '会话',
+      actionText: unreadCount > 0 ? '查看新回复' : '继续留言',
+      rank: unreadCount > 0 ? 0 : 2,
     };
   },
 

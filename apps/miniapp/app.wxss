@@ -1740,6 +1740,10 @@ button {
   background: #FFFFFF;
 }
 
+.connection-inbox-item.unread {
+  border-left: 6rpx solid #8A6A2F;
+}
+
 .connection-inbox-item + .connection-inbox-item {
   margin-top: 14rpx;
 }

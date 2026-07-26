@@ -49,6 +49,7 @@ Page({
         statusText: this.getStatusText(request),
         loading: false,
       });
+      this.markAsRead();
       this.scrollToBottom();
     } catch (err) {
       this.setData({ loading: false });
@@ -109,6 +110,18 @@ Page({
   generateMatchReport() {
     if (!this.data.otherCid) return;
     wx.navigateTo({ url: `/pages/match/report?target_cid=${this.data.otherCid}` });
+  },
+
+  async markAsRead() {
+    if (!this.data.id) return;
+    try {
+      await app.request({
+        url: `/trust/requests/${this.data.id}/read`,
+        method: 'POST',
+      });
+    } catch (err) {
+      console.log('[markAsRead]', err);
+    }
   },
 
   getStatusText(request) {
