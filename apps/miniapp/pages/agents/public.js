@@ -93,45 +93,13 @@ Page({
     });
   },
 
-  respondDemand(e) {
+  openDemandDetail(e) {
     if (!this.data.agent) return;
-    const agent = this.data.agent;
     const dataset = e.currentTarget.dataset || {};
     const sourceId = dataset.sourceId;
-    const title = dataset.title || '这个需求';
-
-    wx.showModal({
-      title: '回应需求',
-      editable: true,
-      placeholderText: '写一句你能提供的帮助、资源或下一步建议',
-      content: `给「${title}」留言`,
-      confirmText: '发送',
-      success: async (res) => {
-        if (!res.confirm) return;
-        const message = (res.content || '').trim();
-        if (message.length < 2) {
-          wx.showToast({ title: '请写一句回应内容', icon: 'none' });
-          return;
-        }
-        try {
-          const result = await app.request({
-            url: '/trust/connect',
-            method: 'POST',
-            data: {
-              target_cid: agent.cid,
-              message,
-              source_type: 'demand',
-              source_id: sourceId,
-            },
-          });
-          wx.showToast({
-            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
-            icon: 'success',
-          });
-        } catch (err) {
-          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
-        }
-      },
+    if (!sourceId) return;
+    wx.navigateTo({
+      url: `/pages/demands/detail?cid=${this.data.agent.cid}&source_id=${encodeURIComponent(sourceId)}`,
     });
   },
 

@@ -69,24 +69,25 @@
       <view class="card-header">
         <text class="card-title">正在寻找</text>
       </view>
-      <view wx:if="{{agent.demand_posts.length > 0}}">
-        <view class="demand-item" wx:for="{{agent.demand_posts}}" wx:key="id">
-          <view class="demand-top">
-            <text class="demand-title">{{item.title}}</text>
+      <view class="public-demand-list" wx:if="{{agent.demand_posts.length > 0}}">
+        <view class="public-demand-card" wx:for="{{agent.demand_posts}}" wx:key="id" data-source-id="{{item.id}}" catch:tap="openDemandDetail">
+          <view class="public-demand-labels">
+            <text class="public-demand-label">正在寻找</text>
             <text class="demand-status demand-open">进行中</text>
           </view>
-          <text class="demand-desc">{{item.description}}</text>
-          <view class="demand-response-row">
-            <button class="btn-inline" data-source-id="{{item.id}}" data-title="{{item.title}}" catch:tap="respondDemand">回应需求</button>
+          <view class="demand-top">
+            <text class="demand-title">{{item.title}}</text>
           </view>
+          <text class="demand-desc">{{item.description}}</text>
+          <text class="public-demand-action">查看详情</text>
         </view>
       </view>
       <text class="profile-empty" wx:else>对方暂未发布公开需求。</text>
     </view>
 
-    <view class="action-bar">
-      <button class="btn-inline btn-muted" catch:tap="applyMatch">先看匹配</button>
-      <button class="btn-primary" catch:tap="startConnection">发起连接</button>
+    <view class="action-bar public-agent-bottom-actions">
+      <button class="public-bottom-button muted" catch:tap="applyMatch">先看匹配</button>
+      <button class="public-bottom-button primary" catch:tap="startConnection">发起连接</button>
     </view>
   </view>
 </view>
