@@ -1677,6 +1677,78 @@ button {
   border-top: 1rpx solid #F0F0EC;
 }
 
+.connection-inbox {
+  margin-top: 12rpx;
+  margin-bottom: 12rpx;
+  padding: 22rpx;
+  border-radius: 16rpx;
+  background: #F5F1E8;
+  border: 1rpx solid #E5D8BE;
+}
+
+.connection-inbox-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 14rpx;
+}
+
+.connection-inbox-eyebrow {
+  display: block;
+  color: #8A6A2F;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.connection-inbox-title {
+  display: block;
+  margin-top: 4rpx;
+  color: #2D3E2F;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.connection-inbox-badge {
+  flex-shrink: 0;
+  padding: 6rpx 14rpx;
+  border-radius: 999rpx;
+  background: #8A6A2F;
+  color: #FFFFFF;
+  font-size: 21rpx;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.connection-inbox-item {
+  padding: 18rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+}
+
+.connection-inbox-item + .connection-inbox-item {
+  margin-top: 14rpx;
+}
+
+.connection-inbox-button {
+  width: 100%;
+  height: 66rpx;
+  min-height: 66rpx;
+  margin: 16rpx 0 0;
+  border: none;
+  border-radius: 33rpx;
+  background: #2D3E2F;
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .todo-main {
   flex: 1;
   min-width: 0;

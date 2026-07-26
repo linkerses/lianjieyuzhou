@@ -52,17 +52,32 @@
       <text class="card-title">协作中心</text>
       <text class="card-action" catch:tap="goCollaborationCenter">全部</text>
     </view>
-    <view class="todo-item {{item.type === 'connection' ? 'connection-todo' : ''}}" wx:for="{{todoItems}}" wx:key="id" data-id="{{item.id}}" data-type="{{item.type}}" catch:tap="openTodo">
+
+    <view class="connection-inbox" wx:if="{{hasConnectionTodos}}">
+      <view class="connection-inbox-head">
+        <view>
+          <text class="connection-inbox-eyebrow">联结消息</text>
+          <text class="connection-inbox-title">{{connectionTodoItems.length}} 条待回复</text>
+        </view>
+        <text class="connection-inbox-badge">新</text>
+      </view>
+      <view class="connection-inbox-item" wx:for="{{connectionTodoItems}}" wx:key="id" data-id="{{item.id}}" catch:tap="openConnectionThread">
+        <view class="todo-title-row">
+          <text class="todo-title">{{item.title}}</text>
+          <text class="todo-tag">{{item.tag}}</text>
+        </view>
+        <text class="todo-desc">{{item.desc}}</text>
+        <button class="connection-inbox-button" data-id="{{item.id}}" catch:tap="openConnectionThread">查看并回复</button>
+      </view>
+    </view>
+
+    <view class="todo-item" wx:for="{{otherTodoItems}}" wx:key="id" data-id="{{item.id}}" data-type="{{item.type}}" catch:tap="openTodo">
       <view class="todo-main">
         <view class="todo-title-row">
           <text class="todo-title">{{item.title}}</text>
           <text class="todo-tag">{{item.tag}}</text>
         </view>
         <text class="todo-desc">{{item.desc}}</text>
-        <view class="todo-actions" wx:if="{{item.type === 'connection'}}">
-          <button class="todo-action muted" data-id="{{item.id}}" data-status="ignored" catch:tap="updateConnectionTodo">暂不处理</button>
-          <button class="todo-action primary" data-id="{{item.id}}" catch:tap="openConnectionThread">查看并回复</button>
-        </view>
       </view>
     </view>
     <view class="todo-empty" wx:if="{{!hasTodos}}">

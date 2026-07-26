@@ -41,7 +41,10 @@ Page({
     hasAgentTags: false,
     trustInfo: null,
     todoItems: [],
+    connectionTodoItems: [],
+    otherTodoItems: [],
     hasTodos: false,
+    hasConnectionTodos: false,
     quickActions: [],
     agentHubItems: DEFAULT_AGENT_HUB_ITEMS,
     feedbackTypes: FEEDBACK_TYPES,
@@ -94,6 +97,8 @@ Page({
       const matches = matchesRes && matchesRes.data ? matchesRes.data : [];
       const connectionRequests = connectionReqRes && connectionReqRes.data ? connectionReqRes.data : { incoming: [], outgoing: [] };
       const todoItems = this.buildTodoItems(transactions, connectionRequests);
+      const connectionTodoItems = todoItems.filter(item => item.type === 'connection');
+      const otherTodoItems = todoItems.filter(item => item.type !== 'connection');
       const quickActions = this.buildQuickActions(agent, todoItems);
       const agentHubItems = this.buildAgentHubItems(agent, services, matches, trustRes && trustRes.data, connectionRequests);
 
@@ -106,7 +111,10 @@ Page({
         hasAgentTags: agentTags.length > 0,
         trustInfo: trustRes && trustRes.data ? trustRes.data : null,
         todoItems,
+        connectionTodoItems,
+        otherTodoItems,
         hasTodos: todoItems.length > 0,
+        hasConnectionTodos: connectionTodoItems.length > 0,
         quickActions,
         agentHubItems,
         loadingData: false,
