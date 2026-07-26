@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page demand-detail-page">
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
   <view wx:elif="{{demand && agent}}">
@@ -11,18 +11,10 @@
       <text class="demand-detail-desc">{{demand.description}}</text>
     </view>
 
-    <view class="card demand-detail-action-card">
+    <view class="card demand-publisher-card">
       <view class="card-header">
-        <text class="card-title">我能提供帮助</text>
-      </view>
-      <text class="card-desc">如果你能提供经验、资源、服务或介绍，可以先留一句具体回应。对方会在「我的-协作中心」收到。</text>
-      <button class="btn-primary" catch:tap="respondDemand">回应这个需求</button>
-    </view>
-
-    <view class="card">
-      <view class="card-header">
-        <text class="card-title">发布者基本信息</text>
-        <text class="card-action" catch:tap="viewAgent">看详细档案</text>
+        <text class="card-title">发布者</text>
+        <text class="card-action" catch:tap="viewAgent">看档案</text>
       </view>
       <view class="demand-detail-agent">
         <view class="agent-basic-avatar demand-detail-avatar">{{agent.initial}}</view>
@@ -34,8 +26,10 @@
       <view class="tag-display detail-tags" wx:if="{{tagLabels.length > 0}}">
         <text class="tag" wx:for="{{tagLabels}}" wx:key="item">{{item}}</text>
       </view>
-      <text class="profile-text">{{agent.core_value}}</text>
-      <button class="btn-inline btn-muted detail-profile-button" catch:tap="viewAgent">进入个人详细信息</button>
     </view>
+  </view>
+
+  <view class="demand-detail-bottom" wx:if="{{demand && agent}}">
+    <button class="btn-primary" catch:tap="respondDemand">回应需求</button>
   </view>
 </view>
