@@ -50,9 +50,9 @@
   <view class="todo-card">
     <view class="card-header">
       <text class="card-title">协作中心</text>
-      <text class="card-action" catch:tap="goTransactions">全部</text>
+      <text class="card-action" catch:tap="goCollaborationCenter">全部</text>
     </view>
-    <view class="todo-item" wx:for="{{todoItems}}" wx:key="id" data-id="{{item.id}}" catch:tap="openTodo">
+    <view class="todo-item" wx:for="{{todoItems}}" wx:key="id" data-id="{{item.id}}" data-type="{{item.type}}" catch:tap="openTodo">
       <view class="todo-main">
         <text class="todo-title">{{item.title}}</text>
         <text class="todo-desc">{{item.desc}}</text>
@@ -61,10 +61,10 @@
     </view>
     <view class="todo-empty" wx:if="{{!hasTodos}}">
       <text class="todo-empty-title">暂无待处理事项</text>
-      <text class="todo-empty-desc">有新预约、待确认交付或待评价时，会显示在这里。</text>
+      <text class="todo-empty-desc">有新连接申请、预约、待确认交付或待评价时，会显示在这里。</text>
       <view class="todo-empty-actions">
         <button class="btn-inline btn-muted" catch:tap="goTransactions">交易记录</button>
-        <button class="btn-inline" catch:tap="goSellerWorkbench">服务方工作台</button>
+        <button class="btn-inline" catch:tap="goTrustNetwork">连接申请</button>
       </view>
     </view>
   </view>

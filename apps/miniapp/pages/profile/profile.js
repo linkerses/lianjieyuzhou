@@ -76,7 +76,7 @@ Page({
         }
       }
 
-      const [agentRes, trustRes, txRes, servicesRes, matchesRes] = await Promise.all([
+      const [agentRes, trustRes, txRes, servicesRes, matchesRes, connectionReqRes] = await Promise.all([
         app.request({ url: '/agents/me' }).catch(() => null),
         app.request({ url: '/trust/my-score' }).catch(() => null),
         app.request({ url: '/transactions/mine' }).catch(() => null),
@@ -85,15 +85,17 @@ Page({
           data: { provider: app.globalData.cid, status: 'all' },
         }).catch(() => null),
         app.request({ url: '/matches/mine' }).catch(() => null),
+        app.request({ url: '/trust/requests/mine' }).catch(() => null),
       ]);
       const agent = agentRes && agentRes.data ? agentRes.data : null;
       const agentTags = agent && agent.life_stage_tags ? this.formatTags(agent.life_stage_tags) : [];
       const transactions = txRes && txRes.data ? txRes.data : [];
       const services = servicesRes && servicesRes.data ? servicesRes.data : [];
       const matches = matchesRes && matchesRes.data ? matchesRes.data : [];
-      const todoItems = this.buildTodoItems(transactions);
+      const connectionRequests = connectionReqRes && connectionReqRes.data ? connectionReqRes.data : { incoming: [], outgoing: [] };
+      const todoItems = this.buildTodoItems(transactions, connectionRequests);
       const quickActions = this.buildQuickActions(agent, todoItems);
-      const agentHubItems = this.buildAgentHubItems(agent, services, matches, trustRes && trustRes.data);
+      const agentHubItems = this.buildAgentHubItems(agent, services, matches, trustRes && trustRes.data, connectionRequests);
 
       this.setData({
         agent,
@@ -129,8 +131,22 @@ Page({
     wx.navigateTo({ url: '/pages/transaction/transaction' });
   },
 
+  goCollaborationCenter() {
+    const hasPendingConnection = (this.data.todoItems || []).some(item => item.type === 'connection');
+    if (hasPendingConnection) {
+      wx.navigateTo({ url: '/pages/agent/agent?tab=trust' });
+      return;
+    }
+    this.goTransactions();
+  },
+
   openTodo(e) {
-    wx.navigateTo({ url: `/pages/transaction/detail?id=${e.currentTarget.dataset.id}` });
+    const { id, type } = e.currentTarget.dataset;
+    if (type === 'connection') {
+      wx.navigateTo({ url: '/pages/agent/agent?tab=trust' });
+      return;
+    }
+    wx.navigateTo({ url: `/pages/transaction/detail?id=${id}` });
   },
 
   onQuickAction(e) {
@@ -233,14 +249,25 @@ Page({
     }
   },
 
-  buildTodoItems(transactions) {
+  buildTodoItems(transactions, connectionRequests = {}) {
     const cid = app.globalData.cid;
-    return (transactions || [])
+    const pendingConnections = (connectionRequests.incoming || [])
+      .filter(item => item && item.status === 'pending')
+      .map(item => ({
+        id: item.id,
+        type: 'connection',
+        title: '新的连接申请',
+        desc: `${item.requester && item.requester.nickname ? item.requester.nickname : item.requester_cid}：${item.message || '想与你建立连接'}`,
+        tag: '消息',
+      }));
+
+    const transactionTodos = (transactions || [])
       .map(item => {
         const serviceName = item.services && item.services.name ? item.services.name : '服务';
         if (item.seller_cid === cid && item.status === 'pending') {
           return {
             id: item.id,
+            type: 'transaction',
             title: '新预约待确认',
             desc: serviceName,
             tag: '服务方',
@@ -249,6 +276,7 @@ Page({
         if (item.buyer_cid === cid && item.status === 'confirmed') {
           return {
             id: item.id,
+            type: 'transaction',
             title: '服务进行中',
             desc: '完成后记得确认交付',
             tag: '买方',
@@ -257,6 +285,7 @@ Page({
         if (item.buyer_cid === cid && item.status === 'completed' && !item.actual_score) {
           return {
             id: item.id,
+            type: 'transaction',
             title: '待评价',
             desc: serviceName,
             tag: '买方',
@@ -264,8 +293,9 @@ Page({
         }
         return null;
       })
-      .filter(Boolean)
-      .slice(0, 5);
+      .filter(Boolean);
+
+    return [...pendingConnections, ...transactionTodos].slice(0, 5);
   },
 
   buildQuickActions(agent, todoItems) {
@@ -298,7 +328,7 @@ Page({
     ];
   },
 
-  buildAgentHubItems(agent, services, matches, trustInfo) {
+  buildAgentHubItems(agent, services, matches, trustInfo, connectionRequests = {}) {
     const config = agent && agent.agent_config ? agent.agent_config : {};
     const profile = config.value_profile || {};
     const demandPosts = Array.isArray(config.demand_posts) ? config.demand_posts : [];
@@ -314,6 +344,7 @@ Page({
     const completeProfileFields = profileFields.filter(value => String(value || '').trim()).length;
     const profileStatus = `${completeProfileFields}/${profileFields.length}`;
     const trustScore = trustInfo && trustInfo.trust_score !== undefined ? Number(trustInfo.trust_score || 0) : 0;
+    const pendingConnections = (connectionRequests.incoming || []).filter(item => item && item.status === 'pending').length;
 
     return [
       {
@@ -347,9 +378,9 @@ Page({
       {
         tab: 'trust',
         title: '信任',
-        desc: trustScore > 0 ? '有记录' : '待积累',
-        metric: trustScore.toFixed(1),
-        state: trustScore > 0 ? 'done' : 'todo',
+        desc: pendingConnections > 0 ? '有连接申请' : trustScore > 0 ? '有记录' : '待积累',
+        metric: pendingConnections > 0 ? `${pendingConnections}条` : trustScore.toFixed(1),
+        state: pendingConnections > 0 ? 'active' : trustScore > 0 ? 'done' : 'todo',
       },
       {
         tab: 'match',
