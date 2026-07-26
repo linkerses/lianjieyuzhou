@@ -50,7 +50,7 @@
 
       <view class="demand-actions">
         <button class="btn-inline btn-muted" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">看发布者</button>
-        <button class="btn-inline" data-cid="{{item.agent_cid}}" catch:tap="applyMatch">我能帮他</button>
+        <button class="btn-inline" data-cid="{{item.agent_cid}}" data-source-id="{{item.source_id}}" data-title="{{item.title}}" catch:tap="respondDemand">回应需求</button>
       </view>
     </view>
   </view>

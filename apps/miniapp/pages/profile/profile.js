@@ -253,13 +253,17 @@ Page({
     const cid = app.globalData.cid;
     const pendingConnections = (connectionRequests.incoming || [])
       .filter(item => item && item.status === 'pending')
-      .map(item => ({
-        id: item.id,
-        type: 'connection',
-        title: '新的连接申请',
-        desc: `${item.requester && item.requester.nickname ? item.requester.nickname : item.requester_cid}：${item.message || '想与你建立连接'}`,
-        tag: '消息',
-      }));
+      .map(item => {
+        const requesterName = item.requester && item.requester.nickname ? item.requester.nickname : item.requester_cid;
+        const isDemandMessage = item.source_type === 'demand';
+        return {
+          id: item.id,
+          type: 'connection',
+          title: isDemandMessage ? '有人回应了你的需求' : '新的连接申请',
+          desc: `${requesterName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立连接')}`,
+          tag: isDemandMessage ? '需求消息' : '消息',
+        };
+      });
 
     const transactionTodos = (transactions || [])
       .map(item => {

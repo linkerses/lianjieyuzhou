@@ -66,6 +66,48 @@ Page({
     wx.navigateTo({ url: `/pages/agents/public?cid=${e.currentTarget.dataset.cid}` });
   },
 
+  respondDemand(e) {
+    const dataset = e.currentTarget.dataset || {};
+    const targetCid = dataset.cid;
+    const sourceId = dataset.sourceId;
+    const title = dataset.title || '这个需求';
+    if (!targetCid) return;
+
+    wx.showModal({
+      title: '回应需求',
+      editable: true,
+      placeholderText: '写一句你能提供的帮助、资源或下一步建议',
+      content: `给「${title}」留言`,
+      confirmText: '发送',
+      success: async (res) => {
+        if (!res.confirm) return;
+        const message = (res.content || '').trim();
+        if (message.length < 2) {
+          wx.showToast({ title: '请写一句回应内容', icon: 'none' });
+          return;
+        }
+        try {
+          const result = await app.request({
+            url: '/trust/connect',
+            method: 'POST',
+            data: {
+              target_cid: targetCid,
+              message,
+              source_type: 'demand',
+              source_id: sourceId,
+            },
+          });
+          wx.showToast({
+            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
+            icon: 'success',
+          });
+        } catch (err) {
+          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
+        }
+      },
+    });
+  },
+
   applyMatch(e) {
     wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
   },
@@ -82,6 +124,7 @@ Page({
       posts.forEach(post => {
         demands.push({
           id: `${agent.cid}_${post.id || post.title}`,
+          source_id: post.id || post.title,
           title: post.title || '',
           description: post.description || '',
           created_at: post.created_at || agent.updated_at || '',
@@ -116,7 +159,7 @@ Page({
     if (tags.includes('connection')) {
       return '适合先看发布者档案，再判断能否介绍合适的人。';
     }
-    return '如果你能提供经验、资源或服务，可以先生成匹配报告。';
+    return '如果你能提供经验、资源或服务，可以直接回应需求。';
   },
 
   formatTimeLabel(value) {

@@ -90,3 +90,18 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+.demand-response-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16rpx;
+}
+
+.demand-response-row .btn-inline {
+  min-width: 168rpx;
+  height: 56rpx;
+  min-height: 56rpx;
+  padding: 0 22rpx;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+}

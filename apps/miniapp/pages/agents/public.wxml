@@ -76,6 +76,9 @@
             <text class="demand-status demand-open">进行中</text>
           </view>
           <text class="demand-desc">{{item.description}}</text>
+          <view class="demand-response-row">
+            <button class="btn-inline" data-source-id="{{item.id}}" data-title="{{item.title}}" catch:tap="respondDemand">回应需求</button>
+          </view>
         </view>
       </view>
       <text class="profile-empty" wx:else>对方暂未发布公开需求。</text>
