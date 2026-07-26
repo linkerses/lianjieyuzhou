@@ -13,6 +13,7 @@ Page({
     accepting: false,
     canAccept: false,
     canSend: false,
+    statusText: '',
   },
 
   onLoad(options = {}) {
@@ -45,6 +46,7 @@ Page({
         messages: this.formatMessages(messages, myCid),
         canAccept: !!request && request.target_cid === myCid && request.status === 'pending',
         canSend: !!request && request.status === 'accepted',
+        statusText: this.getStatusText(request),
         loading: false,
       });
     } catch (err) {
@@ -101,6 +103,22 @@ Page({
   viewOtherAgent() {
     if (!this.data.otherCid) return;
     wx.navigateTo({ url: `/pages/agents/public?cid=${this.data.otherCid}` });
+  },
+
+  generateMatchReport() {
+    if (!this.data.otherCid) return;
+    wx.navigateTo({ url: `/pages/match/report?target_cid=${this.data.otherCid}` });
+  },
+
+  getStatusText(request) {
+    if (!request) return '';
+    const map = {
+      pending: '等待回应',
+      accepted: '已建立联结',
+      ignored: '已暂不处理',
+      closed: '已关闭',
+    };
+    return map[request.status] || request.status || '';
   },
 
   formatMessages(messages, myCid) {

@@ -285,19 +285,18 @@ Page({
 
   buildTodoItems(transactions, connectionRequests = {}) {
     const cid = app.globalData.cid;
-    const pendingConnections = (connectionRequests.incoming || [])
-      .filter(item => item && item.status === 'pending')
-      .map(item => {
-        const requesterName = item.requester && item.requester.nickname ? item.requester.nickname : item.requester_cid;
-        const isDemandMessage = item.source_type === 'demand';
-        return {
-          id: item.id,
-          type: 'connection',
-          title: isDemandMessage ? '有人回应了你的需求' : '新的联结申请',
-          desc: `${requesterName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立联结')}`,
-          tag: isDemandMessage ? '需求消息' : '消息',
-        };
-      });
+    const incomingConnections = (connectionRequests.incoming || [])
+      .filter(item => item && (item.status === 'pending' || item.status === 'accepted'))
+      .map(item => this.formatConnectionTodo(item, 'incoming'));
+    const outgoingConnections = (connectionRequests.outgoing || [])
+      .filter(item => item && (item.status === 'pending' || item.status === 'accepted'))
+      .map(item => this.formatConnectionTodo(item, 'outgoing'));
+    const connectionTodos = [...incomingConnections, ...outgoingConnections]
+      .sort((a, b) => {
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        return (b.updatedTime || 0) - (a.updatedTime || 0);
+      })
+      .slice(0, 4);
 
     const transactionTodos = (transactions || [])
       .map(item => {
@@ -333,7 +332,50 @@ Page({
       })
       .filter(Boolean);
 
-    return [...pendingConnections, ...transactionTodos].slice(0, 5);
+    return [...connectionTodos, ...transactionTodos].slice(0, 6);
+  },
+
+  formatConnectionTodo(item, direction) {
+    const other = direction === 'incoming' ? item.requester : item.target;
+    const otherName = other && other.nickname
+      ? other.nickname
+      : direction === 'incoming' ? item.requester_cid : item.target_cid;
+    const isDemandMessage = item.source_type === 'demand';
+    const updatedTime = new Date(item.updated_at || item.responded_at || item.created_at).getTime();
+    const base = {
+      id: item.id,
+      type: 'connection',
+      desc: `${otherName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立联结')}`,
+      updatedTime: Number.isNaN(updatedTime) ? 0 : updatedTime,
+    };
+
+    if (direction === 'incoming' && item.status === 'pending') {
+      return {
+        ...base,
+        title: isDemandMessage ? '有人回应了你的需求' : '新的联结申请',
+        tag: isDemandMessage ? '需求消息' : '待回复',
+        actionText: '查看并回复',
+        rank: 0,
+      };
+    }
+
+    if (direction === 'outgoing' && item.status === 'pending') {
+      return {
+        ...base,
+        title: '联结申请已发出',
+        tag: '等待中',
+        actionText: '查看状态',
+        rank: 1,
+      };
+    }
+
+    return {
+      ...base,
+      title: direction === 'incoming' ? '已建立联结' : '我发起的联结',
+      tag: '会话',
+      actionText: '继续留言',
+      rank: 2,
+    };
   },
 
   buildQuickActions(agent, todoItems) {

@@ -8,7 +8,10 @@
         <text class="thread-name">{{otherName}}</text>
         <text class="thread-cid">{{otherCid}}</text>
       </view>
-      <button class="thread-profile-btn" catch:tap="viewOtherAgent">看档案</button>
+      <view class="thread-hero-side">
+        <text class="thread-status">{{statusText}}</text>
+        <button class="thread-profile-btn" catch:tap="viewOtherAgent">看档案</button>
+      </view>
     </view>
 
     <view class="thread-origin" wx:if="{{request}}">
@@ -20,6 +23,11 @@
       <text class="thread-pending-title">对方正在等待你的回应</text>
       <text class="thread-pending-desc">接受后，你们可以在这里继续留言，把下一步说清楚。</text>
       <button class="btn-primary" loading="{{accepting}}" disabled="{{accepting}}" catch:tap="acceptConnection">接受联结</button>
+    </view>
+
+    <view class="thread-next-actions" wx:if="{{canSend}}">
+      <button class="thread-next-button" catch:tap="generateMatchReport">生成匹配报告</button>
+      <button class="thread-next-button muted" catch:tap="viewOtherAgent">查看对方档案</button>
     </view>
 
     <view class="message-list">

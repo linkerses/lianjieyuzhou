@@ -57,7 +57,7 @@
       <view class="connection-inbox-head">
         <view>
           <text class="connection-inbox-eyebrow">联结消息</text>
-          <text class="connection-inbox-title">{{hasConnectionTodos ? connectionTodoItems.length + ' 条待回复' : '暂无待回复'}}</text>
+          <text class="connection-inbox-title">{{hasConnectionTodos ? connectionTodoItems.length + ' 条联结消息' : '暂无待回复'}}</text>
         </view>
         <text class="connection-inbox-badge" wx:if="{{hasConnectionTodos}}">新</text>
       </view>
@@ -71,7 +71,7 @@
           <text class="todo-tag">{{item.tag}}</text>
         </view>
         <text class="todo-desc">{{item.desc}}</text>
-        <button class="connection-inbox-button" data-id="{{item.id}}" catch:tap="openConnectionThread">查看并回复</button>
+        <button class="connection-inbox-button" data-id="{{item.id}}" catch:tap="openConnectionThread">{{item.actionText || '查看并回复'}}</button>
       </view>
     </view>
 
