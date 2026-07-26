@@ -262,3 +262,70 @@
   background: #E8EDE6;
   color: #2D3E2F;
 }
+
+.connection-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 140;
+  background: rgba(0,0,0,0.42);
+  display: flex;
+  align-items: flex-end;
+}
+
+.connection-panel {
+  width: 100%;
+  padding: 32rpx 30rpx calc(30rpx + env(safe-area-inset-bottom));
+  border-radius: 24rpx 24rpx 0 0;
+  background: #FAFAF8;
+  box-sizing: border-box;
+}
+
+.connection-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 18rpx;
+}
+
+.connection-panel-title {
+  color: #2D3E2F;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.connection-panel-close {
+  flex-shrink: 0;
+  color: #8D9A8E;
+  font-size: 25rpx;
+  line-height: 1.4;
+}
+
+.connection-textarea {
+  width: 100%;
+  height: 360rpx;
+  padding: 22rpx 24rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  color: #2D3E2F;
+  font-size: 28rpx;
+  line-height: 1.65;
+  box-sizing: border-box;
+}
+
+.connection-panel-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 14rpx;
+  margin-top: 20rpx;
+}
+
+.connection-panel-actions .btn-inline,
+.connection-panel-actions .btn-primary {
+  width: 100%;
+  margin: 0;
+}

@@ -38,6 +38,9 @@ Page({
     locationText: '',
     profileSummary: '',
     loading: true,
+    showConnectionPanel: false,
+    connectionMessage: '',
+    submittingConnection: false,
   },
 
   onLoad(options = {}) {
@@ -81,39 +84,59 @@ Page({
 
   startConnection() {
     if (!this.data.agent) return;
-    const agent = this.data.agent;
-    wx.showModal({
-      title: '发起连接',
-      editable: true,
-      placeholderText: '写一句你为什么想连接对方',
-      content: `给 ${agent.nickname || agent.cid} 留一句连接理由`,
-      confirmText: '发送',
-      success: async (res) => {
-        if (!res.confirm) return;
-        const message = (res.content || '').trim();
-        if (message.length < 2) {
-          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
-          return;
-        }
-        try {
-          const result = await app.request({
-            url: '/trust/connect',
-            method: 'POST',
-            data: {
-              target_cid: agent.cid,
-              message,
-              source_type: 'agent',
-            },
-          });
-          wx.showToast({
-            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
-            icon: 'success',
-          });
-        } catch (err) {
-          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
-        }
-      },
+    this.setData({
+      showConnectionPanel: true,
+      connectionMessage: '',
     });
+  },
+
+  closeConnectionPanel() {
+    if (this.data.submittingConnection) return;
+    this.setData({
+      showConnectionPanel: false,
+      connectionMessage: '',
+    });
+  },
+
+  noop() {},
+
+  onConnectionInput(e) {
+    this.setData({ connectionMessage: e.detail.value });
+  },
+
+  async submitConnection() {
+    if (!this.data.agent || this.data.submittingConnection) return;
+    const agent = this.data.agent;
+    const message = (this.data.connectionMessage || '').trim();
+    if (message.length < 2) {
+      wx.showToast({ title: '请写一句联结理由', icon: 'none' });
+      return;
+    }
+
+    this.setData({ submittingConnection: true });
+    try {
+      const result = await app.request({
+        url: '/trust/connect',
+        method: 'POST',
+        data: {
+          target_cid: agent.cid,
+          message,
+          source_type: 'agent',
+        },
+      });
+      this.setData({
+        showConnectionPanel: false,
+        connectionMessage: '',
+        submittingConnection: false,
+      });
+      wx.showToast({
+        title: result.data && result.data.already_connected ? '已联结过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
+        icon: 'success',
+      });
+    } catch (err) {
+      this.setData({ submittingConnection: false });
+      wx.showToast({ title: err.error || '发送失败', icon: 'none' });
+    }
   },
 
   openDemandDetail(e) {

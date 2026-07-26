@@ -33,7 +33,7 @@
       <view class="public-agent-actions">
         <button class="btn-inline btn-muted" catch:tap="copyCid">复制CID</button>
         <button class="btn-inline btn-muted" catch:tap="applyMatch">匹配</button>
-        <button class="btn-inline" catch:tap="startConnection">留言连接</button>
+        <button class="btn-inline" catch:tap="startConnection">发起联结</button>
       </view>
     </view>
 
@@ -121,7 +121,27 @@
 
     <view class="action-bar public-agent-bottom-actions">
       <button class="public-bottom-button muted" catch:tap="applyMatch">先看匹配</button>
-      <button class="public-bottom-button primary" catch:tap="startConnection">发起连接</button>
+      <button class="public-bottom-button primary" catch:tap="startConnection">发起联结</button>
+    </view>
+  </view>
+
+  <view class="connection-mask" wx:if="{{showConnectionPanel}}" catch:tap="closeConnectionPanel">
+    <view class="connection-panel" catch:tap="noop">
+      <view class="connection-panel-head">
+        <text class="connection-panel-title">发起联结</text>
+        <text class="connection-panel-close" catch:tap="closeConnectionPanel">关闭</text>
+      </view>
+      <textarea class="connection-textarea"
+                value="{{connectionMessage}}"
+                maxlength="500"
+                auto-height="{{false}}"
+                fixed="{{true}}"
+                placeholder="写清楚你为什么想联结对方，或你对哪部分价值、需求、服务感兴趣"
+                bindinput="onConnectionInput"></textarea>
+      <view class="connection-panel-actions">
+        <button class="btn-inline btn-muted" catch:tap="closeConnectionPanel">取消</button>
+        <button class="btn-primary" loading="{{submittingConnection}}" disabled="{{submittingConnection}}" catch:tap="submitConnection">发送申请</button>
+      </view>
     </view>
   </view>
 </view>
