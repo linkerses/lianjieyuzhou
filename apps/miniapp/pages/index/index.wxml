@@ -83,10 +83,16 @@
       </view>
       <view class="loading" wx:if="{{loading.demands}}">加载中...</view>
       <block wx:else>
-        <view class="home-demand-card" wx:for="{{latestDemands}}" wx:key="id" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">
+        <view class="home-demand-card" wx:for="{{latestDemands}}" wx:key="id">
+          <view data-cid="{{item.agent_cid}}" catch:tap="viewAgent">
           <text class="home-demand-title">{{item.title}}</text>
           <text class="home-demand-desc">{{item.description}}</text>
           <text class="home-demand-meta">{{item.nickname}}</text>
+          </view>
+          <view class="home-demand-actions">
+            <button class="home-demand-action muted" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">看发布者</button>
+            <button class="home-demand-action primary" data-cid="{{item.agent_cid}}" data-source-id="{{item.source_id}}" data-title="{{item.title}}" catch:tap="respondDemand">回应需求</button>
+          </view>
         </view>
       </block>
     </view>

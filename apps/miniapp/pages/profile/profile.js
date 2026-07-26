@@ -149,6 +149,26 @@ Page({
     wx.navigateTo({ url: `/pages/transaction/detail?id=${id}` });
   },
 
+  async updateConnectionTodo(e) {
+    const { id, status } = e.currentTarget.dataset;
+    if (!id || !status) return;
+    const labelMap = {
+      accepted: '已接受',
+      ignored: '已忽略',
+    };
+    try {
+      await app.request({
+        url: `/trust/requests/${id}/status`,
+        method: 'PATCH',
+        data: { status },
+      });
+      wx.showToast({ title: labelMap[status] || '已处理', icon: 'success' });
+      this.loadData();
+    } catch (err) {
+      wx.showToast({ title: err.error || '处理失败', icon: 'none' });
+    }
+  },
+
   onQuickAction(e) {
     const key = e.currentTarget.dataset.key;
     if (key === 'agent') {

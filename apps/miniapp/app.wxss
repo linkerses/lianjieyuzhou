@@ -842,6 +842,37 @@ button {
   color: #A8B5A9;
 }
 
+.home-demand-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.home-demand-action {
+  height: 56rpx;
+  min-height: 56rpx;
+  line-height: normal;
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  margin: 0;
+}
+
+.home-demand-action.primary {
+  background: #2D3E2F;
+  color: #FFFFFF;
+}
+
+.home-demand-action.muted {
+  background: #F5F5F0;
+  color: #6B7D6E;
+}
+
 .service-card.compact {
   padding: 22rpx;
 }
@@ -1672,7 +1703,7 @@ button {
 
 .todo-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   padding: 18rpx 0;
   border-top: 1rpx solid #F0F0EC;
 }
@@ -1682,31 +1713,70 @@ button {
   min-width: 0;
 }
 
+.todo-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
 .todo-title {
   display: block;
+  flex: 1;
+  min-width: 0;
   font-size: 28rpx;
   font-weight: 700;
   color: #2D3E2F;
+  line-height: 1.45;
 }
 
 .todo-desc {
   display: block;
-  margin-top: 4rpx;
+  margin-top: 6rpx;
   font-size: 24rpx;
   color: #6B7D6E;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.55;
 }
 
 .todo-tag {
-  margin-left: 18rpx;
+  flex-shrink: 0;
   padding: 6rpx 14rpx;
   border-radius: 18rpx;
   background: #FFF5E6;
   color: #B8860B;
   font-size: 22rpx;
-  flex-shrink: 0;
+  line-height: 1.35;
+}
+
+.todo-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rpx;
+  margin-top: 14rpx;
+}
+
+.todo-action {
+  height: 54rpx;
+  min-height: 54rpx;
+  line-height: normal;
+  border-radius: 27rpx;
+  font-size: 23rpx;
+  padding: 0 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  margin: 0;
+}
+
+.todo-action.primary {
+  background: #2D3E2F;
+  color: #FFFFFF;
+}
+
+.todo-action.muted {
+  background: #F5F5F0;
+  color: #6B7D6E;
 }
 
 .todo-empty {
