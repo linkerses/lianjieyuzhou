@@ -16,20 +16,43 @@
         <text class="card-title">发布者</text>
         <text class="card-action" catch:tap="viewAgent">看档案</text>
       </view>
-      <view class="demand-detail-agent">
+      <view class="publisher-panel" catch:tap="viewAgent">
         <view class="agent-basic-avatar demand-detail-avatar">{{agent.initial}}</view>
-        <view class="demand-detail-agent-main">
-          <text class="demand-detail-agent-name">{{agent.nickname || agent.cid}}</text>
-          <text class="demand-detail-agent-meta">{{locationText}} · 信任 {{agent.trust_score || 0}}</text>
+        <view class="publisher-main">
+          <view class="publisher-head">
+            <text class="demand-detail-agent-name">{{agent.nickname || agent.cid}}</text>
+            <text class="publisher-score">信任 {{agent.trust_score || 0}}</text>
+          </view>
+          <text class="demand-detail-agent-meta">{{locationText}}</text>
+          <view class="tag-display detail-tags" wx:if="{{tagLabels.length > 0}}">
+            <text class="tag" wx:for="{{tagLabels}}" wx:key="item">{{item}}</text>
+          </view>
         </view>
-      </view>
-      <view class="tag-display detail-tags" wx:if="{{tagLabels.length > 0}}">
-        <text class="tag" wx:for="{{tagLabels}}" wx:key="item">{{item}}</text>
       </view>
     </view>
   </view>
 
   <view class="demand-detail-bottom" wx:if="{{demand && agent}}">
     <button class="btn-primary" catch:tap="respondDemand">回应需求</button>
+  </view>
+
+  <view class="response-mask" wx:if="{{showResponsePanel}}" catch:tap="closeResponsePanel">
+    <view class="response-panel" catch:tap="noop">
+      <view class="response-head">
+        <text class="response-title">回应需求</text>
+        <text class="response-close" catch:tap="closeResponsePanel">关闭</text>
+      </view>
+      <textarea class="response-textarea"
+                value="{{responseMessage}}"
+                maxlength="500"
+                auto-height="{{false}}"
+                fixed="{{true}}"
+                placeholder="写清楚你能提供什么帮助、资源或下一步建议"
+                bindinput="onResponseInput"></textarea>
+      <view class="response-actions">
+        <button class="btn-inline btn-muted" catch:tap="closeResponsePanel">取消</button>
+        <button class="btn-primary" loading="{{submittingResponse}}" disabled="{{submittingResponse}}" catch:tap="submitResponse">发送</button>
+      </view>
+    </view>
   </view>
 </view>

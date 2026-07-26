@@ -21,6 +21,9 @@ Page({
     tagLabels: [],
     locationText: '',
     loading: true,
+    showResponsePanel: false,
+    responseMessage: '',
+    submittingResponse: false,
   },
 
   onLoad(options = {}) {
@@ -77,42 +80,61 @@ Page({
 
   respondDemand() {
     if (!this.data.agent || !this.data.demand) return;
+    this.setData({
+      showResponsePanel: true,
+      responseMessage: '',
+    });
+  },
+
+  closeResponsePanel() {
+    if (this.data.submittingResponse) return;
+    this.setData({
+      showResponsePanel: false,
+      responseMessage: '',
+    });
+  },
+
+  noop() {},
+
+  onResponseInput(e) {
+    this.setData({ responseMessage: e.detail.value });
+  },
+
+  async submitResponse() {
+    if (!this.data.agent || !this.data.demand || this.data.submittingResponse) return;
     const agent = this.data.agent;
     const demand = this.data.demand;
+    const message = (this.data.responseMessage || '').trim();
+    if (message.length < 2) {
+      wx.showToast({ title: '请写一句回应内容', icon: 'none' });
+      return;
+    }
 
-    wx.showModal({
-      title: '回应需求',
-      editable: true,
-      placeholderText: '写一句你能提供的帮助、资源或下一步建议',
-      content: `给「${demand.title}」留言`,
-      confirmText: '发送',
-      success: async (res) => {
-        if (!res.confirm) return;
-        const message = (res.content || '').trim();
-        if (message.length < 2) {
-          wx.showToast({ title: '请写一句回应内容', icon: 'none' });
-          return;
-        }
-        try {
-          const result = await app.request({
-            url: '/trust/connect',
-            method: 'POST',
-            data: {
-              target_cid: agent.cid,
-              message,
-              source_type: 'demand',
-              source_id: demand.id,
-            },
-          });
-          wx.showToast({
-            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
-            icon: 'success',
-          });
-        } catch (err) {
-          wx.showToast({ title: err.error || '发送失败', icon: 'none' });
-        }
-      },
-    });
+    this.setData({ submittingResponse: true });
+    try {
+      const result = await app.request({
+        url: '/trust/connect',
+        method: 'POST',
+        data: {
+          target_cid: agent.cid,
+          message,
+          source_type: 'demand',
+          source_id: demand.id,
+        },
+      });
+      this.setData({
+        showResponsePanel: false,
+        responseMessage: '',
+        submittingResponse: false,
+      });
+      wx.showToast({
+        title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
+        icon: 'success',
+      });
+    } catch (err) {
+      this.setData({ submittingResponse: false });
+      wx.showToast({ title: err.error || '发送失败', icon: 'none' });
+    }
   },
 
   viewAgent() {

@@ -51,15 +51,19 @@
 }
 
 .demand-publisher-card {
-  background: #FAFAF8;
+  background: #FFFFFF;
   box-shadow: none;
+  border: 1rpx solid #EEEAE1;
 }
 
-.demand-detail-agent {
+.publisher-panel {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16rpx;
-  margin: 8rpx 0 18rpx;
+  margin-top: 6rpx;
+  padding: 18rpx;
+  border-radius: 14rpx;
+  background: #FAFAF8;
 }
 
 .demand-detail-avatar {
@@ -69,15 +73,35 @@
   font-size: 30rpx;
 }
 
-.demand-detail-agent-main {
+.publisher-main {
   flex: 1;
   min-width: 0;
 }
 
+.publisher-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14rpx;
+}
+
 .demand-detail-agent-name {
   display: block;
+  flex: 1;
+  min-width: 0;
   color: #2D3E2F;
   font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.publisher-score {
+  flex-shrink: 0;
+  padding: 5rpx 12rpx;
+  border-radius: 999rpx;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  font-size: 22rpx;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -91,7 +115,7 @@
 }
 
 .detail-tags {
-  margin-bottom: 0;
+  margin-top: 14rpx;
 }
 
 .detail-tags .tag {
@@ -110,6 +134,73 @@
 }
 
 .demand-detail-bottom .btn-primary {
+  width: 100%;
+  margin: 0;
+}
+
+.response-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: rgba(0,0,0,0.42);
+  display: flex;
+  align-items: flex-end;
+}
+
+.response-panel {
+  width: 100%;
+  padding: 30rpx 30rpx calc(28rpx + env(safe-area-inset-bottom));
+  border-radius: 24rpx 24rpx 0 0;
+  background: #FAFAF8;
+  box-sizing: border-box;
+}
+
+.response-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 18rpx;
+}
+
+.response-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #2D3E2F;
+  line-height: 1.4;
+}
+
+.response-close {
+  flex-shrink: 0;
+  color: #8D9A8E;
+  font-size: 25rpx;
+  line-height: 1.4;
+}
+
+.response-textarea {
+  width: 100%;
+  height: 240rpx;
+  padding: 20rpx 22rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  color: #2D3E2F;
+  font-size: 28rpx;
+  line-height: 1.65;
+  box-sizing: border-box;
+}
+
+.response-actions {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 14rpx;
+  margin-top: 20rpx;
+}
+
+.response-actions .btn-inline,
+.response-actions .btn-primary {
   width: 100%;
   margin: 0;
 }
