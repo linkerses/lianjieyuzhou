@@ -1,5 +1,9 @@
 /* pages/agents/public.wxss */
 
+.public-agent-page {
+  padding-bottom: 128rpx;
+}
+
 .public-agent-hero {
   background: #FFFFFF;
   border-radius: 18rpx;
@@ -83,6 +87,42 @@
   color: #6B7D6E;
 }
 
+.public-section-nav {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  margin-bottom: 24rpx;
+}
+
+.public-section-nav-item {
+  min-height: 86rpx;
+  padding: 14rpx 8rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #EEEAE1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.public-section-nav-title {
+  color: #2D3E2F;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.public-section-nav-count {
+  margin-top: 4rpx;
+  color: #8A6A2F;
+  font-size: 21rpx;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
 .public-demand-list {
   display: flex;
   flex-direction: column;
@@ -94,6 +134,57 @@
   border-radius: 14rpx;
   background: #FAFAF8;
   border-left: 5rpx solid #8A6A2F;
+}
+
+.public-service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.public-service-card {
+  padding: 22rpx;
+  border-radius: 14rpx;
+  background: #FAFAF8;
+  border-left: 5rpx solid #2D3E2F;
+}
+
+.public-service-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 10rpx;
+}
+
+.public-service-system {
+  flex: 1;
+  min-width: 0;
+  color: #6B7D6E;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.public-service-price {
+  flex-shrink: 0;
+  color: #8A6A2F;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.public-service-name {
+  display: block;
+  color: #2D3E2F;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+.public-service-card .service-tags {
+  max-height: 56rpx;
+  overflow: hidden;
 }
 
 .public-demand-labels {

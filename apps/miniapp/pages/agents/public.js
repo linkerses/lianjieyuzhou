@@ -12,10 +12,29 @@ const TAG_LABELS = {
   future: '🔮 未来',
 };
 
+const SYSTEM_LABELS = {
+  health: '健康',
+  living: '生活',
+  connection: '连接',
+  growth: '成长',
+  wealth: '财富',
+  create: '创造',
+  explore: '探索',
+  spirit: '精神',
+  future: '未来',
+};
+
+const DELIVERY_LABELS = {
+  online: '线上',
+  offline: '线下',
+  hybrid: '线上/线下',
+};
+
 Page({
   data: {
     cid: '',
     agent: null,
+    services: [],
     locationText: '',
     profileSummary: '',
     loading: true,
@@ -34,15 +53,19 @@ Page({
   async loadAgent(cid) {
     this.setData({ loading: true });
     try {
-      const res = await app.request({ url: `/agents/public/${cid}` });
-      const agent = this.formatAgent(res.data);
+      const [agentRes, servicesRes] = await Promise.all([
+        app.request({ url: `/agents/public/${cid}` }),
+        app.request({ url: '/services', data: { provider: cid, limit: 5 } }).catch(() => ({ data: [] })),
+      ]);
+      const agent = this.formatAgent(agentRes.data);
       this.setData({
         agent,
+        services: (servicesRes.data || []).map(item => this.formatService(item)),
         locationText: this.formatLocation(agent.basic_profile),
         profileSummary: this.buildProfileSummary(agent),
         loading: false,
       });
-      wx.setNavigationBarTitle({ title: res.data.nickname || '公开档案' });
+      wx.setNavigationBarTitle({ title: agentRes.data.nickname || '公开档案' });
     } catch (err) {
       wx.showToast({ title: err.error || '加载失败', icon: 'none' });
       this.setData({ loading: false });
@@ -103,6 +126,22 @@ Page({
     });
   },
 
+  viewService(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/services/detail?id=${id}` });
+  },
+
+  scrollToSection(e) {
+    const target = e.currentTarget.dataset.target;
+    if (!target) return;
+    wx.pageScrollTo({
+      selector: `#${target}`,
+      duration: 260,
+      offsetTop: 12,
+    });
+  },
+
   copyCid() {
     if (!this.data.agent) return;
     wx.setClipboardData({
@@ -140,6 +179,29 @@ Page({
 
   formatTags(tags) {
     return (tags || []).map(tag => TAG_LABELS[tag] || tag);
+  },
+
+  formatService(item) {
+    const systemLabel = SYSTEM_LABELS[item.primary_system] || item.primary_system || '服务';
+    const deliveryLabel = DELIVERY_LABELS[item.delivery_method] || item.delivery_method || '线上/线下';
+    return {
+      ...item,
+      system_label: systemLabel,
+      delivery_label: deliveryLabel,
+      price_label: this.formatPrice(item.price),
+      tags: [
+        systemLabel,
+        item.secondary_system ? SYSTEM_LABELS[item.secondary_system] || item.secondary_system : '',
+        deliveryLabel,
+        item.duration_minutes ? `${item.duration_minutes}分钟` : '',
+      ].concat(item.suitable_stages || []).filter(Boolean).slice(0, 4),
+    };
+  },
+
+  formatPrice(price) {
+    const value = Number(price || 0);
+    if (!Number.isFinite(value) || value <= 0) return '面议';
+    return `${value}元`;
   },
 
   formatLocation(profile) {

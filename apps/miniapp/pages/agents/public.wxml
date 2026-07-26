@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page public-agent-page">
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
   <view wx:elif="{{agent}}">
@@ -37,6 +37,20 @@
       </view>
     </view>
 
+    <view class="public-section-nav">
+      <view class="public-section-nav-item" data-target="profile-section" catch:tap="scrollToSection">
+        <text class="public-section-nav-title">价值档案</text>
+      </view>
+      <view class="public-section-nav-item" data-target="demand-section" catch:tap="scrollToSection">
+        <text class="public-section-nav-title">正在寻找</text>
+        <text class="public-section-nav-count">{{agent.demand_posts.length || 0}}</text>
+      </view>
+      <view class="public-section-nav-item" data-target="service-section" catch:tap="scrollToSection">
+        <text class="public-section-nav-title">可预约服务</text>
+        <text class="public-section-nav-count">{{services.length || 0}}</text>
+      </view>
+    </view>
+
     <view class="card" wx:if="{{agent.basic_profile.bio}}">
       <view class="card-header">
         <text class="card-title">个人简介</text>
@@ -44,7 +58,7 @@
       <text class="profile-text">{{agent.basic_profile.bio}}</text>
     </view>
 
-    <view class="card">
+    <view class="card" id="profile-section">
       <view class="card-header">
         <text class="card-title">公开身份档案</text>
       </view>
@@ -65,7 +79,7 @@
       </view>
     </view>
 
-    <view class="card">
+    <view class="card" id="demand-section">
       <view class="card-header">
         <text class="card-title">正在寻找</text>
       </view>
@@ -83,6 +97,26 @@
         </view>
       </view>
       <text class="profile-empty" wx:else>对方暂未发布公开需求。</text>
+    </view>
+
+    <view class="card" id="service-section">
+      <view class="card-header">
+        <text class="card-title">可预约服务</text>
+      </view>
+      <view class="public-service-list" wx:if="{{services.length > 0}}">
+        <view class="public-service-card" wx:for="{{services}}" wx:key="id" data-id="{{item.id}}" catch:tap="viewService">
+          <view class="public-service-top">
+            <text class="public-service-system">{{item.system_label}}</text>
+            <text class="public-service-price">{{item.price_label}}</text>
+          </view>
+          <text class="public-service-name">{{item.name}}</text>
+          <view class="service-tags" wx:if="{{item.tags.length > 0}}">
+            <text class="service-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
+          </view>
+          <text class="public-demand-action">查看服务</text>
+        </view>
+      </view>
+      <text class="profile-empty" wx:else>对方暂未上架可预约服务。</text>
     </view>
 
     <view class="action-bar public-agent-bottom-actions">
