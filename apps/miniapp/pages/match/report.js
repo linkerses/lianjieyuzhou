@@ -109,8 +109,8 @@ Page({
         targetServices: services,
         primaryService: services.length > 0 ? services[0] : null,
         actionHint: this.getActionHint(report, services),
-        primaryActionTitle: services.length > 0 ? `先预约「${services[0].name}」` : '先发起连接',
-        primaryActionText: services.length > 0 ? '预约这个服务' : '发起连接',
+        primaryActionTitle: services.length > 0 ? `先预约「${services[0].name}」` : '先发起联结',
+        primaryActionText: services.length > 0 ? '预约这个服务' : '发起联结',
         concreteActions: this.buildConcreteActions(report, services),
         keyFindings: this.buildKeyFindings(report),
         entrypoints: this.buildEntrypoints(report),
@@ -120,8 +120,8 @@ Page({
       console.log('[loadTargetServices]', err);
       this.setData({
         actionHint: this.getActionHint(report, []),
-        primaryActionTitle: '先发起连接',
-        primaryActionText: '发起连接',
+        primaryActionTitle: '先发起联结',
+        primaryActionText: '发起联结',
         concreteActions: this.buildConcreteActions(report, []),
         keyFindings: this.buildKeyFindings(report),
         entrypoints: this.buildEntrypoints(report),
@@ -134,16 +134,16 @@ Page({
     if (!this.data.report) return;
     const target = this.data.report.target_agent;
     wx.showModal({
-      title: '发起连接',
+      title: '发起联结',
       editable: true,
-      placeholderText: '写一句你想连接对方的原因',
-      content: `给 ${target.nickname || target.cid} 留一句连接理由`,
+      placeholderText: '写一句你想联结对方的原因',
+      content: `给 ${target.nickname || target.cid} 留一句联结理由`,
       confirmText: '发送',
       success: async (modalRes) => {
         if (!modalRes.confirm) return;
         const message = (modalRes.content || '').trim();
         if (message.length < 2) {
-          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
+          wx.showToast({ title: '请写一句联结理由', icon: 'none' });
           return;
         }
         try {
@@ -158,11 +158,11 @@ Page({
             },
           });
           wx.showToast({
-            title: res.data && res.data.already_connected ? '已连接过' : res.data && res.data.already_requested ? '已申请过' : '申请已发送',
+            title: res.data && res.data.already_connected ? '已联结过' : res.data && res.data.already_requested ? '已申请过' : '申请已发送',
             icon: 'success',
           });
         } catch (err) {
-          wx.showToast({ title: err.error || '连接失败', icon: 'none' });
+          wx.showToast({ title: err.error || '联结失败', icon: 'none' });
         }
       },
     });
@@ -224,7 +224,7 @@ Page({
       return '不要先聊太散。对方已有服务，优先用一次小交付验证是否合适。';
     }
     if (report && report.total_score >= 75) {
-      return '匹配度较高，先建立连接，并把沟通目标压缩到一次 15 分钟短沟通。';
+      return '匹配度较高，先建立联结，并把沟通目标压缩到一次 15 分钟短沟通。';
     }
     if (report && report.total_score >= 60) {
       return '先别急着合作。先看对方档案，确认需求和能力是否足够具体。';
@@ -246,7 +246,7 @@ Page({
     }
     if (score >= 75) {
       return [
-        '先发起连接，说明你对哪一个需求或能力感兴趣。',
+        '先发起联结，说明你对哪一个需求或能力感兴趣。',
         '约一次 15 分钟短沟通，只确认目标、资源、下一步小实验。',
       ];
     }

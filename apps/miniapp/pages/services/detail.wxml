@@ -95,7 +95,7 @@
     <view class="card" catch:tap="onContact">
       <view class="card-header">
         <text class="card-title">信任信息</text>
-        <text class="card-action" catch:tap="onContact">留言连接</text>
+        <text class="card-action" catch:tap="onContact">发起联结</text>
       </view>
       <view class="info-row">
         <text class="info-label">服务方信任分</text>

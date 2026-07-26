@@ -80,7 +80,7 @@ Page({
     });
   },
 
-  // 联系服务方：先提交轻量连接申请，不直接进入聊天。
+  // 联系服务方：先提交轻量联结申请，不直接进入聊天。
   onContact() {
     if (!this.data.service) return;
     const service = this.data.service;
@@ -88,13 +88,13 @@ Page({
       title: '联系服务方',
       editable: true,
       placeholderText: '写一句你想咨询的问题',
-      content: `给 ${service.provider_nickname || service.provider_cid} 留一句连接理由`,
+      content: `给 ${service.provider_nickname || service.provider_cid} 留一句联结理由`,
       confirmText: '发送',
       success: async (res) => {
         if (!res.confirm) return;
         const message = (res.content || '').trim();
         if (message.length < 2) {
-          wx.showToast({ title: '请写一句连接理由', icon: 'none' });
+          wx.showToast({ title: '请写一句联结理由', icon: 'none' });
           return;
         }
         try {
@@ -109,7 +109,7 @@ Page({
             },
           });
           wx.showToast({
-            title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
+            title: result.data && result.data.already_connected ? '已联结过' : result.data && result.data.already_requested ? '已申请过' : '申请已发送',
             icon: 'success',
           });
         } catch (err) {

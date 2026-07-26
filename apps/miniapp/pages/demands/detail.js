@@ -128,7 +128,7 @@ Page({
         submittingResponse: false,
       });
       wx.showToast({
-        title: result.data && result.data.already_connected ? '已连接过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
+        title: result.data && result.data.already_connected ? '已联结过' : result.data && result.data.already_requested ? '已回应过' : '已发送给对方',
         icon: 'success',
       });
     } catch (err) {

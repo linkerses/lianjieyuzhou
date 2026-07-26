@@ -61,16 +61,16 @@
         <text class="todo-desc">{{item.desc}}</text>
         <view class="todo-actions" wx:if="{{item.type === 'connection'}}">
           <button class="todo-action muted" data-id="{{item.id}}" data-status="ignored" catch:tap="updateConnectionTodo">暂不处理</button>
-          <button class="todo-action primary" data-id="{{item.id}}" data-status="accepted" catch:tap="updateConnectionTodo">接受连接</button>
+          <button class="todo-action primary" data-id="{{item.id}}" data-status="accepted" catch:tap="updateConnectionTodo">接受联结</button>
         </view>
       </view>
     </view>
     <view class="todo-empty" wx:if="{{!hasTodos}}">
       <text class="todo-empty-title">暂无待处理事项</text>
-      <text class="todo-empty-desc">有新连接申请、预约、待确认交付或待评价时，会显示在这里。</text>
+      <text class="todo-empty-desc">有新联结申请、预约、待确认交付或待评价时，会显示在这里。</text>
       <view class="todo-empty-actions">
         <button class="btn-inline btn-muted" catch:tap="goTransactions">交易记录</button>
-        <button class="btn-inline" catch:tap="goTrustNetwork">连接申请</button>
+        <button class="btn-inline" catch:tap="goTrustNetwork">联结申请</button>
       </view>
     </view>
   </view>
@@ -142,7 +142,7 @@
             <text class="about-step-num">④</text>
             <view>
               <text class="about-step-title">预约一个服务</text>
-              <text class="about-step-desc">把你或对方的能力变成可预约的服务，完成一次真实协作。从连接走向交付，从交付积累信任。</text>
+              <text class="about-step-desc">把你或对方的能力变成可预约的服务，完成一次真实协作。从联结走向交付，从交付积累信任。</text>
             </view>
           </view>
         </view>
@@ -198,7 +198,7 @@
             </view>
             <view class="about-term">
               <text class="about-term-word">找服务 vs 找人</text>
-              <text class="about-term-def">找服务是直接预约可交付的项目；找人是先发现可连接的对象，再决定下一步。</text>
+              <text class="about-term-def">找服务是直接预约可交付的项目；找人是先发现可联结的对象，再决定下一步。</text>
             </view>
           </view>
         </view>

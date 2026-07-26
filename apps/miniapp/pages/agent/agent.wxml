@@ -345,10 +345,10 @@
 
     <view class="card">
       <view class="card-header">
-        <text class="card-title">连接申请</text>
+        <text class="card-title">联结申请</text>
         <text class="card-action">{{connectionRequests.incoming.length || 0}}个待看</text>
       </view>
-      <text class="card-desc">有人对你的档案、需求或匹配报告感兴趣时，会先在这里留下连接理由。</text>
+      <text class="card-desc">有人对你的档案、需求或匹配报告感兴趣时，会先在这里留下联结理由。</text>
 
       <view class="loading" wx:if="{{loading.requests}}">加载中...</view>
 
@@ -402,7 +402,7 @@
           </view>
         </view>
 
-        <view class="connection-empty" wx:if="{{connectionRequests.incoming.length === 0 && connectionRequests.outgoing.length === 0}}">还没有连接申请。你可以从 Agent 广场或匹配报告里发起。</view>
+        <view class="connection-empty" wx:if="{{connectionRequests.incoming.length === 0 && connectionRequests.outgoing.length === 0}}">还没有联结申请。你可以从 Agent 广场或匹配报告里发起。</view>
       </view>
     </view>
 
@@ -411,14 +411,14 @@
         <text class="card-title">信任网络</text>
         <text class="card-action">{{trustNetwork.connections.length || 0}}人</text>
       </view>
-      <text class="card-desc">查看你主动连接、对方连接和交易过的 Agent。</text>
+      <text class="card-desc">查看你主动联结、对方联结和交易过的 Agent。</text>
 
       <view class="loading" wx:if="{{loading.network}}">加载中...</view>
 
       <view wx:else>
         <view class="connection-section">
           <view class="connection-section-title">
-            <text>我连接的人</text>
+            <text>我联结的人</text>
             <text>{{trustNetwork.outgoing.length || 0}}</text>
           </view>
           <view class="connection-item" wx:for="{{trustNetwork.outgoing}}" wx:key="cid">
@@ -441,12 +441,12 @@
               <text class="connection-link primary" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</text>
             </view>
           </view>
-          <view class="connection-empty" wx:if="{{trustNetwork.outgoing.length === 0}}">还没有主动连接的 Agent。</view>
+          <view class="connection-empty" wx:if="{{trustNetwork.outgoing.length === 0}}">还没有主动联结的 Agent。</view>
         </view>
 
         <view class="connection-section">
           <view class="connection-section-title">
-            <text>连接我的人</text>
+            <text>联结我的人</text>
             <text>{{trustNetwork.incoming.length || 0}}</text>
           </view>
           <view class="connection-item" wx:for="{{trustNetwork.incoming}}" wx:key="cid">
@@ -469,7 +469,7 @@
               <text class="connection-link primary" data-cid="{{item.cid}}" catch:tap="matchConnectionAgent">匹配</text>
             </view>
           </view>
-          <view class="connection-empty" wx:if="{{trustNetwork.incoming.length === 0}}">还没有人主动连接你。</view>
+          <view class="connection-empty" wx:if="{{trustNetwork.incoming.length === 0}}">还没有人主动联结你。</view>
         </view>
 
         <view class="connection-section">

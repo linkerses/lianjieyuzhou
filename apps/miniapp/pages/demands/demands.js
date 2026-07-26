@@ -115,7 +115,7 @@ Page({
       return '适合有明确交付能力的人提供服务方案。';
     }
     if (/资源|场地|资金|投资|渠道|商会|政府/.test(text)) {
-      return '适合有资源或能做介绍的人建立连接。';
+      return '适合有资源或能做介绍的人建立联结。';
     }
     const tags = agent && agent.life_stage_tags ? agent.life_stage_tags : [];
     if (tags.includes('connection')) {

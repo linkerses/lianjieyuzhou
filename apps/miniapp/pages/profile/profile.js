@@ -279,8 +279,8 @@ Page({
         return {
           id: item.id,
           type: 'connection',
-          title: isDemandMessage ? '有人回应了你的需求' : '新的连接申请',
-          desc: `${requesterName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立连接')}`,
+          title: isDemandMessage ? '有人回应了你的需求' : '新的联结申请',
+          desc: `${requesterName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立联结')}`,
           tag: isDemandMessage ? '需求消息' : '消息',
         };
       });
@@ -335,7 +335,7 @@ Page({
     if (todoItems.length > 0) {
       return [
         { key: 'transactions', title: '处理协作事项', desc: '先处理预约、交付或评价' },
-        { key: 'plaza', title: '看看新连接', desc: '从 Agent 广场找下一位匹配对象' },
+        { key: 'plaza', title: '看看新联结', desc: '从 Agent 广场找下一位匹配对象' },
       ];
     }
 
@@ -402,7 +402,7 @@ Page({
       {
         tab: 'trust',
         title: '信任',
-        desc: pendingConnections > 0 ? '有连接申请' : trustScore > 0 ? '有记录' : '待积累',
+        desc: pendingConnections > 0 ? '有联结申请' : trustScore > 0 ? '有记录' : '待积累',
         metric: pendingConnections > 0 ? `${pendingConnections}条` : trustScore.toFixed(1),
         state: pendingConnections > 0 ? 'active' : trustScore > 0 ? 'done' : 'todo',
       },
