@@ -34,16 +34,15 @@
 }
 
 .demand-waterfall {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
 }
 
 .demand-plaza-card {
   background: #FFFFFF;
   border-radius: 16rpx;
-  padding: 22rpx;
-  min-height: 500rpx;
+  padding: 26rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
   display: flex;
   flex-direction: column;
@@ -73,7 +72,7 @@
 }
 
 .demand-plaza-card .demand-title {
-  font-size: 28rpx;
+  font-size: 31rpx;
   line-height: 1.42;
   display: -webkit-box;
   overflow: hidden;
@@ -87,17 +86,17 @@
   line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 
 .demand-action-hint {
-  margin-top: 14rpx;
-  padding: 14rpx 16rpx;
+  margin-top: 16rpx;
+  padding: 16rpx 18rpx;
   border-radius: 12rpx;
   background: #F7F2E8;
   color: #6B5734;
-  font-size: 22rpx;
+  font-size: 24rpx;
   line-height: 1.55;
   display: -webkit-box;
   overflow: hidden;
@@ -109,18 +108,18 @@
 .demand-agent {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  margin-top: auto;
-  padding: 14rpx;
+  gap: 16rpx;
+  margin-top: 20rpx;
+  padding: 16rpx;
   border-radius: 12rpx;
   background: #FAFAF8;
 }
 
 .demand-agent-avatar {
-  width: 54rpx;
-  height: 54rpx;
+  width: 64rpx;
+  height: 64rpx;
   margin-right: 0;
-  font-size: 23rpx;
+  font-size: 26rpx;
 }
 
 .demand-agent-main {
@@ -131,14 +130,14 @@
 .demand-agent-label {
   display: block;
   margin-bottom: 4rpx;
-  font-size: 20rpx;
+  font-size: 21rpx;
   color: #A8B5A9;
   line-height: 1.35;
 }
 
 .demand-agent-name {
   display: block;
-  font-size: 24rpx;
+  font-size: 27rpx;
   font-weight: 700;
   color: #2D3E2F;
   line-height: 1.35;
@@ -147,7 +146,7 @@
 .demand-agent-meta {
   display: block;
   margin-top: 4rpx;
-  font-size: 20rpx;
+  font-size: 22rpx;
   color: #A8B5A9;
   line-height: 1.4;
 }
@@ -158,7 +157,7 @@
 }
 
 .demand-plaza-card .service-tag {
-  max-width: 138rpx;
+  max-width: 240rpx;
 }
 
 .demand-card-action {
