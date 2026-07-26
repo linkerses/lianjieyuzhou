@@ -83,10 +83,6 @@ Page({
     wx.navigateTo({ url: `/pages/agents/public?cid=${e.currentTarget.dataset.cid}` });
   },
 
-  applyMatch(e) {
-    wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
-  },
-
   clearFilter() {
     if (this.data.activeFilter === 'all') return;
     this.setData({ activeFilter: 'all' }, () => this.loadAgents());
@@ -114,7 +110,6 @@ Page({
       completion_badge_class: hasCompleteProfile ? 'metric-pill strong' : 'metric-pill',
       has_complete_profile: hasCompleteProfile,
       life_stage_tag_labels: this.formatTags(item.life_stage_tags || []),
-      contact_reason: this.buildContactReason(profile, serviceCount, completion),
       primary_label: this.buildPrimaryLabel(profile, demandPosts, serviceCount, completion),
       updated_label: this.formatTimeLabel(item.updated_at),
     };
@@ -132,19 +127,6 @@ Page({
         title: item.title || '',
         description: item.description || '',
       }));
-  },
-
-  buildContactReason(profile, serviceCount, completion) {
-    if (profile.service_capabilities && profile.vision_needs) {
-      return '能力和需求都已公开，适合先生成匹配报告再沟通。';
-    }
-    if (serviceCount > 0) {
-      return '已有可预约服务，适合从一次轻量体验开始。';
-    }
-    if (completion >= 80) {
-      return '档案较完整，适合先查看公开档案判断合作方向。';
-    }
-    return '档案还在完善中，建议先查看基础信息或等待对方补充。';
   },
 
   buildPrimaryLabel(profile, demandPosts, serviceCount, completion) {

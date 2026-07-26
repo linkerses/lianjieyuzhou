@@ -4,12 +4,7 @@
       <text class="seller-title">找人</text>
       <text class="plaza-count" wx:if="{{!loading}}">{{agents.length}}人</text>
     </view>
-    <text class="seller-subtitle">发现公开身份档案，查看价值与需求，再申请匹配。</text>
-    <view class="plaza-guide">
-      <text>看价值</text>
-      <text>看需求</text>
-      <text>再匹配</text>
-    </view>
+    <text class="seller-subtitle">看见人的核心价值、当前需求和可连接方向。</text>
   </view>
 
   <scroll-view class="filter-bar" scroll-x>
@@ -60,26 +55,18 @@
         </view>
       </view>
 
-      <view class="agent-value-list">
-        <view class="agent-value-block">
-          <text class="agent-value-label">可提供</text>
-          <text class="agent-value-text line-clamp">{{item.service_capabilities}}</text>
+      <view class="agent-value-list" data-cid="{{item.cid}}" catch:tap="viewAgent">
+        <view class="agent-value-block core">
+          <text class="agent-value-label">核心价值</text>
+          <text class="agent-value-text line-clamp">{{item.core_value}}</text>
         </view>
         <view class="agent-value-block">
-          <text class="agent-value-label">正在找</text>
+          <text class="agent-value-label">正在寻找</text>
           <text class="agent-value-text line-clamp">{{item.vision_needs}}</text>
         </view>
       </view>
 
-      <view class="agent-reason">
-        <text class="agent-reason-label">联系理由</text>
-        <text class="agent-reason-text">{{item.contact_reason}}</text>
-      </view>
-
-      <view class="service-actions">
-        <button class="btn-inline btn-muted" data-cid="{{item.cid}}" catch:tap="viewAgent">看档案</button>
-        <button class="btn-inline" data-cid="{{item.cid}}" catch:tap="applyMatch">申请匹配</button>
-      </view>
+      <text class="agent-card-action" data-cid="{{item.cid}}" catch:tap="viewAgent">查看详细档案</text>
     </view>
   </view>
 

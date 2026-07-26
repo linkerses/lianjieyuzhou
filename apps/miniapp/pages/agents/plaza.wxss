@@ -18,28 +18,6 @@
   line-height: 1.35;
 }
 
-.plaza-guide {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10rpx;
-  margin-top: 18rpx;
-}
-
-.plaza-guide text {
-  min-height: 58rpx;
-  padding: 0 8rpx;
-  border-radius: 12rpx;
-  background: #FFFFFF;
-  color: #6B7D6E;
-  font-size: 22rpx;
-  line-height: 1.35;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.03);
-}
-
 .agent-plaza-card {
   border-left: 5rpx solid #2D3E2F;
 }
@@ -86,14 +64,18 @@
 .agent-value-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14rpx;
-  margin-top: 22rpx;
+  gap: 12rpx;
+  margin-top: 20rpx;
 }
 
 .agent-value-block {
   background: #FAFAF8;
   border-radius: 12rpx;
-  padding: 20rpx 22rpx;
+  padding: 18rpx 22rpx;
+}
+
+.agent-value-block.core {
+  background: #F3F7F1;
 }
 
 .agent-value-label {
@@ -119,37 +101,13 @@
   -webkit-box-orient: vertical;
 }
 
-.agent-reason {
+.agent-card-action {
+  display: block;
   margin-top: 18rpx;
-  padding: 20rpx 22rpx;
-  border-radius: 12rpx;
-  background: #F7F2E8;
-}
-
-.agent-reason-label {
-  display: block;
-  color: #8A6A2F;
-  font-size: 22rpx;
-  font-weight: 600;
-  margin-bottom: 6rpx;
-}
-
-.agent-reason-text {
-  display: block;
-  color: #5D4B2C;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F0F0EC;
+  color: #2D3E2F;
   font-size: 25rpx;
-  line-height: 1.65;
-}
-
-.agent-plaza-card .service-actions {
-  grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
-  margin-top: 18rpx;
-}
-
-.agent-plaza-card .service-actions .btn-inline {
-  height: 58rpx;
-  min-height: 58rpx;
-  font-size: 24rpx;
-  border-radius: 29rpx;
+  font-weight: 700;
+  line-height: 1.4;
 }
