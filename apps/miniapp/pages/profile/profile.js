@@ -143,10 +143,16 @@ Page({
   openTodo(e) {
     const { id, type } = e.currentTarget.dataset;
     if (type === 'connection') {
-      wx.navigateTo({ url: '/pages/agent/agent?tab=trust' });
+      wx.navigateTo({ url: `/pages/connections/thread?id=${id}` });
       return;
     }
     wx.navigateTo({ url: `/pages/transaction/detail?id=${id}` });
+  },
+
+  openConnectionThread(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/connections/thread?id=${id}` });
   },
 
   async updateConnectionTodo(e) {

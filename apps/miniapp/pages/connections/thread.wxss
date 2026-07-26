@@ -1,0 +1,185 @@
+.connection-thread-page {
+  padding-bottom: 220rpx;
+}
+
+.thread-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  padding: 28rpx;
+  margin-bottom: 20rpx;
+  border-radius: 18rpx;
+  background: #FFFFFF;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.thread-label,
+.thread-origin-label {
+  display: block;
+  color: #8D9A8E;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.thread-name {
+  display: block;
+  margin-top: 8rpx;
+  color: #2D3E2F;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.thread-cid {
+  display: block;
+  margin-top: 4rpx;
+  color: #6B7D6E;
+  font-size: 23rpx;
+  line-height: 1.4;
+}
+
+.thread-profile-btn {
+  flex-shrink: 0;
+  height: 62rpx;
+  padding: 0 24rpx;
+  border-radius: 31rpx;
+  background: #E8EDE6;
+  color: #2D3E2F;
+  font-size: 25rpx;
+  font-weight: 700;
+  line-height: 62rpx;
+}
+
+.thread-origin,
+.thread-pending,
+.thread-closed {
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  border-radius: 16rpx;
+  background: #FFFFFF;
+}
+
+.thread-origin-content {
+  display: block;
+  margin-top: 10rpx;
+  color: #2D3E2F;
+  font-size: 28rpx;
+  line-height: 1.65;
+}
+
+.thread-pending-title {
+  display: block;
+  color: #2D3E2F;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.thread-pending-desc,
+.thread-closed {
+  color: #6B7D6E;
+  font-size: 26rpx;
+  line-height: 1.6;
+}
+
+.thread-pending .btn-primary {
+  width: 100%;
+  margin-top: 20rpx;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.message-empty {
+  padding: 28rpx;
+  color: #8D9A8E;
+  font-size: 26rpx;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.message-item {
+  display: flex;
+}
+
+.message-item.mine {
+  justify-content: flex-end;
+}
+
+.message-item.other {
+  justify-content: flex-start;
+}
+
+.message-bubble {
+  max-width: 78%;
+  padding: 18rpx 20rpx;
+  border-radius: 16rpx;
+  background: #FFFFFF;
+  box-sizing: border-box;
+}
+
+.message-item.mine .message-bubble {
+  background: #2D3E2F;
+}
+
+.message-content {
+  display: block;
+  color: #2D3E2F;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.message-item.mine .message-content {
+  color: #FFFFFF;
+}
+
+.message-time {
+  display: block;
+  margin-top: 8rpx;
+  color: #A8B5A9;
+  font-size: 20rpx;
+  line-height: 1.3;
+}
+
+.thread-composer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 80;
+  display: grid;
+  grid-template-columns: 1fr 132rpx;
+  gap: 14rpx;
+  padding: 18rpx 24rpx calc(18rpx + env(safe-area-inset-bottom));
+  background: #FAFAF8;
+  border-top: 1rpx solid #EEEAE1;
+  box-sizing: border-box;
+}
+
+.thread-input {
+  width: 100%;
+  height: 150rpx;
+  padding: 18rpx 20rpx;
+  border-radius: 14rpx;
+  background: #FFFFFF;
+  color: #2D3E2F;
+  font-size: 27rpx;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+.thread-send {
+  align-self: end;
+  height: 78rpx;
+  margin: 0;
+  border-radius: 39rpx;
+  background: #2D3E2F;
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 700;
+  line-height: 78rpx;
+}

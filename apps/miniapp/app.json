@@ -9,6 +9,7 @@
     "pages/agent/agent",
     "pages/agents/plaza",
     "pages/agents/public",
+    "pages/connections/thread",
     "pages/match/report",
     "pages/seller/workbench",
     "pages/seller/service-form",

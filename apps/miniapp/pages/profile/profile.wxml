@@ -61,7 +61,7 @@
         <text class="todo-desc">{{item.desc}}</text>
         <view class="todo-actions" wx:if="{{item.type === 'connection'}}">
           <button class="todo-action muted" data-id="{{item.id}}" data-status="ignored" catch:tap="updateConnectionTodo">暂不处理</button>
-          <button class="todo-action primary" data-id="{{item.id}}" data-status="accepted" catch:tap="updateConnectionTodo">接受联结</button>
+          <button class="todo-action primary" data-id="{{item.id}}" catch:tap="openConnectionThread">查看并回复</button>
         </view>
       </view>
     </view>

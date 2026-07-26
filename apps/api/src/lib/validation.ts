@@ -144,6 +144,10 @@ export const UpdateConnectionRequestSchema = z.object({
   status: z.enum(['accepted', 'ignored', 'closed']),
 });
 
+export const CreateConnectionMessageSchema = z.object({
+  content: z.string().min(1).max(1000),
+});
+
 export const UpdateSkillSchema = z.object({
   skill: z.enum([
     'state_scan', 'growth_path', 'spirit_charge',

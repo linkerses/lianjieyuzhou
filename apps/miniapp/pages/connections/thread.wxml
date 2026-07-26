@@ -1,0 +1,52 @@
+<view class="page connection-thread-page">
+  <view class="loading" wx:if="{{loading}}">加载中...</view>
+
+  <view wx:else>
+    <view class="thread-hero" wx:if="{{request}}">
+      <view>
+        <text class="thread-label">联结对象</text>
+        <text class="thread-name">{{otherName}}</text>
+        <text class="thread-cid">{{otherCid}}</text>
+      </view>
+      <button class="thread-profile-btn" catch:tap="viewOtherAgent">看档案</button>
+    </view>
+
+    <view class="thread-origin" wx:if="{{request}}">
+      <text class="thread-origin-label">发起理由</text>
+      <text class="thread-origin-content">{{request.message}}</text>
+    </view>
+
+    <view class="thread-pending" wx:if="{{canAccept}}">
+      <text class="thread-pending-title">对方正在等待你的回应</text>
+      <text class="thread-pending-desc">接受后，你们可以在这里继续留言，把下一步说清楚。</text>
+      <button class="btn-primary" loading="{{accepting}}" disabled="{{accepting}}" catch:tap="acceptConnection">接受联结</button>
+    </view>
+
+    <view class="message-list">
+      <view class="message-empty" wx:if="{{messages.length === 0 && canSend}}">
+        <text>还没有后续留言。可以先说明一个具体下一步。</text>
+      </view>
+      <view class="message-item {{item.isMine ? 'mine' : 'other'}}" wx:for="{{messages}}" wx:key="id">
+        <view class="message-bubble">
+          <text class="message-content">{{item.content}}</text>
+          <text class="message-time">{{item.createdText}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="thread-composer" wx:if="{{canSend}}">
+      <textarea class="thread-input"
+                value="{{inputValue}}"
+                maxlength="1000"
+                auto-height="{{false}}"
+                fixed="{{true}}"
+                placeholder="写下你想约的时间、可提供的帮助，或下一步具体行动"
+                bindinput="onInput"></textarea>
+      <button class="thread-send" loading="{{submitting}}" disabled="{{submitting}}" catch:tap="sendMessage">发送</button>
+    </view>
+
+    <view class="thread-closed" wx:if="{{request && request.status !== 'pending' && request.status !== 'accepted'}}">
+      <text>这条联结申请已处理，暂不能继续留言。</text>
+    </view>
+  </view>
+</view>

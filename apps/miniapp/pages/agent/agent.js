@@ -562,6 +562,12 @@ Page({
     wx.navigateTo({ url: `/pages/match/report?target_cid=${e.currentTarget.dataset.cid}` });
   },
 
+  openConnectionThread(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/connections/thread?id=${id}` });
+  },
+
   async updateConnectionRequest(e) {
     const { id, status } = e.currentTarget.dataset;
     const labelMap = {
@@ -802,6 +808,7 @@ Page({
       created_text: Number.isNaN(date.getTime()) ? '' : `${date.getMonth() + 1}月${date.getDate()}日`,
       can_accept: direction === 'incoming' && item.status === 'pending',
       can_close: direction === 'outgoing' && item.status === 'pending',
+      can_message: item.status === 'accepted',
     };
   },
 

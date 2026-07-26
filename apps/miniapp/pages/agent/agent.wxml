@@ -372,7 +372,8 @@
             </view>
             <view class="connection-actions">
               <text class="connection-link" data-cid="{{item.other_cid}}" catch:tap="viewConnectionAgent">看档案</text>
-              <text class="connection-link primary" wx:if="{{item.can_accept}}" data-id="{{item.id}}" data-status="accepted" catch:tap="updateConnectionRequest">接受</text>
+              <text class="connection-link primary" wx:if="{{item.can_accept}}" data-id="{{item.id}}" catch:tap="openConnectionThread">接受并回复</text>
+              <text class="connection-link primary" wx:if="{{item.can_message}}" data-id="{{item.id}}" catch:tap="openConnectionThread">留言</text>
               <text class="connection-link" wx:if="{{item.can_accept}}" data-id="{{item.id}}" data-status="ignored" catch:tap="updateConnectionRequest">忽略</text>
             </view>
           </view>
@@ -397,6 +398,7 @@
             </view>
             <view class="connection-actions">
               <text class="connection-link" data-cid="{{item.other_cid}}" catch:tap="viewConnectionAgent">看档案</text>
+              <text class="connection-link primary" wx:if="{{item.can_message}}" data-id="{{item.id}}" catch:tap="openConnectionThread">留言</text>
               <text class="connection-link" wx:if="{{item.can_close}}" data-id="{{item.id}}" data-status="closed" catch:tap="updateConnectionRequest">关闭</text>
             </view>
           </view>

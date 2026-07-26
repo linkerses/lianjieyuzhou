@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { supabase, getCurrentCid } from '../lib/supabase';
-import { CreateConnectionSchema, UpdateConnectionRequestSchema } from '../lib/validation';
+import { CreateConnectionSchema, UpdateConnectionRequestSchema, CreateConnectionMessageSchema } from '../lib/validation';
 
 const router = Router();
 
@@ -166,6 +166,98 @@ router.patch('/requests/:id/status', async (req: Request, res: Response) => {
     res.json({ data });
   } catch (err: any) {
     res.status(400).json({ error: err.message || '处理连接申请失败' });
+  }
+});
+
+router.get('/requests/:id/messages', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const { data: request, error: requestError } = await supabase
+      .from('connection_requests')
+      .select(`
+        id, requester_cid, target_cid, message, source_type, source_id, status, created_at, updated_at, responded_at,
+        requester:agents!connection_requests_requester_cid_fkey(cid, nickname, trust_score, life_stage_tags, agent_config),
+        target:agents!connection_requests_target_cid_fkey(cid, nickname, trust_score, life_stage_tags, agent_config)
+      `)
+      .eq('id', req.params.id)
+      .single();
+
+    if (requestError) throw requestError;
+    if (!request) return res.status(404).json({ error: '联结申请不存在' });
+    if (request.requester_cid !== cid && request.target_cid !== cid) {
+      return res.status(403).json({ error: '无权查看该联结会话' });
+    }
+
+    const { data: messages, error: messageError } = await supabase
+      .from('connection_messages')
+      .select('id, request_id, sender_cid, content, created_at')
+      .eq('request_id', req.params.id)
+      .order('created_at', { ascending: true })
+      .limit(100);
+
+    if (messageError) throw messageError;
+
+    res.json({
+      data: {
+        request: {
+          ...request,
+          requester: request.requester ? formatConnectionAgent(request.requester) : null,
+          target: request.target ? formatConnectionAgent(request.target) : null,
+        },
+        messages: messages || [],
+      },
+    });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '获取联结会话失败' });
+  }
+});
+
+router.post('/requests/:id/messages', async (req: Request, res: Response) => {
+  try {
+    const cid = getCurrentCid(req);
+    if (!cid) return res.status(401).json({ error: '未登录' });
+
+    const body = CreateConnectionMessageSchema.parse(req.body);
+    const content = body.content.trim();
+    if (!content) return res.status(400).json({ error: '请填写留言内容' });
+
+    const { data: request, error: requestError } = await supabase
+      .from('connection_requests')
+      .select('id, requester_cid, target_cid, status')
+      .eq('id', req.params.id)
+      .single();
+
+    if (requestError) throw requestError;
+    if (!request) return res.status(404).json({ error: '联结申请不存在' });
+    if (request.requester_cid !== cid && request.target_cid !== cid) {
+      return res.status(403).json({ error: '无权回复该联结会话' });
+    }
+    if (request.status !== 'accepted') {
+      return res.status(400).json({ error: '接受联结后才能继续留言' });
+    }
+
+    const { data, error } = await supabase
+      .from('connection_messages')
+      .insert({
+        request_id: req.params.id,
+        sender_cid: cid,
+        content,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    await supabase
+      .from('connection_requests')
+      .update({ updated_at: new Date().toISOString() })
+      .eq('id', req.params.id);
+
+    res.status(201).json({ data });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || '发送联结留言失败' });
   }
 });
 
