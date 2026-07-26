@@ -104,14 +104,20 @@ router.get('/requests/mine', async (req: Request, res: Response) => {
     if (incomingResult.error) throw incomingResult.error;
     if (outgoingResult.error) throw outgoingResult.error;
 
+    const incoming = incomingResult.data || [];
+    const outgoing = outgoingResult.data || [];
+    const messageMeta = await getConnectionMessageMeta([...incoming, ...outgoing].map((item: any) => item.id));
+
     res.json({
       data: {
-        incoming: (incomingResult.data || []).map((item: any) => ({
+        incoming: incoming.map((item: any) => ({
           ...item,
+          ...(messageMeta.get(item.id) || { messages_count: 0, latest_message: null }),
           requester: item.requester ? formatConnectionAgent(item.requester) : null,
         })),
-        outgoing: (outgoingResult.data || []).map((item: any) => ({
+        outgoing: outgoing.map((item: any) => ({
           ...item,
+          ...(messageMeta.get(item.id) || { messages_count: 0, latest_message: null }),
           target: item.target ? formatConnectionAgent(item.target) : null,
         })),
       },
@@ -434,6 +440,35 @@ async function ensureActiveConnection(requesterCid: string, targetCid: string) {
 
   if (error) throw error;
   return data;
+}
+
+async function getConnectionMessageMeta(requestIds: string[]) {
+  const ids = [...new Set((requestIds || []).filter(Boolean))];
+  const meta = new Map<string, any>();
+  if (ids.length === 0) return meta;
+
+  const { data, error } = await supabase
+    .from('connection_messages')
+    .select('id, request_id, sender_cid, content, created_at')
+    .in('request_id', ids)
+    .order('created_at', { ascending: false })
+    .limit(500);
+
+  if (error) throw error;
+
+  (data || []).forEach((message: any) => {
+    const current = meta.get(message.request_id) || {
+      messages_count: 0,
+      latest_message: null,
+    };
+    current.messages_count += 1;
+    if (!current.latest_message) {
+      current.latest_message = message;
+    }
+    meta.set(message.request_id, current);
+  });
+
+  return meta;
 }
 
 export default router;

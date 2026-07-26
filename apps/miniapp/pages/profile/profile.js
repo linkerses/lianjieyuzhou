@@ -341,12 +341,20 @@ Page({
       ? other.nickname
       : direction === 'incoming' ? item.requester_cid : item.target_cid;
     const isDemandMessage = item.source_type === 'demand';
-    const updatedTime = new Date(item.updated_at || item.responded_at || item.created_at).getTime();
+    const latestMessage = item.latest_message || null;
+    const messagesCount = Number(item.messages_count || 0);
+    const updatedTime = new Date(latestMessage && latestMessage.created_at
+      ? latestMessage.created_at
+      : item.updated_at || item.responded_at || item.created_at).getTime();
+    const preview = latestMessage && latestMessage.content
+      ? latestMessage.content
+      : item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立联结');
     const base = {
       id: item.id,
       type: 'connection',
-      desc: `${otherName}：${item.message || (isDemandMessage ? '想回应你的需求' : '想与你建立联结')}`,
+      desc: `${otherName}：${preview}`,
       updatedTime: Number.isNaN(updatedTime) ? 0 : updatedTime,
+      messagesCount,
     };
 
     if (direction === 'incoming' && item.status === 'pending') {
@@ -372,7 +380,7 @@ Page({
     return {
       ...base,
       title: direction === 'incoming' ? '已建立联结' : '我发起的联结',
-      tag: '会话',
+      tag: messagesCount > 0 ? `${messagesCount}条留言` : '会话',
       actionText: '继续留言',
       rank: 2,
     };

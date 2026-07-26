@@ -49,6 +49,7 @@ Page({
         statusText: this.getStatusText(request),
         loading: false,
       });
+      this.scrollToBottom();
     } catch (err) {
       this.setData({ loading: false });
       wx.showToast({ title: err.error || '会话加载失败', icon: 'none' });
@@ -130,5 +131,14 @@ Page({
         createdText: Number.isNaN(date.getTime()) ? '' : `${date.getMonth() + 1}月${date.getDate()}日 ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`,
       };
     });
+  },
+
+  scrollToBottom() {
+    setTimeout(() => {
+      wx.pageScrollTo({
+        selector: '#thread-bottom',
+        duration: 180,
+      });
+    }, 80);
   },
 });
