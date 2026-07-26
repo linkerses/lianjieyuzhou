@@ -1,0 +1,95 @@
+.demand-detail-hero {
+  background: #FFFFFF;
+  border-radius: 18rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  border-left: 6rpx solid #8A6A2F;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+}
+
+.demand-detail-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+  margin-bottom: 18rpx;
+}
+
+.demand-card-label {
+  font-size: 22rpx;
+  font-weight: 700;
+  color: #8A6A2F;
+  line-height: 1.4;
+}
+
+.demand-card-time {
+  flex-shrink: 0;
+  font-size: 22rpx;
+  color: #A8B5A9;
+  line-height: 1.4;
+}
+
+.demand-detail-title {
+  display: block;
+  font-size: 38rpx;
+  font-weight: 800;
+  color: #2D3E2F;
+  line-height: 1.38;
+}
+
+.demand-detail-desc {
+  display: block;
+  margin-top: 18rpx;
+  color: #2D3E2F;
+  font-size: 29rpx;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.demand-detail-action-card .btn-primary {
+  margin-top: 20rpx;
+}
+
+.demand-detail-agent {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 8rpx 0 18rpx;
+}
+
+.demand-detail-avatar {
+  width: 76rpx;
+  height: 76rpx;
+  margin-right: 0;
+  font-size: 30rpx;
+}
+
+.demand-detail-agent-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.demand-detail-agent-name {
+  display: block;
+  color: #2D3E2F;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.demand-detail-agent-meta {
+  display: block;
+  margin-top: 6rpx;
+  color: #6B7D6E;
+  font-size: 24rpx;
+  line-height: 1.45;
+}
+
+.detail-tags {
+  margin-bottom: 16rpx;
+}
+
+.detail-profile-button {
+  width: 100%;
+  margin-top: 20rpx;
+}

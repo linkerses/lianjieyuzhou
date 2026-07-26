@@ -20,8 +20,8 @@
 
   <view class="loading" wx:if="{{loading}}">加载中...</view>
 
-  <view wx:elif="{{demands.length > 0}}">
-    <view class="demand-plaza-card" wx:for="{{demands}}" wx:key="id">
+  <view class="demand-waterfall" wx:elif="{{demands.length > 0}}">
+    <view class="demand-plaza-card" wx:for="{{demands}}" wx:key="id" data-cid="{{item.agent_cid}}" data-source-id="{{item.source_id}}" catch:tap="openDemandDetail">
       <view class="demand-card-labels">
         <text class="demand-card-label">正在寻找</text>
         <text class="demand-card-time">{{item.time_label}}</text>
@@ -36,11 +36,6 @@
         <text>{{item.action_hint}}</text>
       </view>
 
-      <view class="demand-actions">
-        <button class="btn-inline btn-muted" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">看发布者</button>
-        <button class="btn-inline" data-cid="{{item.agent_cid}}" data-source-id="{{item.source_id}}" data-title="{{item.title}}" catch:tap="respondDemand">回应需求</button>
-      </view>
-
       <view class="demand-agent" data-cid="{{item.agent_cid}}" catch:tap="viewAgent">
         <view class="agent-basic-avatar demand-agent-avatar">{{item.initial}}</view>
         <view class="demand-agent-main">
@@ -53,6 +48,8 @@
       <view class="service-tags" wx:if="{{item.life_stage_tag_labels.length > 0}}">
         <text class="service-tag" wx:for="{{item.life_stage_tag_labels}}" wx:for-item="tag" wx:key="tag">{{tag}}</text>
       </view>
+
+      <text class="demand-card-action">查看详情</text>
     </view>
   </view>
 

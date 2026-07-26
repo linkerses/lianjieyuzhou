@@ -33,12 +33,21 @@
   line-height: 1.4;
 }
 
+.demand-waterfall {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+}
+
 .demand-plaza-card {
   background: #FFFFFF;
   border-radius: 16rpx;
-  padding: 26rpx;
-  margin-bottom: 16rpx;
+  padding: 22rpx;
+  min-height: 500rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
 }
 
 .demand-card-labels {
@@ -46,7 +55,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
-  margin-bottom: 12rpx;
+  margin-bottom: 10rpx;
 }
 
 .demand-card-label {
@@ -64,41 +73,54 @@
 }
 
 .demand-plaza-card .demand-title {
-  font-size: 31rpx;
+  font-size: 28rpx;
   line-height: 1.42;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .demand-plaza-card .demand-desc {
-  display: block;
-  line-height: 1.65;
-  white-space: pre-wrap;
+  display: -webkit-box;
+  line-height: 1.6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 }
 
 .demand-action-hint {
-  margin-top: 16rpx;
-  padding: 16rpx 18rpx;
+  margin-top: 14rpx;
+  padding: 14rpx 16rpx;
   border-radius: 12rpx;
   background: #F7F2E8;
   color: #6B5734;
-  font-size: 24rpx;
+  font-size: 22rpx;
   line-height: 1.55;
+  display: -webkit-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .demand-agent {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  margin-top: 18rpx;
-  padding: 16rpx;
+  gap: 12rpx;
+  margin-top: auto;
+  padding: 14rpx;
   border-radius: 12rpx;
   background: #FAFAF8;
 }
 
 .demand-agent-avatar {
-  width: 64rpx;
-  height: 64rpx;
+  width: 54rpx;
+  height: 54rpx;
   margin-right: 0;
-  font-size: 26rpx;
+  font-size: 23rpx;
 }
 
 .demand-agent-main {
@@ -109,14 +131,14 @@
 .demand-agent-label {
   display: block;
   margin-bottom: 4rpx;
-  font-size: 21rpx;
+  font-size: 20rpx;
   color: #A8B5A9;
   line-height: 1.35;
 }
 
 .demand-agent-name {
   display: block;
-  font-size: 27rpx;
+  font-size: 24rpx;
   font-weight: 700;
   color: #2D3E2F;
   line-height: 1.35;
@@ -125,21 +147,25 @@
 .demand-agent-meta {
   display: block;
   margin-top: 4rpx;
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: #A8B5A9;
   line-height: 1.4;
 }
 
-.demand-plaza-card .demand-actions {
-  grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
-  margin-top: 18rpx;
-  margin-bottom: 2rpx;
+.demand-plaza-card .service-tags {
+  max-height: 52rpx;
+  overflow: hidden;
 }
 
-.demand-plaza-card .demand-actions .btn-inline {
-  height: 58rpx;
-  min-height: 58rpx;
+.demand-plaza-card .service-tag {
+  max-width: 138rpx;
+}
+
+.demand-card-action {
+  display: block;
+  margin-top: 16rpx;
+  color: #2D3E2F;
   font-size: 24rpx;
-  border-radius: 29rpx;
+  font-weight: 700;
+  line-height: 1.4;
 }
