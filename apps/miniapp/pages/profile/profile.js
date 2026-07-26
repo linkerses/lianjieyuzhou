@@ -45,7 +45,6 @@ Page({
     otherTodoItems: [],
     hasTodos: false,
     hasConnectionTodos: false,
-    quickActions: [],
     agentHubItems: DEFAULT_AGENT_HUB_ITEMS,
     feedbackTypes: FEEDBACK_TYPES,
     feedbackTypeIndex: 0,
@@ -99,7 +98,6 @@ Page({
       const todoItems = this.buildTodoItems(transactions, connectionRequests);
       const connectionTodoItems = todoItems.filter(item => item.type === 'connection');
       const otherTodoItems = todoItems.filter(item => item.type !== 'connection');
-      const quickActions = this.buildQuickActions(agent, todoItems);
       const agentHubItems = this.buildAgentHubItems(agent, services, matches, trustRes && trustRes.data, connectionRequests);
 
       this.setData({
@@ -115,7 +113,6 @@ Page({
         otherTodoItems,
         hasTodos: todoItems.length > 0,
         hasConnectionTodos: connectionTodoItems.length > 0,
-        quickActions,
         agentHubItems,
         loadingData: false,
       });
@@ -180,19 +177,6 @@ Page({
       this.loadData();
     } catch (err) {
       wx.showToast({ title: err.error || '处理失败', icon: 'none' });
-    }
-  },
-
-  onQuickAction(e) {
-    const key = e.currentTarget.dataset.key;
-    if (key === 'agent') {
-      this.goAgent();
-    } else if (key === 'plaza') {
-      wx.switchTab({ url: '/pages/agents/plaza' });
-    } else if (key === 'seller') {
-      this.goSellerWorkbench();
-    } else if (key === 'transactions') {
-      this.goTransactions();
     }
   },
 
@@ -387,36 +371,6 @@ Page({
       actionText: unreadCount > 0 ? '查看新回复' : '继续留言',
       rank: unreadCount > 0 ? 0 : 2,
     };
-  },
-
-  buildQuickActions(agent, todoItems) {
-    const profile = agent && agent.agent_config && agent.agent_config.value_profile
-      ? agent.agent_config.value_profile
-      : {};
-    const hasValueProfile = !!(
-      profile.core_value &&
-      profile.service_capabilities &&
-      profile.project_experience
-    );
-
-    if (todoItems.length > 0) {
-      return [
-        { key: 'transactions', title: '处理协作事项', desc: '先处理预约、交付或评价' },
-        { key: 'plaza', title: '看看新联结', desc: '从 Agent 广场找下一位匹配对象' },
-      ];
-    }
-
-    if (!hasValueProfile) {
-      return [
-        { key: 'agent', title: '完善数字档案', desc: '补齐价值、能力、经历和需求' },
-        { key: 'seller', title: '发布一个服务', desc: '把可交付能力变成可预约服务' },
-      ];
-    }
-
-    return [
-      { key: 'plaza', title: '发起一次匹配', desc: '选择感兴趣的人生成匹配报告' },
-      { key: 'seller', title: '维护服务内容', desc: '更新服务介绍、定价和上下架状态' },
-    ];
   },
 
   buildAgentHubItems(agent, services, matches, trustInfo, connectionRequests = {}) {
